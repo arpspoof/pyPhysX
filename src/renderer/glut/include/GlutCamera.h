@@ -27,18 +27,17 @@
 // Copyright (c) 2004-2008 AGEIA Technologies, Inc. All rights reserved.
 // Copyright (c) 2001-2004 NovodeX AG. All rights reserved.  
 
-
-#ifndef PHYSX_SNIPPET_CAMERA_H
-#define PHYSX_SNIPPET_CAMERA_H
+#pragma once
 
 #include "foundation/PxTransform.h"
 
-namespace Snippets
+namespace glutRenderer
 {
-class Camera
+
+class GlutCamera
 {
 public:
-	Camera(const physx::PxVec3 &eye, const physx::PxVec3& dir);
+	GlutCamera(const physx::PxVec3 &eye, const physx::PxVec3& dir);
 
 	void				handleMouse(int button, int state, int x, int y);
 	bool				handleKey(unsigned char key, int x, int y, float speed = 1.0f);
@@ -55,8 +54,4 @@ private:
 	int				mMouseY;
 };
 
-
 }
-
-
-#endif //PHYSX_SNIPPET_CAMERA_H

@@ -114,7 +114,7 @@ void printFar(double *arr, int n) {
 
 VectorXd calcAcc(24);
 
-int xFrame = 0;
+extern int xFrame;
 
 void control(PxReal dt, int /*contactFlag*/) {
 	gArticulation->copyInternalStateToCache(*gCache, PxArticulationCache::eALL);

@@ -33,65 +33,77 @@
 #include "PxPhysicsAPI.h"
 #include "config.h"
 
-#include "SnippetRender.h"
-#include "SnippetCamera.h"
+#include "GlutRenderer.h"
+#include "GlutRendererLowLevel.h"
+#include "GlutCamera.h"
 
 using namespace physx;
 using namespace std::chrono;
 
-extern void initPhysics(bool interactive);
-extern void stepPhysics(bool interactive);	
-extern void cleanupPhysics(bool interactive);
-extern void keyPress(unsigned char key, const PxTransform& camera);
-
-
-namespace
+namespace glutRenderer
 {
-Snippets::Camera*	sCamera;
 
-void r() {
-	Snippets::startRender(sCamera->getEye(), sCamera->getDir());
+GlutRenderer GlutRenderer::globalGlutRenderer;
+
+GlutRenderer* GlutRenderer::GetInstance()
+{
+	return &globalGlutRenderer;
+}
+
+GlutRenderer::GlutRenderer()
+{
+	this->renderFrequenceHz = 60;
+	this->scene = nullptr;
+	this->keyboardHandler = nullptr;
+	this->glutCamera = nullptr;
+	this->simulating = false;
+}
+
+void GlutRenderer::AttachScene(::Scene* scene, GlutKeyboardHandler handler)
+{
+	this->scene = scene;
+	this->keyboardHandler = handler;
+}
+
+void GlutRenderer::renderScene() {
+	startRender(glutCamera->getEye(), glutCamera->getDir());
 	
-	PxScene* scene;
-	PxGetPhysics().getScenes(&scene, 1);
-	PxU32 nbActors = scene->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
+	PxU32 nbActors = scene->GetPxScene()->getNbActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC);
 	if (nbActors)
 	{
 		std::vector<PxRigidActor*> actors(nbActors);
-		scene->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
-		Snippets::renderActors(&actors[0], static_cast<PxU32>(actors.size()), true);
+		scene->GetPxScene()->getActors(PxActorTypeFlag::eRIGID_DYNAMIC | PxActorTypeFlag::eRIGID_STATIC, reinterpret_cast<PxActor**>(&actors[0]), nbActors);
+		renderActors(&actors[0], static_cast<PxU32>(actors.size()), true);
 	}
 
-	PxU32 nbArticulations = scene->getNbArticulations();
+	PxU32 nbArticulations = scene->GetPxScene()->getNbArticulations();
 	for (PxU32 i = 0; i<nbArticulations; i++)
 	{
 		PxArticulationBase* articulation;
-		scene->getArticulations(&articulation, 1, i);
+		scene->GetPxScene()->getArticulations(&articulation, 1, i);
 
 		const PxU32 nbLinks = articulation->getNbLinks();
 		std::vector<PxArticulationLink*> links(nbLinks);
 		articulation->getLinks(&links[0], nbLinks);
 
-		Snippets::renderActors(reinterpret_cast<PxRigidActor**>(&links[0]), static_cast<PxU32>(links.size()), true);
+		renderActors(reinterpret_cast<PxRigidActor**>(&links[0]), static_cast<PxU32>(links.size()), true);
 	}
 
-	Snippets::finishRender();
+	finishRender();
 }
 
-void motionCallback(int x, int y)
+void GlutRenderer::motionCallback(int x, int y)
 {
 	static int test = 0;
-	sCamera->handleMotion(x, y);
+	glutCamera->handleMotion(x, y);
 	if (test == 0) {
 		test = 1;
 		return;
 	}
-	r();
+	renderScene();
 }
 
-bool simulating = false;
-
-void keyboardCallback(unsigned char key, int x, int y)
+void GlutRenderer::keyboardCallback(unsigned char key, int x, int y)
 {
 	switch (key) {
 	case 27:
@@ -100,29 +112,30 @@ void keyboardCallback(unsigned char key, int x, int y)
 		simulating = !simulating; return;
 	}
 
-	if(!sCamera->handleKey(key, x, y))
-		keyPress(key, sCamera->getTransform());
-	r();
+	if(!glutCamera->handleKey(key, x, y) && keyboardHandler != nullptr)
+		keyboardHandler(key);
+
+	renderScene();
 }
 
-void mouseCallback(int button, int state, int x, int y)
+void GlutRenderer::mouseCallback(int button, int state, int x, int y)
 {
-	sCamera->handleMouse(button, state, x, y);
+	glutCamera->handleMouse(button, state, x, y);
 }
 
-void idleCallback()
+void GlutRenderer::idleCallback()
 {
 	glutPostRedisplay();
 }
 
-void renderCallback()
+void GlutRenderer::renderCallback()
 {
 	static int phyFrameCount = 10000;
 	static int rendercount = 59;
 	static high_resolution_clock::time_point starttime;
 
 	if (simulating) {
-		stepPhysics(true);
+		scene->Step();
 		phyFrameCount++;
 	}
 
@@ -134,7 +147,7 @@ void renderCallback()
 		return;
 	}
 
-	r();
+	renderScene();
 
 	rendercount++;
 	if (rendercount == 60) {
@@ -146,35 +159,29 @@ void renderCallback()
 	}
 }
 
-void exitCallback(void)
+void GlutRenderer::exitCallback()
 {
-	delete sCamera;
-	cleanupPhysics(true);
-}
+	delete glutCamera;
 }
 
-/*const PxVec3 gCamEyeLift(2.0f, 4.050591f, 8.605188f);
-const PxVec3 gCamDirLift(-2.0, -0, -8.605188f);*/
-
-const PxVec3 gCamEyeLift(8.0f, 4.050591f, 0);
-const PxVec3 gCamDirLift(-8.0, -0, -0);
-
-void renderLoop()
+void GlutRenderer::StartRenderLoop()
 {
-	sCamera = new Snippets::Camera(gCamEyeLift, gCamDirLift);
+	const PxVec3 camEyeLift(8.0f, 4.050591f, 0);
+	const PxVec3 camDirLift(-8.0, -0, -0);
+	glutCamera = new GlutCamera(camEyeLift, camDirLift);
 
-	Snippets::setupDefaultWindow("PhysX Snippet Articulation");
-	Snippets::setupDefaultRenderState();
+	setupDefaultWindow("PhysX Application");
+	setupDefaultRenderState();
 
-	glutIdleFunc(idleCallback);
-	glutDisplayFunc(renderCallback);
-	glutKeyboardFunc(keyboardCallback);
-	glutMouseFunc(mouseCallback);
-	glutMotionFunc(motionCallback);
+	glutIdleFunc([]() { globalGlutRenderer.idleCallback(); });
+	glutDisplayFunc([]() { globalGlutRenderer.renderCallback(); });
+	glutKeyboardFunc([](unsigned char key, int x, int y) { globalGlutRenderer.keyboardCallback(key, x, y); });
+	glutMouseFunc([](int button, int state, int x, int y) { globalGlutRenderer.mouseCallback(button, state, x, y); });
+	glutMotionFunc([](int x, int y) { globalGlutRenderer.motionCallback(x, y); });
 	motionCallback(0,0);
+	atexit([]() { globalGlutRenderer.exitCallback(); });
 
-	atexit(exitCallback);
-
-	initPhysics(true);
 	glutMainLoop();
+}
+
 }

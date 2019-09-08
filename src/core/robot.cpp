@@ -110,9 +110,4 @@ void loadRoot() {
 	arTree.buildArticulation(ar);
 
 	gArticulation->setArticulationFlag(PxArticulationFlag::Enum::eFIX_BASE, true);
-
-	auto rightFoot = ar.linkMap["right_ankle"]->link;
-	auto leftFoot = ar.linkMap["left_ankle"]->link;
-	setupFiltering(rightFoot, CollisionGroup::RightFoot, CollisionGroup::Ground);
-	setupFiltering(leftFoot, CollisionGroup::LeftFoot, CollisionGroup::Ground);
 }

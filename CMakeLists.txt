@@ -20,12 +20,21 @@ if (NOT DEFINED EIGEN_DIR)
     message(FATAL_ERROR "No Eigen directory specified")
 endif()
 
-include_directories("${PROJECT_SOURCE_DIR}")
+set(SRC_PATH "${PROJECT_SOURCE_DIR}/src")
+
+set(CORE_PATH "${SRC_PATH}/core")
+
+set(RENDERER_PATH "${SRC_PATH}/renderer")
+set(RENDERER_GLUT_PATH "${RENDERER_PATH}/glut")
+
 include_directories("${PHYSX_INSTALL_DIR}/PhysX/include")
 include_directories("${PHYSX_INSTALL_DIR}/PhysX/source/foundation/include")
 include_directories("${PHYSX_INSTALL_DIR}/PhysX/source/fastxml/include")
 include_directories("${PHYSX_INSTALL_DIR}/PxShared/include")
 include_directories("${EIGEN_DIR}")
+
+include_directories("${CORE_PATH}/include")
+include_directories("${RENDERER_GLUT_PATH}/include")
 
 link_directories("${PHYSX_BUILD_DIR}")
 
@@ -34,11 +43,6 @@ if (${CMAKE_BUILD_TYPE} MATCHES "Debug")
 else()
     add_compile_definitions(NDEBUG)
 endif()
-
-file(GLOB SRC
-    "${PROJECT_SOURCE_DIR}/src/*.h"
-    "${PROJECT_SOURCE_DIR}/src/*.cpp"
-)
 
 set(PX_LIBS 
     libPhysX_static_64.a 
@@ -62,6 +66,22 @@ set(SYS_LIBS
     cuda
 )
 
-add_executable(main ${SRC})
 
-target_link_libraries(main ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
+file(GLOB CORE_SRC
+    "${CORE_PATH}/include/*.h"
+    "${CORE_PATH}/*.cpp"
+)
+add_library(core ${CORE_SRC})
+target_link_libraries(core ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
+
+
+file(GLOB RENDERER_GLUT_SRC
+    "${RENDERER_GLUT_PATH}/include/*.h"
+    "${RENDERER_GLUT_PATH}/*.cpp"
+)
+add_library(renderer_glut ${RENDERER_GLUT_SRC})
+target_link_libraries(renderer_glut ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
+
+
+add_executable(main "${PROJECT_SOURCE_DIR}/src/main.cpp")
+target_link_libraries(main core renderer_glut)
