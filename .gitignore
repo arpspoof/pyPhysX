@@ -1,4 +1,6 @@
 build/
+debug/
+.vscode/
 
 # Prerequisites
 *.d

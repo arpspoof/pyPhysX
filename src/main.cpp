@@ -13,9 +13,6 @@
 #include <vector>
 #include <algorithm>
 
-#include "SnippetPrint.h"
-#include "SnippetPVD.h"
-
 using namespace physx;
 using namespace std;
 using namespace std::chrono;
@@ -30,8 +27,6 @@ PxDefaultCpuDispatcher*	gDispatcher		= NULL;
 PxScene*				gScene			= NULL;
 
 PxMaterial*				gMaterial		= NULL;
-
-PxPvd*                  gPvd			= NULL;
 
 PxArticulationReducedCoordinate*		gArticulation = NULL;
 PxArticulationCache*					gCache = NULL;
@@ -145,12 +140,9 @@ void assignIndices() {
 void initPhysics(bool /*interactive*/)
 {
 	gFoundation = PxCreateFoundation(PX_PHYSICS_VERSION, gAllocator, gErrorCallback);
-	gPvd = PxCreatePvd(*gFoundation);
-	PxPvdTransport* transport = PxDefaultPvdSocketTransportCreate(PVD_HOST, 5425, 10);
-	gPvd->connect(*transport,PxPvdInstrumentationFlag::eALL);
 
-	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, gPvd);
-	PxInitExtensions(*gPhysics, gPvd);
+	gPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *gFoundation, PxTolerancesScale(), true, NULL);
+	PxInitExtensions(*gPhysics, NULL);
 
 	PxSceneDesc sceneDesc(gPhysics->getTolerancesScale());
 	sceneDesc.gravity = PxVec3(0.0f, -getConfigF("C_GRAVITY"), 0.0f);
@@ -182,14 +174,6 @@ void initPhysics(bool /*interactive*/)
 	}
 
 	gScene = gPhysics->createScene(sceneDesc);
-
-	PxPvdSceneClient* pvdClient = gScene->getScenePvdClient();
-	if(pvdClient)
-	{
-		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONSTRAINTS, true);
-		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_CONTACTS, true);
-		pvdClient->setScenePvdFlag(PxPvdSceneFlag::eTRANSMIT_SCENEQUERIES, true);
-	}
 
 	gMaterial = gPhysics->createMaterial(getConfigF("C_STATIC_FRICTION"), getConfigF("C_DYNAMIC_FRICTION"), 0.f);
 
@@ -236,9 +220,6 @@ void cleanupPhysics(bool /*interactive*/)
 	gScene->release();
 	gDispatcher->release();
 	gPhysics->release();	
-	PxPvdTransport* transport = gPvd->getTransport();
-	gPvd->release();
-	transport->release();
 	PxCloseExtensions();  
 	gFoundation->release();
 
@@ -254,7 +235,7 @@ PxReal motions[98][36];
 
 #include <fstream>
 
-int snippetMain(int argc, const char*const* argv)
+int main(int argc, char** argv)
 {
 	if (argc > 1) {
 		const char* config_path = argv[1];

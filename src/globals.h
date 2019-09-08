@@ -16,8 +16,6 @@ extern PxScene*					gScene;
 
 extern PxMaterial*				gMaterial;
 
-extern PxPvd*					gPvd;
-
 extern PxArticulationReducedCoordinate*			gArticulation;
 extern PxArticulationJointReducedCoordinate*	gDriveJoint;
 extern PxArticulationCache*						gCache;
