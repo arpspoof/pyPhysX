@@ -1,4 +1,3 @@
-#include "robot.h"
 #include "config.h"
 
 #include "LinkBody.h"
@@ -14,7 +13,6 @@ extern Articulation* articulation;
 extern PxMaterial* material;
 
 void loadRoot() {
-
 	// Link bodies
 	NULLLinkBody bodyBase;
 	SphereLinkBody bodyRoot(6.f, 0.36f, material); // segment fault here
@@ -112,5 +110,5 @@ void loadRoot() {
 
 	arTree.buildArticulation(*articulation);
 
-	articulation->SetFixBaseFlag(true);
+	articulation->SetFixBaseFlag(false);
 }

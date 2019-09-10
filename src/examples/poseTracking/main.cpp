@@ -6,7 +6,6 @@
 
 #include "PxPhysicsAPI.h"
 #include "config.h"
-#include "globals.h"
 #include "ArticulationTree.h"
 
 #include <iostream>
@@ -44,6 +43,9 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 Scene* scene;
 PxMaterial* material;
 
+void loadRoot();
+void InitControl();
+
 void initPhysics(bool /*interactive*/)
 {
 	scene = new Scene(SceneDescription());
@@ -59,7 +61,7 @@ void initPhysics(bool /*interactive*/)
 	
 	articulation = new Articulation();
 
-	loader();
+	loadRoot();
 
 	scene->AddArticulation(articulation);
 	scene->timeStep = getConfigF("C_TIME_STEP");

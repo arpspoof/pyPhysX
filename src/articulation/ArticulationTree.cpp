@@ -1,5 +1,4 @@
 #include "ArticulationTree.h"
-#include "globals.h"
 #include "config.h"
 
 #include <cassert>

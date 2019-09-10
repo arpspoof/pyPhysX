@@ -69,20 +69,20 @@ set(SYS_LIBS
 )
 
 
-file(GLOB CORE_SRC
-    "${CORE_PATH}/include/*.h"
-    "${CORE_PATH}/*.cpp"
-)
-add_library(core ${CORE_SRC})
-target_link_libraries(core ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
-
-
 file(GLOB ARTICULATION_SRC
     "${ARTICULATION_PATH}/include/*.h"
     "${ARTICULATION_PATH}/*.cpp"
 )
 add_library(articulation ${ARTICULATION_SRC})
 target_link_libraries(articulation ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
+
+
+file(GLOB CORE_SRC
+    "${CORE_PATH}/include/*.h"
+    "${CORE_PATH}/*.cpp"
+)
+add_library(core ${CORE_SRC})
+target_link_libraries(core ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
 
 
 file(GLOB RENDERER_GLUT_SRC
@@ -93,5 +93,19 @@ add_library(renderer_glut ${RENDERER_GLUT_SRC})
 target_link_libraries(renderer_glut ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
 
 
-add_executable(main "${PROJECT_SOURCE_DIR}/src/main.cpp")
-target_link_libraries(main core articulation renderer_glut)
+
+set(BUILD_EXAMPLES true)
+
+if(${BUILD_EXAMPLES} MATCHES true)
+
+    set(EXAMPLE_PATH "${SRC_PATH}/examples")
+
+    set(EXAMPLE_POSE_TRACKING_PATH "${EXAMPLE_PATH}/poseTracking")
+    file(GLOB EXAMPLE_POSE_TRACKING_SRC
+        "${EXAMPLE_POSE_TRACKING_PATH}/include/*.h"
+        "${EXAMPLE_POSE_TRACKING_PATH}/*.cpp"
+    )
+    add_executable(poseTracking ${EXAMPLE_POSE_TRACKING_SRC})
+    target_link_libraries(poseTracking core articulation renderer_glut)
+
+endif()

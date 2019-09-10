@@ -199,8 +199,6 @@ void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
 	PxReal *velocities = mainCache->jointVelocity;
 	PxReal *forces = mainCache->jointForce;
 
-	memset(forces, 0, sizeof(PxReal) * nDof);
-
 	VectorXd proportionalTorquePlusQDotDeltaT(nDof);
 	VectorXd derivativeTorque(nDof);
 

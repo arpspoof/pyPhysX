@@ -49,8 +49,8 @@ void InitControl() {
 		int cacheIndex = joint->cacheIndex;
 
 		for (int i = 0; i < nDof; i++) {
-			kps[cacheIndex + i] = getConfigF("P_KP_" + name) * 10000;
-			kds[cacheIndex + i] = getConfigF("P_KD_" + name) * 1000;
+			kps[cacheIndex + i] = getConfigF("P_KP_" + name) * 10;
+			kds[cacheIndex + i] = getConfigF("P_KD_" + name) * 1;
 			fls[cacheIndex + i] = getConfigF("P_FL_" + name);
 		}
 	}
