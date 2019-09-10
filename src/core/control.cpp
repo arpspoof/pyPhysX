@@ -61,7 +61,7 @@ vector<float> targetPositions, targetVelocities;
 
 PxArticulationCache *tmpcache, *tmpcache2, *tmpcache3, *tmpcache4, *gCache;
 
-void initControl() {
+void InitControl() {
 	int totalDof = articulation->GetNDof();
 
 	kps = vector<float>(totalDof);

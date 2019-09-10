@@ -41,29 +41,7 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 	free(shapes);
 }
 
-void assignIndices() {
-	typedef pair<PxU32, Link*> PIDL;
-	vector<PIDL> linkIndices;
-	for (auto &kvp : articulation->linkMap) {
-		linkIndices.push_back(make_pair(kvp.second->link->getLinkIndex(), kvp.second));
-	}
-	sort(linkIndices.begin(), linkIndices.end(), [=](PIDL a, PIDL b) { return a.first < b.first; });
-
-	int currentIndex = 0;
-	for (PIDL &p : linkIndices) {
-		int nDof = (int)p.second->link->getInboundJointDof();
-		if (!p.second->inboundJoint) {
-			continue;
-		}
-		p.second->inboundJoint->nDof = nDof;
-		p.second->inboundJoint->cacheIndex = currentIndex;
-		currentIndex += nDof;
-		printf("link id = %d, dof = %d, index = %d\n", p.first, nDof, p.second->inboundJoint->cacheIndex);
-	}
-}
-
 Scene* scene;
-
 PxMaterial* material;
 
 void initPhysics(bool /*interactive*/)
@@ -85,11 +63,7 @@ void initPhysics(bool /*interactive*/)
 
 	scene->AddArticulation(articulation);
 
-	auto x = articulation->GetPxArticulation()->createCache();
-	printf("%x\n", x);
-
-	assignIndices();
-	initControl();
+	InitControl();
 
 	scene->timeStep = getConfigF("C_TIME_STEP");
 }

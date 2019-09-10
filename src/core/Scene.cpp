@@ -79,7 +79,7 @@ void Scene::AddObject(SceneObject obj)
 void Scene::AddArticulation(Articulation* articulation)
 {
 	pxScene->addArticulation(*articulation->GetPxArticulation());
-	articulation->initControl(); // TODO: make init control a general function
+	articulation->InitControl(); // TODO: make init control a general function
 }
 
 void Scene::Step()

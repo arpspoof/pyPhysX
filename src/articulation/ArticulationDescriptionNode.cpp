@@ -24,7 +24,7 @@ Link* ArticulationDescriptionNode::CreateLink(Articulation& ar, Link *parentLink
 {
 	PxVec3 jointPos = parentJointPos + posOffsetJointToParentJoint;
 	PxVec3 linkPos = jointPos + posOffsetLinkToInboundJoint;
-	Link *link = ar.addLink(linkName, parentLink, PxTransform(linkPos, rtz), body);
+	Link *link = ar.AddLink(linkName, parentLink, PxTransform(linkPos, rtz), body);
 	link->globalPositionOffset = linkPos;
 	if (parentLink) {
 		Joint *joint = CreateJoint(ar, link,
@@ -63,7 +63,7 @@ Joint* FixedDescriptionNode::CreateJoint(Articulation& ar, Link *link,
 	PxTransform parentPose,
 	PxTransform childPose) const 
 {
-	return ar.addFixedJoint(jointName, link, parentPose, childPose);
+	return ar.AddFixedJoint(jointName, link, parentPose, childPose);
 }
 
 SpericalDescriptionNode::SpericalDescriptionNode(string linkName, string jointName, LinkBody *body,
@@ -77,7 +77,7 @@ Joint* SpericalDescriptionNode::CreateJoint(Articulation& ar, Link *link,
 	PxTransform parentPose,
 	PxTransform childPose) const 
 {
-	return ar.addSpericalJoint(jointName, link, parentPose, childPose);
+	return ar.AddSpericalJoint(jointName, link, parentPose, childPose);
 }
 
 RevoluteDescriptionNode::RevoluteDescriptionNode(string linkName, string jointName, LinkBody *body,
@@ -92,5 +92,5 @@ Joint* RevoluteDescriptionNode::CreateJoint(Articulation& ar, Link *link,
 	PxTransform parentPose,
 	PxTransform childPose) const 
 {
-	return ar.addRevoluteJoint(jointName, link, axis, parentPose, childPose);
+	return ar.AddRevoluteJoint(jointName, link, axis, parentPose, childPose);
 }

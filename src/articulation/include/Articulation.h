@@ -13,19 +13,21 @@ public:
 	std::unordered_map<std::string, Link*> linkMap;
 	std::unordered_map<std::string, Joint*> jointMap;
 public:
-    Link* addLink(std::string name, Link *parent, physx::PxTransform transform, LinkBody *body);
-	Joint* addSpericalJoint(std::string name, Link *link,
+    Link* AddLink(std::string name, Link *parent, physx::PxTransform transform, LinkBody *body);
+	Joint* AddSpericalJoint(std::string name, Link *link,
 		physx::PxTransform parentPose, physx::PxTransform childPose);
-	Joint* addRevoluteJoint(std::string name, Link *link, physx::PxArticulationAxis::Enum axis,
+	Joint* AddRevoluteJoint(std::string name, Link *link, physx::PxArticulationAxis::Enum axis,
 		physx::PxTransform parentPose, physx::PxTransform childPose);
-	Joint* addFixedJoint(std::string name, Link *link, 
+	Joint* AddFixedJoint(std::string name, Link *link, 
 		physx::PxTransform parentPose, physx::PxTransform childPose);
 public:
     Articulation();
     ~Articulation();
-    void initControl();
+    void InitControl();
     void Dispose() override;
     physx::PxArticulationReducedCoordinate* GetPxArticulation() const;
+private:
+    void AssignIndices();
 public:
     int GetNDof() const;
     void SetFixBaseFlag(bool shouldFixBase);
