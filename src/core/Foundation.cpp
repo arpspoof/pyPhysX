@@ -15,10 +15,10 @@ Foundation::Foundation()
 
 Foundation::~Foundation()
 {
-    dispose();
+    Dispose();
 }
 
-void Foundation::dispose()
+void Foundation::Dispose()
 {
     pxPhysics->release();
     PxCloseExtensions();

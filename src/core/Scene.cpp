@@ -65,7 +65,7 @@ Scene::~Scene()
 {
 }
 
-void Scene::dispose()
+void Scene::Dispose()
 {
     pxScene->release();
     pxCpuDispatcher->release();
@@ -74,6 +74,12 @@ void Scene::dispose()
 void Scene::AddObject(SceneObject obj)
 {
     pxScene->addActor(*obj.pxActor);
+}
+
+void Scene::AddArticulation(Articulation* articulation)
+{
+	pxScene->addArticulation(*articulation->GetPxArticulation());
+	articulation->initControl(); // TODO: make init control a general function
 }
 
 void Scene::Step()

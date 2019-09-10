@@ -9,7 +9,7 @@ private:
     Foundation();
     ~Foundation();
 public:
-    void dispose() override;
+    void Dispose() override;
     physx::PxPhysics* GetPxPhysics() const;
     physx::PxCudaContextManager* GetPxCudaContextManager() const;
 private:

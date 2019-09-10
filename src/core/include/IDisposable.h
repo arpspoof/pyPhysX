@@ -4,5 +4,5 @@
 class IDisposable
 {
 public:
-    virtual void dispose() = 0;
+    virtual void Dispose() = 0;
 };

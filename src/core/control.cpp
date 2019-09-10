@@ -1,13 +1,14 @@
-#include "globals.h"
 #include "config.h"
-#include "articulationTree.h"
+#include "Articulation.h"
+#include "PxPhysicsAPI.h"
 
 #include <Eigen/Dense>
 
+using namespace physx;
 using namespace Eigen;
 using namespace std;
 
-extern Articulation ar;
+extern Articulation* articulation;
 
 /*
 
@@ -58,10 +59,10 @@ std::vector<string> nameList{
 vector<float> kps, kds, fls;
 vector<float> targetPositions, targetVelocities;
 
-PxArticulationCache *tmpcache, *tmpcache2, *tmpcache3, *tmpcache4;
+PxArticulationCache *tmpcache, *tmpcache2, *tmpcache3, *tmpcache4, *gCache;
 
 void initControl() {
-	PxU32 totalDof = gArticulation->getDofs();
+	int totalDof = articulation->GetNDof();
 
 	kps = vector<float>(totalDof);
 	kds = vector<float>(totalDof);
@@ -69,7 +70,7 @@ void initControl() {
 	targetPositions = vector<float>(totalDof, 0);
 	targetVelocities = vector<float>(totalDof, 0);
 
-	for (auto &kvp : ar.jointMap) {
+	for (auto &kvp : articulation->jointMap) {
 		auto &joint = kvp.second;
 		const string &name = kvp.first;
 
@@ -83,10 +84,11 @@ void initControl() {
 		}
 	}
 
-	tmpcache = gArticulation->createCache();
-	tmpcache2 = gArticulation->createCache();
-	tmpcache3 = gArticulation->createCache();
-	tmpcache4 = gArticulation->createCache();
+	gCache = articulation->GetPxArticulation()->createCache();
+	tmpcache = articulation->GetPxArticulation()->createCache();
+	tmpcache2 = articulation->GetPxArticulation()->createCache();
+	tmpcache3 = articulation->GetPxArticulation()->createCache();
+	tmpcache4 = articulation->GetPxArticulation()->createCache();
 }
 
 PxQuat getPositionDifference(PxVec3 after, PxVec3 before) {
@@ -117,35 +119,35 @@ VectorXd calcAcc(24);
 extern int xFrame;
 
 void control(PxReal dt, int /*contactFlag*/) {
-	gArticulation->copyInternalStateToCache(*gCache, PxArticulationCache::eALL);
+	articulation->GetPxArticulation()->copyInternalStateToCache(*gCache, PxArticulationCache::eALL);
 
 	PxVec3 extforceaddneck = PxVec3(70, 0, 0) * 0;
 	PxVec3 extforceaddRHip = PxVec3(70, 0, 60) * 0;
-	ar.linkMap["neck"]->link->addForce(extforceaddneck);
-	ar.linkMap["right_hip"]->link->addForce(extforceaddRHip);
+	articulation->linkMap["neck"]->link->addForce(extforceaddneck);
+	articulation->linkMap["right_hip"]->link->addForce(extforceaddRHip);
 
 	//////////////////////////////////////
-	PxU32 nnDof = gArticulation->getDofs();
+	int nnDof = articulation->GetNDof();
 
-	gArticulation->commonInit();
-	gArticulation->computeGeneralizedMassMatrix(*tmpcache);
+	articulation->GetPxArticulation()->commonInit();
+	articulation->GetPxArticulation()->computeGeneralizedMassMatrix(*tmpcache);
 
-	gArticulation->copyInternalStateToCache(*tmpcache2, PxArticulationCache::eVELOCITY);
-	gArticulation->computeCoriolisAndCentrifugalForce(*tmpcache2);
+	articulation->GetPxArticulation()->copyInternalStateToCache(*tmpcache2, PxArticulationCache::eVELOCITY);
+	articulation->GetPxArticulation()->computeCoriolisAndCentrifugalForce(*tmpcache2);
 
-	gArticulation->computeGeneralizedGravityForce(*tmpcache3);
+	articulation->GetPxArticulation()->computeGeneralizedGravityForce(*tmpcache3);
 
-	tmpcache4->externalForces[ar.linkMap["neck"]->link->getLinkIndex()].force = extforceaddneck;
-	tmpcache4->externalForces[ar.linkMap["right_hip"]->link->getLinkIndex()].force = extforceaddRHip;
-	gArticulation->computeGeneralizedExternalForce(*tmpcache4);
+	tmpcache4->externalForces[articulation->linkMap["neck"]->link->getLinkIndex()].force = extforceaddneck;
+	tmpcache4->externalForces[articulation->linkMap["right_hip"]->link->getLinkIndex()].force = extforceaddRHip;
+	articulation->GetPxArticulation()->computeGeneralizedExternalForce(*tmpcache4);
 
 	VectorXd centrifugalCoriolisGravityExternal(nnDof);
-	for (PxU32 i = 0; i < nnDof; i++) {
+	for (int i = 0; i < nnDof; i++) {
 		centrifugalCoriolisGravityExternal(i) = -tmpcache2->jointForce[i] - tmpcache3->jointForce[i] - tmpcache4->jointForce[i];
 	}
 	MatrixXd H(nnDof, nnDof);
-	for (PxU32 i = 0; i < nnDof; i++) {
-		for (PxU32 j = i; j < nnDof; j++) {
+	for (int i = 0; i < nnDof; i++) {
+		for (int j = i; j < nnDof; j++) {
 			H(i, j) = H(j, i) = tmpcache->massMatrix[i * nnDof + j];
 		}
 	}
@@ -162,12 +164,12 @@ void control(PxReal dt, int /*contactFlag*/) {
 	PxReal *velocities = gCache->jointVelocity;
 	PxReal *forces = gCache->jointForce;
 
-	memset(forces, 0, sizeof(PxReal) * gArticulation->getDofs());
+	memset(forces, 0, sizeof(PxReal) * articulation->GetNDof());
 
 	VectorXd proportionalTorquePlusQDotDeltaT(nnDof);
 	VectorXd derivativeTorque(nnDof);
 
-	for (auto &kvp : ar.jointMap) {
+	for (auto &kvp : articulation->jointMap) {
 		auto &joint = kvp.second;
 
 		int nDof = joint->nDof;
@@ -263,5 +265,5 @@ void control(PxReal dt, int /*contactFlag*/) {
 		forces[i] = (PxReal)(proportionalTorquePlusQDotDeltaT(i) + derivativeTorque(i) + dt * kps[i] * velocities[i]);
 	}*/
 
-	gArticulation->applyCache(*gCache, PxArticulationCache::eFORCE);
+	articulation->GetPxArticulation()->applyCache(*gCache, PxArticulationCache::eFORCE);
 }

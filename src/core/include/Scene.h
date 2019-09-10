@@ -2,6 +2,7 @@
 
 #include "PxPhysicsAPI.h"
 #include "IDisposable.h"
+#include "Articulation.h"
 
 struct SceneDescription
 {
@@ -29,9 +30,10 @@ class Scene : public physx::PxSimulationEventCallback, IDisposable
 public:
     Scene(SceneDescription description, float timeStep = 0.001f);
     ~Scene();
-    void dispose() override;
+    void Dispose() override;
 public:
     void AddObject(SceneObject obj);
+    void AddArticulation(Articulation* articulation);
     void Step();
     physx::PxScene* GetPxScene() const;
 private:

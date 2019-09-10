@@ -7,7 +7,7 @@
 #include "PxPhysicsAPI.h"
 #include "config.h"
 #include "globals.h"
-#include "articulationTree.h"
+#include "ArticulationTree.h"
 
 #include <iostream>
 #include <vector>
@@ -20,14 +20,9 @@ using namespace physx;
 using namespace std;
 using namespace std::chrono;
 
-PxMaterial*				gMaterial		= NULL;
-
-PxArticulationReducedCoordinate*		gArticulation = NULL;
-PxArticulationCache*					gCache = NULL;
-
-Articulation ar;
-
 static int contactFlag = 0;
+
+Articulation* articulation;
 
 void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 {
@@ -49,7 +44,7 @@ void setupFiltering(PxRigidActor* actor, PxU32 filterGroup, PxU32 filterMask)
 void assignIndices() {
 	typedef pair<PxU32, Link*> PIDL;
 	vector<PIDL> linkIndices;
-	for (auto &kvp : ar.linkMap) {
+	for (auto &kvp : articulation->linkMap) {
 		linkIndices.push_back(make_pair(kvp.second->link->getLinkIndex(), kvp.second));
 	}
 	sort(linkIndices.begin(), linkIndices.end(), [=](PIDL a, PIDL b) { return a.first < b.first; });
@@ -69,28 +64,29 @@ void assignIndices() {
 
 Scene* scene;
 
+PxMaterial* material;
+
 void initPhysics(bool /*interactive*/)
 {
 	scene = new Scene(SceneDescription());
 
 	PxPhysics* physics = Foundation::GetFoundation()->GetPxPhysics();
-
-	gMaterial = physics->createMaterial(getConfigF("C_STATIC_FRICTION"), getConfigF("C_DYNAMIC_FRICTION"), 0.f);
+	material = physics->createMaterial(getConfigF("C_STATIC_FRICTION"), getConfigF("C_DYNAMIC_FRICTION"), 0.f);
 
 	if (getConfigI("S_GROUND")) {
-		PxRigidStatic* groundPlane = PxCreatePlane(*physics, PxPlane(0, 1, 0, 0), *gMaterial);
+		PxRigidStatic* groundPlane = PxCreatePlane(*physics, PxPlane(0, 1, 0, 0), *material);
 		SceneObject ground(groundPlane);
 		scene->AddObject(ground);
 	}
 	
-	gArticulation = physics->createArticulationReducedCoordinate();
+	articulation = new Articulation();
 
 	loader();
 
-	scene->GetPxScene()->addArticulation(*gArticulation);
+	scene->AddArticulation(articulation);
 
-	gCache = gArticulation->createCache();
-	gArticulation->commonInit();
+	auto x = articulation->GetPxArticulation()->createCache();
+	printf("%x\n", x);
 
 	assignIndices();
 	initControl();
@@ -100,9 +96,9 @@ void initPhysics(bool /*interactive*/)
 	
 void cleanupPhysics(bool /*interactive*/)
 {
-	gArticulation->release();
-
-	scene->dispose();
+	articulation->Dispose();
+	scene->Dispose();
+	delete articulation;
 	delete scene;
 }
 
@@ -140,7 +136,6 @@ int main(int argc, char** argv)
 			PxReal tmp;motioninput >> tmp;
 			if (j < 7) continue;
 			motions[i][j - 7] = tmp;
-			if (i == 0 ) printf("%f\n", motions[i][j - 7]);
 		}
 	}
 	motioninput.close();
