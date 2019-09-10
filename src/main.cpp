@@ -62,10 +62,9 @@ void initPhysics(bool /*interactive*/)
 	loader();
 
 	scene->AddArticulation(articulation);
+	scene->timeStep = getConfigF("C_TIME_STEP");
 
 	InitControl();
-
-	scene->timeStep = getConfigF("C_TIME_STEP");
 }
 	
 void cleanupPhysics(bool /*interactive*/)

@@ -31,44 +31,15 @@ extern Articulation* articulation;
 
 extern PxReal motions[98][36];
 
-int idMap[] = { -1, -1, 0, 8, 22, 4, 17, 31, 12, 26, 21, 35, 13, 27 };
-
-PxQuat getQuat(PxReal t, PxReal s1, PxReal s2) {
-	PxVec3 s(0, s1, s2);
-	PxQuat swingQuat = s.isZero() ? PxQuat(0, 0, 0, 1) : PxQuat(s.magnitude(), s.getNormalized());
-	return swingQuat * PxQuat(t, PxVec3(1, 0, 0));
-}
-PxQuat getQuat(PxVec3 v) {
-	return getQuat(v[0], v[1], v[2]);
-}
-
-PxVec3 getPos(PxQuat q) {
-	PxQuat qT = PxQuat(q.x, 0, 0, q.w).getNormalized();
-	PxQuat qS = q * qT.getConjugate();
-	PxVec3 twist = PxVec3(1, 0, 0) * 2 * (PxReal)atan2(qT.x, qT.w);
-	PxVec3 swingImg(qS.x, qS.y, qS.z);
-	PxVec3 swing = swingImg / swingImg.magnitude() * 2 * (PxReal)atan2(swingImg.magnitude(), qS.w);
-	return twist + swing;
-}
-
-std::vector<string> nameList{
-	"chest", "right_hip", "left_hip", "neck", "right_shoulder", "left_shoulder",
-	"right_knee", "left_knee", "right_elbow", "left_elbow", "right_ankle", "left_ankle"
-};
-
-vector<float> kps, kds, fls;
-vector<float> targetPositions, targetVelocities;
-
-PxArticulationCache *tmpcache, *tmpcache2, *tmpcache3, *tmpcache4, *gCache;
+int idMap[] = { 0, 8, 22, 4, 17, 31, 12, 26, 21, 35, 13, 27 };
 
 void InitControl() {
+	vector<float> kps, kds, fls;
 	int totalDof = articulation->GetNDof();
 
 	kps = vector<float>(totalDof);
 	kds = vector<float>(totalDof);
 	fls = vector<float>(totalDof);
-	targetPositions = vector<float>(totalDof, 0);
-	targetVelocities = vector<float>(totalDof, 0);
 
 	for (auto &kvp : articulation->jointMap) {
 		auto &joint = kvp.second;
@@ -84,186 +55,25 @@ void InitControl() {
 		}
 	}
 
-	gCache = articulation->GetPxArticulation()->createCache();
-	tmpcache = articulation->GetPxArticulation()->createCache();
-	tmpcache2 = articulation->GetPxArticulation()->createCache();
-	tmpcache3 = articulation->GetPxArticulation()->createCache();
-	tmpcache4 = articulation->GetPxArticulation()->createCache();
+	articulation->SetKPs(kps.data());
+	articulation->SetKDs(kds.data());
 }
-
-PxQuat getPositionDifference(PxVec3 after, PxVec3 before) {
-	return getQuat(after) * getQuat(before).getConjugate();
-}
-PxQuat getPositionDifference(PxQuat after, PxQuat before) {
-	return after * before.getConjugate();
-}
-
-void printFar(PxReal *arr, int n) {
-	printf("[ ");
-	for (int i = 0; i < n - 1; i++) {
-		printf("%f, ", arr[i]);
-	}
-	printf("%f ]\n", arr[n - 1]);
-}
-
-void printFar(double *arr, int n) {
-	printf("[ ");
-	for (int i = 0; i < n - 1; i++) {
-		printf("%f, ", arr[i]);
-	}
-	printf("%f ]\n", arr[n - 1]);
-}
-
-VectorXd calcAcc(24);
 
 extern int xFrame;
 
+float targetPosition[36];
+
 void control(PxReal dt, int /*contactFlag*/) {
-	articulation->GetPxArticulation()->copyInternalStateToCache(*gCache, PxArticulationCache::eALL);
-
-	PxVec3 extforceaddneck = PxVec3(70, 0, 0) * 0;
-	PxVec3 extforceaddRHip = PxVec3(70, 0, 60) * 0;
-	articulation->linkMap["neck"]->link->addForce(extforceaddneck);
-	articulation->linkMap["right_hip"]->link->addForce(extforceaddRHip);
-
-	//////////////////////////////////////
-	int nnDof = articulation->GetNDof();
-
-	articulation->GetPxArticulation()->commonInit();
-	articulation->GetPxArticulation()->computeGeneralizedMassMatrix(*tmpcache);
-
-	articulation->GetPxArticulation()->copyInternalStateToCache(*tmpcache2, PxArticulationCache::eVELOCITY);
-	articulation->GetPxArticulation()->computeCoriolisAndCentrifugalForce(*tmpcache2);
-
-	articulation->GetPxArticulation()->computeGeneralizedGravityForce(*tmpcache3);
-
-	tmpcache4->externalForces[articulation->linkMap["neck"]->link->getLinkIndex()].force = extforceaddneck;
-	tmpcache4->externalForces[articulation->linkMap["right_hip"]->link->getLinkIndex()].force = extforceaddRHip;
-	articulation->GetPxArticulation()->computeGeneralizedExternalForce(*tmpcache4);
-
-	VectorXd centrifugalCoriolisGravityExternal(nnDof);
-	for (int i = 0; i < nnDof; i++) {
-		centrifugalCoriolisGravityExternal(i) = -tmpcache2->jointForce[i] - tmpcache3->jointForce[i] - tmpcache4->jointForce[i];
-	}
-	MatrixXd H(nnDof, nnDof);
-	for (int i = 0; i < nnDof; i++) {
-		for (int j = i; j < nnDof; j++) {
-			H(i, j) = H(j, i) = tmpcache->massMatrix[i * nnDof + j];
+	int index = 0;
+	const int* dofs = articulation->GetJointDofsInIdOrder();
+	for (int i = 0; i < 12; i++) {
+		int dof = dofs[i];
+		int dataid = idMap[i];
+		int loopcount = dof == 3 ? 4 : 1;
+		for (int j = 0; j < loopcount; j++) {
+			targetPosition[index + j] = motions[xFrame][dataid + j];
 		}
+		index += loopcount;
 	}
-
-	/////////////////////////////////////////
-
-	targetPositions = vector<float>(28, 0.f);
-	targetVelocities = vector<float>(28, 0.f);
-
-//	simbicon_tick(dt, contactFlag);
-//	simbicon_setTargets();
-
-	PxReal *positions = gCache->jointPosition;
-	PxReal *velocities = gCache->jointVelocity;
-	PxReal *forces = gCache->jointForce;
-
-	memset(forces, 0, sizeof(PxReal) * articulation->GetNDof());
-
-	VectorXd proportionalTorquePlusQDotDeltaT(nnDof);
-	VectorXd derivativeTorque(nnDof);
-
-	for (auto &kvp : articulation->jointMap) {
-		auto &joint = kvp.second;
-
-		int nDof = joint->nDof;
-		int cacheIndex = joint->cacheIndex;
-
-		if (nDof == 0) continue;
-
-		if (nDof == 3) {
-			PxVec3 position(
-				positions[cacheIndex],
-				positions[cacheIndex + 1], 
-				positions[cacheIndex + 2]
-			);
-			int dataid = idMap[joint->childLink->link->getLinkIndex()];
-
-			PxQuat targetPosition(
-				motions[xFrame][dataid + 1],
-				motions[xFrame][dataid + 2],
-				motions[xFrame][dataid + 3],
-				motions[xFrame][dataid]
-			);
-			PxVec3 kp(
-				kps[cacheIndex],
-				kps[cacheIndex + 1],
-				kps[cacheIndex + 2]
-			);
-
-			PxMat33 MTrans(PxQuat(-PxPi / 2, PxVec3(0, 0, 1)));
-			PxMat33 R(targetPosition);
-			PxMat33 RPrime = MTrans*R*MTrans.getTranspose();
-		//	RPrime=R;
-			targetPosition = PxQuat(RPrime);
-
-			if (targetPosition.w < 0) {
-				targetPosition = -targetPosition;
-			}
-
-		/*	if (joint->childLink->link->getLinkIndex() == 3) {
-				targetPosition = PxQuat(PxPi / 2, PxVec3(1, 0, 0));
-			}
-			else {
-				targetPosition = PxQuat(PxIdentity);
-			}*/
-
-			PxQuat localRotation = getQuat(position);
-
-			PxQuat posDifference = getPositionDifference(targetPosition, localRotation);
-			PxVec3 axis;
-			PxReal angle;
-			posDifference.toRadiansAndUnitAxis(angle, axis);
-
-			PxVec3 proportionalForceInParentFrame = PxMat33::createDiagonal(kp) * axis * angle;
-			PxVec3 proportionalForceInChildFrame = localRotation.getConjugate().rotate(proportionalForceInParentFrame);
-
-			proportionalTorquePlusQDotDeltaT(cacheIndex) = proportionalForceInChildFrame[0] - 
-				dt * velocities[cacheIndex] * kps[cacheIndex];
-			proportionalTorquePlusQDotDeltaT(cacheIndex + 1) = proportionalForceInChildFrame[1] -
-				dt * velocities[cacheIndex + 1] * kps[cacheIndex + 1];
-			proportionalTorquePlusQDotDeltaT(cacheIndex + 2) = proportionalForceInChildFrame[2] -
-				dt * velocities[cacheIndex + 2] * kps[cacheIndex + 2];
-
-			derivativeTorque(cacheIndex) = -kds[cacheIndex] * velocities[cacheIndex];
-			derivativeTorque(cacheIndex + 1) = -kds[cacheIndex + 1] * velocities[cacheIndex + 1];
-			derivativeTorque(cacheIndex + 2) = -kds[cacheIndex + 2] * velocities[cacheIndex + 2];
-
-			H(cacheIndex, cacheIndex) += kds[cacheIndex] * dt;
-			H(cacheIndex + 1, cacheIndex + 1) += kds[cacheIndex + 1] * dt;
-			H(cacheIndex + 2, cacheIndex + 2) += kds[cacheIndex + 2] * dt;
-		}
-		else if (nDof == 1) {
-			int dataid = idMap[joint->childLink->link->getLinkIndex()];
-			PxReal position = positions[cacheIndex];
-			PxReal velocity = velocities[cacheIndex];
-			PxReal targetPosition = motions[xFrame][dataid];
-			PxReal kp = kps[cacheIndex];
-			proportionalTorquePlusQDotDeltaT(cacheIndex) = kp * (targetPosition - position - dt * velocity);
-			derivativeTorque(cacheIndex) = -kds[cacheIndex] * velocity;
-			H(cacheIndex, cacheIndex) += kds[cacheIndex] * dt;
-		}
-		else {
-			printf("no controller defined for Dof %d\n", nDof);
-			assert(false);
-		}
-	}
-
-	VectorXd qDotDot = H.llt().solve(centrifugalCoriolisGravityExternal + proportionalTorquePlusQDotDeltaT + derivativeTorque);
-	for (PxU32 i = 0; i < nnDof; i++) {
-		forces[i] = (PxReal)(proportionalTorquePlusQDotDeltaT(i) + derivativeTorque(i) - dt * kds[i] * qDotDot(i));
-	}
-
-	// PD
-/*	for (PxU32 i = 0; i < nnDof; i++) {
-		forces[i] = (PxReal)(proportionalTorquePlusQDotDeltaT(i) + derivativeTorque(i) + dt * kps[i] * velocities[i]);
-	}*/
-
-	articulation->GetPxArticulation()->applyCache(*gCache, PxArticulationCache::eFORCE);
+	articulation->AddSPDForces(targetPosition, dt);
 }

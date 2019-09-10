@@ -30,7 +30,19 @@ private:
     void AssignIndices();
 public:
     int GetNDof() const;
+    std::string GetJointNameById(int id) const;
+    const int* GetJointDofsInIdOrder() const;
     void SetFixBaseFlag(bool shouldFixBase);
+public:
+    std::vector<float> kps, kds, forceLimits;
+    void SetKPs(const float kps[]);
+    void SetKDs(const float kds[]);
+    void SetForceLimits(const float forceLimits[]);
+    void AddSPDForces(const float targetPositions[], float timeStep); // WXYZ
+private:
+    std::vector<Joint*> jointList;
+    std::vector<int> jointDofs;
+    std::vector<std::string> jointNames;
 private:
     physx::PxArticulationReducedCoordinate* pxArticulation;
     physx::PxArticulationCache* mainCache;
