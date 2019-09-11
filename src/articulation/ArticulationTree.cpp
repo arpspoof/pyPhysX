@@ -1,6 +1,4 @@
 #include "ArticulationTree.h"
-#include "config.h"
-
 #include <cassert>
 
 using namespace physx;
@@ -40,10 +38,9 @@ void ArticulationTree::connect(std::string parentLinkName, std::string childLink
 	parent->children.push_back(child);
 }
 
-void ArticulationTree::buildArticulation(Articulation &ar) {
+void ArticulationTree::buildArticulation(Articulation &ar, PxVec3 basePosition) {
 	assert(root != NULL);
-	PxVec3 basePos(0.f, getConfigF("T_BASE_HEIGHT"), 0.f);
-	buildArticulation(ar, root, NULL, basePos, basePos);
+	buildArticulation(ar, root, NULL, basePosition, basePosition);
 }
 
 void ArticulationTree::buildArticulation(Articulation &ar, ArticulationDescriptionNode *startNode,

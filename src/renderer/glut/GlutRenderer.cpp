@@ -31,7 +31,6 @@
 #include <chrono>
 
 #include "PxPhysicsAPI.h"
-#include "config.h"
 
 #include "GlutRenderer.h"
 #include "GlutRendererLowLevel.h"
@@ -139,7 +138,7 @@ void GlutRenderer::renderCallback()
 		phyFrameCount++;
 	}
 
-	int framesPerRender = round(1.0 / getConfigF("C_TIME_STEP") / getConfigF("C_RENDER_FREQUENCY"));
+	int framesPerRender = round(1.0 / scene->timeStep / renderFrequenceHz);
 	if (phyFrameCount >= framesPerRender) {
 		phyFrameCount = 0;
 	} 

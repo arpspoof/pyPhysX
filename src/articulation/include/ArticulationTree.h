@@ -15,7 +15,7 @@ public:
 	void addRevoluteDescriptionNode(const RevoluteDescriptionNode &node);
 	void setRoot(std::string linkName);
 	void connect(std::string parentLinkName, std::string childLinkName);
-	void buildArticulation(Articulation &ar);
+	void buildArticulation(Articulation &ar, physx::PxVec3 basePosition);
 
 	virtual ~ArticulationTree();
 private:

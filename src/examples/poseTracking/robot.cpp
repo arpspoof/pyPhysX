@@ -108,7 +108,8 @@ void loadRoot() {
 	arTree.addFixedDescriptionNode(descrLWrist);
 	arTree.connect("left_elbow", "left_wrist");
 
-	arTree.buildArticulation(*articulation);
+	PxVec3 basePos(0.f, getConfigF("T_BASE_HEIGHT"), 0.f);
+	arTree.buildArticulation(*articulation, basePos);
 
 	articulation->SetFixBaseFlag(false);
 }
