@@ -107,12 +107,12 @@ void Scene::onContact(const PxContactPairHeader &pairHeader,
 
         if (cp.events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
         {
-            reportContact(pairHeader.actors[0], pairHeader.actors[1]);
+            ReportContact(pairHeader.actors[0], pairHeader.actors[1]);
         }
     }
 }
 
-void Scene::reportContact(const physx::PxActor* actor0, const physx::PxActor* actor1)
+void Scene::ReportContact(const physx::PxActor* actor0, const physx::PxActor* actor1)
 {
 	// TODO
 	printf("report contact\n");

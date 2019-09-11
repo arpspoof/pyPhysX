@@ -9,16 +9,16 @@ class ArticulationTree {
 	ArticulationDescriptionNode *root;
 	std::unordered_map<std::string, ArticulationDescriptionNode*> nodeMap;
 public:
-	void addNULLDescriptionNode(const NULLDescriptionNode &node);
-	void addFixedDescriptionNode(const FixedDescriptionNode &node);
-	void addSpericalDescriptionNode(const SpericalDescriptionNode &node);
-	void addRevoluteDescriptionNode(const RevoluteDescriptionNode &node);
-	void setRoot(std::string linkName);
-	void connect(std::string parentLinkName, std::string childLinkName);
-	void buildArticulation(Articulation &ar, physx::PxVec3 basePosition);
+	void AddNULLDescriptionNode(const NULLDescriptionNode &node);
+	void AddFixedDescriptionNode(const FixedDescriptionNode &node);
+	void AddSpericalDescriptionNode(const SpericalDescriptionNode &node);
+	void AddRevoluteDescriptionNode(const RevoluteDescriptionNode &node);
+	void SetRoot(std::string linkName);
+	void Connect(std::string parentLinkName, std::string childLinkName);
+	void BuildArticulation(Articulation &ar, physx::PxVec3 basePosition);
 
 	virtual ~ArticulationTree();
 private:
-	void buildArticulation(Articulation &ar, ArticulationDescriptionNode *startNode,
+	void BuildArticulation(Articulation &ar, ArticulationDescriptionNode *startNode,
 		Link *parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const;
 };

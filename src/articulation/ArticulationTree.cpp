@@ -3,33 +3,33 @@
 
 using namespace physx;
 
-void ArticulationTree::addNULLDescriptionNode(const NULLDescriptionNode &node) {
+void ArticulationTree::AddNULLDescriptionNode(const NULLDescriptionNode &node) {
 	NULLDescriptionNode *copyNode = new NULLDescriptionNode(node);
 	nodeMap[node.linkName] = copyNode;
 }
 
-void ArticulationTree::addFixedDescriptionNode(const FixedDescriptionNode &node) {
+void ArticulationTree::AddFixedDescriptionNode(const FixedDescriptionNode &node) {
 	FixedDescriptionNode *copyNode = new FixedDescriptionNode(node);
 	nodeMap[node.linkName] = copyNode;
 }
 
-void ArticulationTree::addSpericalDescriptionNode(const SpericalDescriptionNode &node) {
+void ArticulationTree::AddSpericalDescriptionNode(const SpericalDescriptionNode &node) {
 	SpericalDescriptionNode *copyNode = new SpericalDescriptionNode(node);
 	nodeMap[node.linkName] = copyNode;
 }
 
-void ArticulationTree::addRevoluteDescriptionNode(const RevoluteDescriptionNode &node) {
+void ArticulationTree::AddRevoluteDescriptionNode(const RevoluteDescriptionNode &node) {
 	RevoluteDescriptionNode *copyNode = new RevoluteDescriptionNode(node);
 	nodeMap[node.linkName] = copyNode;
 }
 
-void ArticulationTree::setRoot(std::string linkName) {
+void ArticulationTree::SetRoot(std::string linkName) {
 	assert(nodeMap.find(linkName) != nodeMap.end());
 	root = nodeMap[linkName];
 	root->parent = NULL;
 }
 
-void ArticulationTree::connect(std::string parentLinkName, std::string childLinkName) {
+void ArticulationTree::Connect(std::string parentLinkName, std::string childLinkName) {
 	assert(nodeMap.find(parentLinkName) != nodeMap.end());
 	assert(nodeMap.find(childLinkName) != nodeMap.end());
 	ArticulationDescriptionNode *parent = nodeMap[parentLinkName];
@@ -38,16 +38,16 @@ void ArticulationTree::connect(std::string parentLinkName, std::string childLink
 	parent->children.push_back(child);
 }
 
-void ArticulationTree::buildArticulation(Articulation &ar, PxVec3 basePosition) {
+void ArticulationTree::BuildArticulation(Articulation &ar, PxVec3 basePosition) {
 	assert(root != NULL);
-	buildArticulation(ar, root, NULL, basePosition, basePosition);
+	BuildArticulation(ar, root, NULL, basePosition, basePosition);
 }
 
-void ArticulationTree::buildArticulation(Articulation &ar, ArticulationDescriptionNode *startNode,
+void ArticulationTree::BuildArticulation(Articulation &ar, ArticulationDescriptionNode *startNode,
 	Link *parentLink, PxVec3 parentJointPos, PxVec3 parentLinkPos) const {
 	Link *link = startNode->CreateLink(ar, parentLink, parentJointPos, parentLinkPos);
 	for (auto it : startNode->children) {
-		buildArticulation(ar, it, link,
+		BuildArticulation(ar, it, link,
 			parentJointPos + startNode->posOffsetJointToParentJoint,
 			link->globalPositionOffset);
 	}

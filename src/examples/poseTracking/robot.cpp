@@ -60,56 +60,56 @@ void loadRoot() {
 
 	ArticulationTree arTree;
 
-	arTree.addNULLDescriptionNode(descrBase);
-	arTree.setRoot("base");
+	arTree.AddNULLDescriptionNode(descrBase);
+	arTree.SetRoot("base");
 
-	arTree.addFixedDescriptionNode(descrRoot);
-	arTree.connect("base", "root");
+	arTree.AddFixedDescriptionNode(descrRoot);
+	arTree.Connect("base", "root");
 
-	arTree.addSpericalDescriptionNode(descrChest);
-	arTree.connect("root", "chest");
+	arTree.AddSpericalDescriptionNode(descrChest);
+	arTree.Connect("root", "chest");
 
-	arTree.addSpericalDescriptionNode(descrNeck);
-	arTree.connect("chest", "neck");
+	arTree.AddSpericalDescriptionNode(descrNeck);
+	arTree.Connect("chest", "neck");
 
-	arTree.addSpericalDescriptionNode(descrRHip);
-	arTree.connect("root", "right_hip");
+	arTree.AddSpericalDescriptionNode(descrRHip);
+	arTree.Connect("root", "right_hip");
 
-	arTree.addSpericalDescriptionNode(descrLHip);
-	arTree.connect("root", "left_hip");
+	arTree.AddSpericalDescriptionNode(descrLHip);
+	arTree.Connect("root", "left_hip");
 
-	arTree.addRevoluteDescriptionNode(descrRKnee);
-	arTree.connect("right_hip", "right_knee");
+	arTree.AddRevoluteDescriptionNode(descrRKnee);
+	arTree.Connect("right_hip", "right_knee");
 
-	arTree.addRevoluteDescriptionNode(descrLKnee);
-	arTree.connect("left_hip", "left_knee");
+	arTree.AddRevoluteDescriptionNode(descrLKnee);
+	arTree.Connect("left_hip", "left_knee");
 
-	arTree.addSpericalDescriptionNode(descrRAnkle);
-	arTree.connect("right_knee", "right_ankle");
+	arTree.AddSpericalDescriptionNode(descrRAnkle);
+	arTree.Connect("right_knee", "right_ankle");
 
-	arTree.addSpericalDescriptionNode(descrLAnkle);
-	arTree.connect("left_knee", "left_ankle");
+	arTree.AddSpericalDescriptionNode(descrLAnkle);
+	arTree.Connect("left_knee", "left_ankle");
 
-	arTree.addSpericalDescriptionNode(descrRShoulder);
-	arTree.connect("chest", "right_shoulder");
+	arTree.AddSpericalDescriptionNode(descrRShoulder);
+	arTree.Connect("chest", "right_shoulder");
 
-	arTree.addSpericalDescriptionNode(descrLShoulder);
-	arTree.connect("chest", "left_shoulder");
+	arTree.AddSpericalDescriptionNode(descrLShoulder);
+	arTree.Connect("chest", "left_shoulder");
 
-	arTree.addRevoluteDescriptionNode(descrRElbow);
-	arTree.connect("right_shoulder", "right_elbow");
+	arTree.AddRevoluteDescriptionNode(descrRElbow);
+	arTree.Connect("right_shoulder", "right_elbow");
 
-	arTree.addRevoluteDescriptionNode(descrLElbow);
-	arTree.connect("left_shoulder", "left_elbow");
+	arTree.AddRevoluteDescriptionNode(descrLElbow);
+	arTree.Connect("left_shoulder", "left_elbow");
 
-	arTree.addFixedDescriptionNode(descrRWrist);
-	arTree.connect("right_elbow", "right_wrist");
+	arTree.AddFixedDescriptionNode(descrRWrist);
+	arTree.Connect("right_elbow", "right_wrist");
 
-	arTree.addFixedDescriptionNode(descrLWrist);
-	arTree.connect("left_elbow", "left_wrist");
+	arTree.AddFixedDescriptionNode(descrLWrist);
+	arTree.Connect("left_elbow", "left_wrist");
 
 	PxVec3 basePos(0.f, getConfigF("T_BASE_HEIGHT"), 0.f);
-	arTree.buildArticulation(*articulation, basePos);
+	arTree.BuildArticulation(*articulation, basePos);
 
 	articulation->SetFixBaseFlag(false);
 }

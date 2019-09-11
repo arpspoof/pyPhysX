@@ -52,5 +52,5 @@ private:
 public:
     float timeStep;
 private:
-    void reportContact(const physx::PxActor* actor0, const physx::PxActor* actor1);
+    void ReportContact(const physx::PxActor* actor0, const physx::PxActor* actor1);
 };
