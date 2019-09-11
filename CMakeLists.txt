@@ -22,6 +22,7 @@ endif()
 
 set(SRC_PATH "${PROJECT_SOURCE_DIR}/src")
 
+set(COMMON_PATH "${SRC_PATH}/common")
 set(CORE_PATH "${SRC_PATH}/core")
 set(ARTICULATION_PATH "${SRC_PATH}/articulation")
 
@@ -34,6 +35,7 @@ include_directories("${PHYSX_INSTALL_DIR}/PhysX/source/fastxml/include")
 include_directories("${PHYSX_INSTALL_DIR}/PxShared/include")
 include_directories("${EIGEN_DIR}")
 
+include_directories("${COMMON_PATH}/include")
 include_directories("${CORE_PATH}/include")
 include_directories("${ARTICULATION_PATH}/include")
 include_directories("${RENDERER_GLUT_PATH}/include")
@@ -69,29 +71,27 @@ set(SYS_LIBS
 )
 
 
-file(GLOB ARTICULATION_SRC
-    "${ARTICULATION_PATH}/include/*.h"
-    "${ARTICULATION_PATH}/*.cpp"
-)
-add_library(articulation ${ARTICULATION_SRC})
-target_link_libraries(articulation ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
+function(createLibrary varName varSrcPath)
+    file(GLOB TMP_SRC
+        "${varSrcPath}/include/*.h"
+        "${varSrcPath}/*.cpp"
+    )
+    add_library(${varName} ${TMP_SRC})
+    target_link_libraries(${varName} ${ARGN})
+endfunction(createLibrary)
 
+function(createExecutable varName varSrcPath)
+    file(GLOB TMP_SRC
+        "${varSrcPath}/include/*.h"
+        "${varSrcPath}/*.cpp"
+    )
+    add_executable(${varName} ${TMP_SRC})
+    target_link_libraries(${varName} ${ARGN})
+endfunction(createExecutable)
 
-file(GLOB CORE_SRC
-    "${CORE_PATH}/include/*.h"
-    "${CORE_PATH}/*.cpp"
-)
-add_library(core ${CORE_SRC})
-target_link_libraries(core ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
-
-
-file(GLOB RENDERER_GLUT_SRC
-    "${RENDERER_GLUT_PATH}/include/*.h"
-    "${RENDERER_GLUT_PATH}/*.cpp"
-)
-add_library(renderer_glut ${RENDERER_GLUT_SRC})
-target_link_libraries(renderer_glut ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
-
+createLibrary(articulation ${ARTICULATION_PATH} ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
+createLibrary(core ${CORE_PATH} ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
+createLibrary(renderer_glut ${RENDERER_GLUT_PATH} ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
 
 
 set(BUILD_EXAMPLES true)
@@ -101,11 +101,7 @@ if(${BUILD_EXAMPLES} MATCHES true)
     set(EXAMPLE_PATH "${SRC_PATH}/examples")
 
     set(EXAMPLE_POSE_TRACKING_PATH "${EXAMPLE_PATH}/poseTracking")
-    file(GLOB EXAMPLE_POSE_TRACKING_SRC
-        "${EXAMPLE_POSE_TRACKING_PATH}/include/*.h"
-        "${EXAMPLE_POSE_TRACKING_PATH}/*.cpp"
-    )
-    add_executable(poseTracking ${EXAMPLE_POSE_TRACKING_SRC})
-    target_link_libraries(poseTracking core articulation renderer_glut)
+    createExecutable(poseTracking ${EXAMPLE_POSE_TRACKING_PATH} 
+        articulation core renderer_glut ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
 
 endif()
