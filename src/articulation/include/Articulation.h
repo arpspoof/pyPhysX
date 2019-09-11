@@ -30,7 +30,7 @@ private:
     void AssignIndices();
 public:
     int GetNDof() const;
-    std::string GetJointNameById(int id) const;
+    int GetNActiveJoints() const;
     const int* GetJointDofsInIdOrder() const;
     void SetFixBaseFlag(bool shouldFixBase);
 public:

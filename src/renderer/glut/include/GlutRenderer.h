@@ -10,8 +10,10 @@ namespace glutRenderer
 class GlutRenderer
 {
 typedef std::function<void(unsigned char)> GlutKeyboardHandler;
+typedef std::function<void()> BeforeRenderCallback;
 public:
-    void AttachScene(::Scene* scene, GlutKeyboardHandler handler = nullptr);
+    void AttachScene(::Scene* scene, GlutKeyboardHandler handler = nullptr,
+        BeforeRenderCallback beforeRenderCallback = nullptr);
     void StartRenderLoop();
     static GlutRenderer* GetInstance();
 private:
@@ -20,6 +22,7 @@ private:
     ::Scene* scene;
     GlutCamera* glutCamera;
     GlutKeyboardHandler keyboardHandler;
+    BeforeRenderCallback beforeRenderCallback;
     bool simulating;
 public:
     int renderFrequenceHz;

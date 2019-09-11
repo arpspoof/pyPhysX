@@ -94,6 +94,11 @@ createLibrary(core ${CORE_PATH} ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
 createLibrary(renderer_glut ${RENDERER_GLUT_PATH} ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
 
 
+set(ALL_MODULE_NO_RENDERER articulation core)
+set(ALL_MODULE ${ALL_MODULE_NO_RENDERER} renderer_glut)
+set(ALL_EXT_LIBS ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
+
+
 set(BUILD_EXAMPLES true)
 
 if(${BUILD_EXAMPLES} MATCHES true)
@@ -101,7 +106,20 @@ if(${BUILD_EXAMPLES} MATCHES true)
     set(EXAMPLE_PATH "${SRC_PATH}/examples")
 
     set(EXAMPLE_POSE_TRACKING_PATH "${EXAMPLE_PATH}/poseTracking")
-    createExecutable(poseTracking ${EXAMPLE_POSE_TRACKING_PATH} 
-        articulation core renderer_glut ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
+    createExecutable(poseTracking ${EXAMPLE_POSE_TRACKING_PATH} ${ALL_MODULE} ${ALL_EXT_LIBS})
+
+endif()
+
+
+
+set(BUILD_TESTS true)
+
+if (${BUILD_TESTS} MATCHES true)
+
+    find_package(GTest REQUIRED)
+    include_directories(${GTEST_INCLUDE_DIRS})
+
+    set(TESTS_PATH ${SRC_PATH}/tests)
+    createExecutable(unitTests ${TESTS_PATH} ${ALL_MODULE_NO_RENDERER} ${ALL_EXT_LIBS} ${GTEST_LIBRARIES})
 
 endif()

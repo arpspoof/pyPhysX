@@ -63,7 +63,7 @@ extern int xFrame;
 
 float targetPosition[36];
 
-void control(PxReal dt, int /*contactFlag*/) {
+void control(PxReal dt) {
 	int index = 0;
 	const int* dofs = articulation->GetJointDofsInIdOrder();
 	for (int i = 0; i < 12; i++) {

@@ -122,14 +122,14 @@ int Articulation::GetNDof() const
     return (int)pxArticulation->getDofs();
 }
 
+int Articulation::GetNActiveJoints() const
+{
+	return (int)jointList.size();
+}
+
 const int* Articulation::GetJointDofsInIdOrder() const
 {
 	return jointDofs.data();
-}
-
-string Articulation::GetJointNameById(int id) const
-{
-	return jointNames[id];
 }
 
 void Articulation::SetFixBaseFlag(bool shouldFixBase)

@@ -58,10 +58,12 @@ GlutRenderer::GlutRenderer()
 	this->simulating = false;
 }
 
-void GlutRenderer::AttachScene(::Scene* scene, GlutKeyboardHandler handler)
+void GlutRenderer::AttachScene(::Scene* scene, GlutKeyboardHandler handler,
+        BeforeRenderCallback beforeRenderCallback)
 {
 	this->scene = scene;
 	this->keyboardHandler = handler;
+	this->beforeRenderCallback = beforeRenderCallback;
 }
 
 void GlutRenderer::renderScene() {
@@ -134,6 +136,8 @@ void GlutRenderer::renderCallback()
 	static high_resolution_clock::time_point starttime;
 
 	if (simulating) {
+		if (beforeRenderCallback)
+			beforeRenderCallback();
 		scene->Step();
 		phyFrameCount++;
 	}

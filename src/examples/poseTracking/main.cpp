@@ -95,6 +95,13 @@ void keyHandler(unsigned char key)
 	}
 }
 
+extern void control(PxReal dt);
+
+void beforeRender()
+{
+	control(scene->timeStep);
+}
+
 int main(int argc, char** argv)
 {
 	if (argc > 1) {
@@ -115,18 +122,20 @@ int main(int argc, char** argv)
 	}
 	motioninput.close();
 
-#if 1
+#if 0
 	initPhysics(false);
 	auto renderer = glutRenderer::GlutRenderer::GetInstance();
-	renderer->AttachScene(scene, keyHandler);
+	renderer->AttachScene(scene, keyHandler, beforeRender);
 	renderer->StartRenderLoop();
 	cleanupPhysics(false);
 #else
 	static const PxU32 frameCount = 10000;
 	initPhysics(false);
     auto starttime = high_resolution_clock::now();
-	for(PxU32 i=0; i<frameCount; i++)
+	for(PxU32 i=0; i<frameCount; i++) {
+		control(scene->timeStep);
 		scene->Step();
+	}
     auto endtime = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(endtime - starttime).count();
     printf("%lld\n", duration);

@@ -84,11 +84,6 @@ void Scene::AddArticulation(Articulation* articulation)
 
 void Scene::Step()
 {
-	// TODO: remove this
-	int contactFlag;
-	extern void control(PxReal dt, int /*contactFlag*/);
-	control(timeStep, contactFlag);
-
     pxScene->simulate(timeStep);
 	pxScene->fetchResults(true);
 }
