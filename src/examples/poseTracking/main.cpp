@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 	}
 	motioninput.close();
 
-#if 0
+#if 1
 	initPhysics(false);
 	auto renderer = glutRenderer::GlutRenderer::GetInstance();
 	renderer->AttachScene(scene, keyHandler, beforeRender);

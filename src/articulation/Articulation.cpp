@@ -44,7 +44,9 @@ Articulation::Articulation()
     pxArticulation = Foundation::GetFoundation()->GetPxPhysics()->createArticulationReducedCoordinate();
 }
 
-Articulation::~Articulation() {
+void Articulation::Dispose() 
+{
+    pxArticulation->release();
     for (auto& it : linkMap) {
         delete it.second;
     }
@@ -105,11 +107,6 @@ void Articulation::AssignIndices() {
 		currentIndex += nDof;
 		printf("link id = %d, dof = %d, index = %d\n", p.first, nDof, p.second->inboundJoint->cacheIndex);
 	}
-}
-
-void Articulation::Dispose() 
-{
-    pxArticulation->release();
 }
 
 PxArticulationReducedCoordinate* Articulation::GetPxArticulation() const

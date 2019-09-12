@@ -22,7 +22,6 @@ public:
 		physx::PxTransform parentPose, physx::PxTransform childPose);
 public:
     Articulation();
-    ~Articulation();
     void InitControl();
     void Dispose() override;
     physx::PxArticulationReducedCoordinate* GetPxArticulation() const;
