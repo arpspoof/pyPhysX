@@ -39,11 +39,6 @@ Joint* Articulation::AddFixedJoint(std::string name, Link *link,
     return joint;
 }
 
-Articulation::Articulation()
-{
-    pxArticulation = Foundation::GetFoundation()->GetPxPhysics()->createArticulationReducedCoordinate();
-}
-
 void Articulation::Dispose() 
 {
     pxArticulation->release();
@@ -107,11 +102,6 @@ void Articulation::AssignIndices() {
 		currentIndex += nDof;
 		printf("link id = %d, dof = %d, index = %d\n", p.first, nDof, p.second->inboundJoint->cacheIndex);
 	}
-}
-
-PxArticulationReducedCoordinate* Articulation::GetPxArticulation() const
-{
-    return pxArticulation;
 }
 
 int Articulation::GetNDof() const

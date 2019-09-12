@@ -2,7 +2,6 @@
 #include "ArticulationDescriptionNode.h"
 #include "ArticulationTree.h"
 #include "LinkBody.h"
-#include "Foundation.h"
 
 using namespace std;
 using namespace physx;
@@ -11,12 +10,9 @@ using namespace testing;
 void ArticulationTestResources::Init() {
     printf("-- ArticulationTestFixture -- Initializing ...\n");
 
-    articulation = new Articulation();
-
-    PxPhysics* physics = Foundation::GetFoundation()->GetPxPhysics();
-    material = physics->createMaterial(1.f, 1.f, 0.f);
-
-    scene = new Scene(SceneDescription());
+    foundation = new Foundation();
+    scene = foundation->CreateScene(SceneDescription(), 0.001f);
+    material = scene->CreateMaterial(1, 1, 0);
 
     // Link bodies
     NULLLinkBody bodyBase;
@@ -114,21 +110,12 @@ void ArticulationTestResources::Init() {
     arTree.Connect("left_elbow", "left_wrist");
 
     printf("-- ArticulationTestFixture -- Build articulation ...\n");
-
-    PxVec3 basePos(0.f, 3.75f, 0.f);
-    arTree.BuildArticulation(*articulation, basePos);
-
-    articulation->SetFixBaseFlag(false);
-
-    printf("-- ArticulationTestFixture -- Add articulation to scene ...\n");
-    scene->AddArticulation(articulation);
+    articulation = scene->CreateArticulation(&arTree, vec3(0, 3.75f, 0));
 }
 
 void ArticulationTestResources::Dispose()
 {
     printf("-- ArticulationTestFixture -- Clean up ...\n");
-    articulation->Dispose();
-    scene->Dispose();
-    delete articulation;
-    delete scene;
+    foundation->Dispose();
+    delete foundation;
 }

@@ -1,6 +1,8 @@
 #include "Scene.h"
 #include "Foundation.h"
 
+#include <cassert>
+
 using namespace physx;
 
 SceneDescription::SceneDescription()
@@ -11,12 +13,7 @@ SceneDescription::SceneDescription()
     enableGPUBroadPhase = false;
 }
 
-SceneObject::SceneObject(PxActor* pxActor)
-{
-    this->pxActor = pxActor;
-}
-
-static PxFilterFlags CollisionShader(
+PxFilterFlags Scene::CollisionShader(
 	PxFilterObjectAttributes attributes0, PxFilterData filterData0,
 	PxFilterObjectAttributes attributes1, PxFilterData filterData1,
 	PxPairFlags& pairFlags, const void* /*constantBlock*/, PxU32 /*constantBlockSize*/)
@@ -38,9 +35,15 @@ static PxFilterFlags CollisionShader(
 	return PxFilterFlag::eDEFAULT;
 }
 
-Scene::Scene(SceneDescription description, float timeStep)
+Scene::Scene()
 {
-	const Foundation* foundation = Foundation::GetFoundation();
+	// For API binding only. 
+	assert("false");
+}
+
+Scene::Scene(Foundation* foundation, SceneDescription description, float timeStep)
+	:foundation(foundation)
+{
     PxSceneDesc pxSceneDesc(foundation->GetPxPhysics()->getTolerancesScale());
 
     pxSceneDesc.gravity = PxVec3(0.f, description.gravity, 0.f);
@@ -61,25 +64,72 @@ Scene::Scene(SceneDescription description, float timeStep)
 	this->timeStep = timeStep;
 }
 
-Scene::~Scene()
-{
-}
-
 void Scene::Dispose()
 {
+    printf("disposing materials, actors, articulations ...\n");
+	for (auto &p : materials) {
+		delete p;
+	}
+	for (auto &p : actors) {
+		if (p->isReleasable()) {
+			p->release();
+		}
+	}
+	for (auto &p : articulations) {
+		p->Dispose();
+		delete p;
+	}
     pxScene->release();
     pxCpuDispatcher->release();
 }
 
-void Scene::AddObject(SceneObject obj)
+Material* Scene::CreateMaterial(float staticFriction, float dynamicFriction, float restitution)
 {
-    pxScene->addActor(*obj.pxActor);
+	Material* material = new Material();
+	material->pxMaterial = foundation->GetPxPhysics()->createMaterial(staticFriction, dynamicFriction, restitution);
+	materials.insert(material);
+	return material;
 }
 
-void Scene::AddArticulation(Articulation* articulation)
+Plane* Scene::CreatePlane(Material* material, vec3 planeNormal, float distance)
 {
-	pxScene->addArticulation(*articulation->GetPxArticulation());
-	articulation->InitControl(); // TODO: make init control a general function
+	Plane* plane = new Plane();
+	plane->pxActor = PxCreatePlane(
+		*foundation->GetPxPhysics(), 
+		PxPlane(planeNormal.x, planeNormal.y, planeNormal.z, distance), 
+		*material->pxMaterial
+	);
+	actors.insert(plane->pxActor);
+	pxScene->addActor(*plane->pxActor);
+	return plane;
+}
+
+Articulation* Scene::CreateArticulation(const ArticulationTree* tree, vec3 basePosition)
+{
+	Articulation* articulation = new Articulation();
+	articulation->pxArticulation = foundation->GetPxPhysics()->createArticulationReducedCoordinate();
+
+	assert(tree->GetRootNode() != nullptr);
+	BuildArticulation(*articulation, tree->GetRootNode(), nullptr, basePosition, basePosition);
+
+	pxScene->addArticulation(*articulation->pxArticulation);
+
+	articulation->InitControl();
+	articulations.insert(articulation);
+
+	return articulation;
+}
+
+
+void Scene::BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode,
+	Link* parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const
+{
+	Link *link = startNode->CreateLink(ar, parentLink, parentJointPos, parentLinkPos);
+	for (auto it : startNode->children) {
+		BuildArticulation(ar, it, link,
+			parentJointPos + startNode->posOffsetJointToParentJoint,
+			link->globalPositionOffset);
+	}
 }
 
 void Scene::Step()

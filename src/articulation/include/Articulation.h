@@ -12,6 +12,7 @@ class Articulation :public IDisposable
 public:
 	std::unordered_map<std::string, Link*> linkMap;
 	std::unordered_map<std::string, Joint*> jointMap;
+    physx::PxArticulationReducedCoordinate* pxArticulation;
 public:
     Link* AddLink(std::string name, Link *parent, physx::PxTransform transform, LinkBody *body);
 	Joint* AddSpericalJoint(std::string name, Link *link,
@@ -21,10 +22,7 @@ public:
 	Joint* AddFixedJoint(std::string name, Link *link, 
 		physx::PxTransform parentPose, physx::PxTransform childPose);
 public:
-    Articulation();
     void InitControl();
-    void Dispose() override;
-    physx::PxArticulationReducedCoordinate* GetPxArticulation() const;
 private:
     void AssignIndices();
 public:
@@ -32,6 +30,7 @@ public:
     int GetNActiveJoints() const;
     const int* GetJointDofsInIdOrder() const;
     void SetFixBaseFlag(bool shouldFixBase);
+    void Dispose() override;
 public:
     std::vector<float> kps, kds, forceLimits;
     void SetKPs(const float kps[]);
@@ -43,7 +42,6 @@ private:
     std::vector<int> jointDofs;
     std::vector<std::string> jointNames;
 private:
-    physx::PxArticulationReducedCoordinate* pxArticulation;
     physx::PxArticulationCache* mainCache;
     physx::PxArticulationCache* massMatrixCache;
     physx::PxArticulationCache* coriolisCache;

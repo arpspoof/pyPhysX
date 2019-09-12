@@ -2,14 +2,19 @@
 
 #include "PxPhysicsAPI.h"
 #include "IDisposable.h"
+#include "Scene.h"
+
+#include <unordered_set>
 
 class Foundation :public IDisposable
 {
-private:
-    Foundation();
-    ~Foundation();
+// API BEGIN
 public:
+    Foundation();
     void Dispose() override;
+    Scene* CreateScene(SceneDescription description, float timeStep);
+// API END
+public:
     physx::PxPhysics* GetPxPhysics() const;
     physx::PxCudaContextManager* GetPxCudaContextManager() const;
 private:
@@ -18,8 +23,5 @@ private:
     physx::PxDefaultAllocator		pxAllocator;
     physx::PxDefaultErrorCallback	pxErrorCallback;
     physx::PxCudaContextManager*    pxCudaContextManager;
-private:
-    static Foundation foundationGlobal;
-public:
-    static const Foundation* GetFoundation();
+    std::unordered_set<Scene*> scenes;
 };

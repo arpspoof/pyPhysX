@@ -89,10 +89,9 @@ function(createExecutable varName varSrcPath)
     target_link_libraries(${varName} ${ARGN})
 endfunction(createExecutable)
 
-createLibrary(articulation ${ARTICULATION_PATH} ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
-createLibrary(core ${CORE_PATH} ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
-createLibrary(renderer_glut ${RENDERER_GLUT_PATH} ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
-
+createLibrary(articulation ${ARTICULATION_PATH})
+createLibrary(core ${CORE_PATH})
+createLibrary(renderer_glut ${RENDERER_GLUT_PATH})
 
 set(ALL_MODULE_NO_RENDERER articulation core)
 set(ALL_MODULE ${ALL_MODULE_NO_RENDERER} renderer_glut)
@@ -120,6 +119,7 @@ if (${BUILD_TESTS} MATCHES true)
     include_directories(${GTEST_INCLUDE_DIRS})
 
     set(TESTS_PATH ${SRC_PATH}/tests)
-    createExecutable(unitTests ${TESTS_PATH} ${ALL_MODULE_NO_RENDERER} ${ALL_EXT_LIBS} ${GTEST_LIBRARIES})
+ #   createExecutable(unitTests ${TESTS_PATH} ${ALL_MODULE_NO_RENDERER} ${ALL_EXT_LIBS} ${GTEST_LIBRARIES})
+    createExecutable(unitTests ${TESTS_PATH} ${ALL_MODULE} ${ALL_EXT_LIBS} ${GTEST_LIBRARIES})
 
 endif()

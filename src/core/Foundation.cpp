@@ -13,23 +13,24 @@ Foundation::Foundation()
     pxCudaContextManager = PxCreateCudaContextManager(*pxFoundation, cudaContextManagerDesc, PxGetProfilerCallback());
 }
 
-Foundation::~Foundation()
-{
-    Dispose();
-}
-
 void Foundation::Dispose()
 {
+    printf("disposing scenes ...\n");
+    for (auto &p : scenes) {
+        p->Dispose();
+        delete p;
+    }
+    printf("disposing foundation ...\n");
     pxPhysics->release();
     PxCloseExtensions();
     pxFoundation->release();
 }
 
-Foundation Foundation::foundationGlobal;
-
-const Foundation* Foundation::GetFoundation()
+Scene* Foundation::CreateScene(SceneDescription description, float timeStep)
 {
-    return &foundationGlobal;
+    Scene* scene = new Scene(this, description, timeStep);
+    scenes.insert(scene);
+    return scene;
 }
 
 PxPhysics* Foundation::GetPxPhysics() const 

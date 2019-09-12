@@ -15,9 +15,10 @@ LinkBody::~LinkBody()
     delete geometry;
 }
 
-LinkBody::LinkBody(float mass, PxGeometry *geometry, PxMaterial *material) 
-	:mass(mass), hasGeometry(true), geometry(geometry), material(material)
+LinkBody::LinkBody(float mass, PxGeometry *geometry, Material *material) 
+	:mass(mass), hasGeometry(true), geometry(geometry)
 {
+    this->material = material ? material->pxMaterial : nullptr;
 }
 
 
@@ -47,7 +48,7 @@ float BoxLinkBody::getDensity() const
 	return mass / (lenX * lenY * lenZ);
 }
 
-BoxLinkBody::BoxLinkBody(float mass, float lenX, float lenY, float lenZ, PxMaterial *material)
+BoxLinkBody::BoxLinkBody(float mass, float lenX, float lenY, float lenZ, Material *material)
     :LinkBody(mass, new PxBoxGeometry(lenX / 2, lenY / 2, lenZ / 2), material),
     lenX(lenX), lenY(lenY), lenZ(lenZ)
 {
@@ -62,7 +63,7 @@ float SphereLinkBody::getDensity() const
     return mass / (4.0f / 3.0f*physx::PxPi*radius*radius*radius);
 }
 
-SphereLinkBody::SphereLinkBody(float mass, float radius, PxMaterial *material)
+SphereLinkBody::SphereLinkBody(float mass, float radius, Material *material)
     :LinkBody(mass, new physx::PxSphereGeometry(radius), material), radius(radius) 
 {
     assert(material != nullptr);
@@ -79,7 +80,7 @@ float CapsuleLinkBody::getDensity() const
     );
 }
 
-CapsuleLinkBody::CapsuleLinkBody(float mass, float radius, float length, PxMaterial *material)
+CapsuleLinkBody::CapsuleLinkBody(float mass, float radius, float length, Material *material)
     :LinkBody(mass, new physx::PxCapsuleGeometry(radius, length / 2), material), 
     radius(radius), length(length) 
 {

@@ -1,6 +1,8 @@
 #include "ArticulationTestResources.h"
+#include "MathInterface.h"
 #include "PxPhysicsAPI.h"
 #include "Foundation.h"
+#include "Actor.h"
 
 #include <chrono>
 #include <gtest/gtest.h>
@@ -35,13 +37,7 @@ public:
 
         res.Init();
 
-        PxPhysics* physics = Foundation::GetFoundation()->GetPxPhysics();
-	    PxMaterial* material = physics->createMaterial(1.f, 1.f, 0.f);
-        PxRigidStatic* groundPlane = PxCreatePlane(*physics, PxPlane(0, 1, 0, 0), *material);
-		SceneObject ground(groundPlane);
-		res.scene->AddObject(ground);
-
-        res.scene->timeStep = 0.001f;
+		res.scene->CreatePlane(res.material, vec3(0, 1, 0), 0);
 
         vector<float> kps(res.articulation->GetNDof(), 10000.f);
         vector<float> kds(res.articulation->GetNDof(), 400.f);
@@ -57,6 +53,12 @@ public:
 
 ArticulationTestResources PerformanceIntegrationTestFixture::res;
 
+#define RENDER_LAST_FRAME 0
+
+#if(RENDER_LAST_FRAME)
+#include "GlutRenderer.h"
+#endif
+
 TEST_F(PerformanceIntegrationTestFixture, test_performance_integration)
 {
     static const PxU32 frameCount = 10000;
@@ -69,4 +71,9 @@ TEST_F(PerformanceIntegrationTestFixture, test_performance_integration)
     auto duration = duration_cast<microseconds>(endtime - starttime).count();
     printf("simulation time is %lld, this should be less than 690000 ...\n", duration);
     ASSERT_LE(duration, 690000);
+#if(RENDER_LAST_FRAME)
+	auto renderer = glutRenderer::GlutRenderer::GetInstance();
+	renderer->AttachScene(res.scene);
+	renderer->StartRenderLoop();
+#endif
 }

@@ -38,19 +38,9 @@ void ArticulationTree::Connect(std::string parentLinkName, std::string childLink
 	parent->children.push_back(child);
 }
 
-void ArticulationTree::BuildArticulation(Articulation &ar, PxVec3 basePosition) {
-	assert(root != NULL);
-	BuildArticulation(ar, root, NULL, basePosition, basePosition);
-}
-
-void ArticulationTree::BuildArticulation(Articulation &ar, ArticulationDescriptionNode *startNode,
-	Link *parentLink, PxVec3 parentJointPos, PxVec3 parentLinkPos) const {
-	Link *link = startNode->CreateLink(ar, parentLink, parentJointPos, parentLinkPos);
-	for (auto it : startNode->children) {
-		BuildArticulation(ar, it, link,
-			parentJointPos + startNode->posOffsetJointToParentJoint,
-			link->globalPositionOffset);
-	}
+ArticulationDescriptionNode* ArticulationTree::GetRootNode() const
+{
+	return root;
 }
 
 ArticulationTree::~ArticulationTree() {
