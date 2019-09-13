@@ -114,9 +114,9 @@ int Articulation::GetNActiveJoints() const
 	return (int)jointList.size();
 }
 
-const int* Articulation::GetJointDofsInIdOrder() const
+const std::vector<int>& Articulation::GetJointDofsInIdOrder() const
 {
-	return jointDofs.data();
+	return jointDofs;
 }
 
 void Articulation::SetFixBaseFlag(bool shouldFixBase)

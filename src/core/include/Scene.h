@@ -8,6 +8,7 @@
 #include "MathInterface.h"
 #include "Actor.h"
 
+#include <vector>
 #include <unordered_set>
 
 struct SceneDescription
@@ -35,6 +36,8 @@ public:
     Scene();
     void Step();
     void Dispose() override;
+
+    const std::vector<std::pair<int, int>>& GetAllContactPairs() const;
 // API END
 public:
     Scene(Foundation* foundation, SceneDescription description, float timeStep);
@@ -50,6 +53,7 @@ private:
     physx::PxScene* pxScene;
     physx::PxDefaultCpuDispatcher* pxCpuDispatcher;
 private:
+    std::vector<std::pair<int, int>> contacts;
     void onContact(const physx::PxContactPairHeader &pairHeader, 
 		const physx::PxContactPair *pairs, physx::PxU32 nbPairs) override;
 	void onConstraintBreak(physx::PxConstraintInfo * /*constraints*/, 
@@ -59,7 +63,6 @@ private:
 	void onTrigger(physx::PxTriggerPair * /*pairs*/, physx::PxU32 /*count*/) override {}
 	void onAdvance(const physx::PxRigidBody *const * /*bodyBuffer*/, 
 		const physx::PxTransform * /*poseBuffer*/, const physx::PxU32 /*count*/) override {}
-    void ReportContact(const physx::PxActor* actor0, const physx::PxActor* actor1);
 public:
     static physx::PxFilterFlags CollisionShader(
         physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,

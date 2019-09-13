@@ -39,4 +39,5 @@ Link::Link(PxArticulationReducedCoordinate* pxArticulation, Link *parent, PxTran
 		parent->childLinks.push_back(this);
 	}
 	PxRigidBodyExt::updateMassAndInertia(*link, body->getDensity());
+	pxActor = link;
 }

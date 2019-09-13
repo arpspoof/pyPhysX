@@ -2,6 +2,7 @@
 
 #include "PxPhysicsAPI.h"
 #include "LinkBody.h"
+#include "Actor.h"
 
 #include <vector>
 
@@ -36,7 +37,7 @@ public:
 		physx::PxTransform parentPose, physx::PxTransform childPose);
 };
 
-class Link {
+class Link :public RigidActor {
 public:
 	Link *parentLink;
 	std::vector<Link*> childLinks;

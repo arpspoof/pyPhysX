@@ -23,8 +23,9 @@ endif()
 set(SRC_PATH "${PROJECT_SOURCE_DIR}/src")
 
 set(COMMON_PATH "${SRC_PATH}/common")
-set(CORE_PATH "${SRC_PATH}/core")
+set(ACTORS_PATH "${SRC_PATH}/actors")
 set(ARTICULATION_PATH "${SRC_PATH}/articulation")
+set(CORE_PATH "${SRC_PATH}/core")
 
 set(RENDERER_PATH "${SRC_PATH}/renderer")
 set(RENDERER_GLUT_PATH "${RENDERER_PATH}/glut")
@@ -36,8 +37,9 @@ include_directories("${PHYSX_INSTALL_DIR}/PxShared/include")
 include_directories("${EIGEN_DIR}")
 
 include_directories("${COMMON_PATH}/include")
-include_directories("${CORE_PATH}/include")
+include_directories("${ACTORS_PATH}/include")
 include_directories("${ARTICULATION_PATH}/include")
+include_directories("${CORE_PATH}/include")
 include_directories("${RENDERER_GLUT_PATH}/include")
 
 link_directories("${PHYSX_BUILD_DIR}")
@@ -89,11 +91,12 @@ function(createExecutable varName varSrcPath)
     target_link_libraries(${varName} ${ARGN})
 endfunction(createExecutable)
 
+createLibrary(actors ${ACTORS_PATH})
 createLibrary(articulation ${ARTICULATION_PATH})
 createLibrary(core ${CORE_PATH})
 createLibrary(renderer_glut ${RENDERER_GLUT_PATH})
 
-set(ALL_MODULE_NO_RENDERER articulation core)
+set(ALL_MODULE_NO_RENDERER actors articulation core)
 set(ALL_MODULE ${ALL_MODULE_NO_RENDERER} renderer_glut)
 set(ALL_EXT_LIBS ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
 

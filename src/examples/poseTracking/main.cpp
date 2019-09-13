@@ -37,7 +37,8 @@ void initPhysics(bool /*interactive*/)
 	material = scene->CreateMaterial(1.f, 1.f, 0.f);
 
 	if (getConfigI("S_GROUND")) {
-		scene->CreatePlane(material, vec3(0, 1, 0), 0);
+		auto plane = scene->CreatePlane(material, vec3(0, 1, 0), 0);
+		plane->setupCollisionFiltering(1, 2 | 4);
 	}
 
 	ArticulationTree arTree;
@@ -134,7 +135,10 @@ void initPhysics(bool /*interactive*/)
 	arTree.AddFixedDescriptionNode(descrLWrist);
 	arTree.Connect("left_elbow", "left_wrist");
 	
-	articulation = scene->CreateArticulation(&arTree, vec3(0, 33.75f, 0));
+	articulation = scene->CreateArticulation(&arTree, vec3(0, 3.75f, 0));
+
+	articulation->linkMap["right_ankle"]->setupCollisionFiltering(2, 1 | 4);
+	articulation->linkMap["left_ankle"]->setupCollisionFiltering(4, 1 | 2);
 
 	InitControl();
 }
@@ -167,6 +171,10 @@ extern void control(PxReal dt);
 
 void beforeRender()
 {
+/*	auto contacts = scene->GetAllContactPairs();
+	for (auto &p: contacts) {
+		printf("%d, %d\n", p.first, p.second);
+	}*/
 	control(scene->timeStep);
 }
 

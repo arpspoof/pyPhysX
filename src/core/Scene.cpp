@@ -3,6 +3,7 @@
 
 #include <cassert>
 
+using namespace std;
 using namespace physx;
 
 SceneDescription::SceneDescription()
@@ -11,28 +12,6 @@ SceneDescription::SceneDescription()
     nWorkerThreads = 0;
     enableGPUDynamics = false;
     enableGPUBroadPhase = false;
-}
-
-PxFilterFlags Scene::CollisionShader(
-	PxFilterObjectAttributes attributes0, PxFilterData filterData0,
-	PxFilterObjectAttributes attributes1, PxFilterData filterData1,
-	PxPairFlags& pairFlags, const void* /*constantBlock*/, PxU32 /*constantBlockSize*/)
-{
-	// let triggers through
-	if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
-	{
-		pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
-		return PxFilterFlag::eDEFAULT;
-	}
-	// generate contacts for all that were not filtered above
-	pairFlags = PxPairFlag::eCONTACT_DEFAULT;
-
-	// trigger the contact callback for pairs (A,B) where 
-	// the filtermask of A contains the ID of B and vice versa.
-	if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1))
-		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
-
-	return PxFilterFlag::eDEFAULT;
 }
 
 Scene::Scene()
@@ -134,13 +113,41 @@ void Scene::BuildArticulation(Articulation &ar, ArticulationDescriptionNode* sta
 
 void Scene::Step()
 {
+	contacts.clear();
     pxScene->simulate(timeStep);
 	pxScene->fetchResults(true);
+}
+
+const vector<pair<int, int>>& Scene::GetAllContactPairs() const
+{
+	return contacts;
 }
 
 PxScene* Scene::GetPxScene() const
 {
 	return pxScene;
+}
+
+PxFilterFlags Scene::CollisionShader(
+	PxFilterObjectAttributes attributes0, PxFilterData filterData0,
+	PxFilterObjectAttributes attributes1, PxFilterData filterData1,
+	PxPairFlags& pairFlags, const void* /*constantBlock*/, PxU32 /*constantBlockSize*/)
+{
+	// let triggers through
+	if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
+	{
+		pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
+		return PxFilterFlag::eDEFAULT;
+	}
+	// generate contacts for all that were not filtered above
+	pairFlags = PxPairFlag::eCONTACT_DEFAULT;
+
+	// trigger the contact callback for pairs (A,B) where 
+	// the filtermask of A contains the ID of B and vice versa.
+	if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1))
+		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+
+	return PxFilterFlag::eDEFAULT;
 }
 
 void Scene::onContact(const PxContactPairHeader &pairHeader, 
@@ -152,13 +159,9 @@ void Scene::onContact(const PxContactPairHeader &pairHeader,
 
         if (cp.events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
         {
-            ReportContact(pairHeader.actors[0], pairHeader.actors[1]);
+			int collisionGroup0 = cp.shapes[0]->getSimulationFilterData().word0;
+			int collisionGroup1 = cp.shapes[1]->getSimulationFilterData().word0;
+			contacts.push_back(make_pair(collisionGroup0, collisionGroup1));
         }
     }
-}
-
-void Scene::ReportContact(const physx::PxActor* actor0, const physx::PxActor* actor1)
-{
-	// TODO
-	printf("report contact\n");
 }

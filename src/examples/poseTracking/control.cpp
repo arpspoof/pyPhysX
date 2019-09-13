@@ -65,7 +65,7 @@ float targetPosition[36];
 
 void control(PxReal dt) {
 	int index = 0;
-	const int* dofs = articulation->GetJointDofsInIdOrder();
+	auto dofs = articulation->GetJointDofsInIdOrder();
 	for (int i = 0; i < 12; i++) {
 		int dof = dofs[i];
 		int dataid = idMap[i];
