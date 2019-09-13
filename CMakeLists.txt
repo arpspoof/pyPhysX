@@ -93,7 +93,7 @@ endfunction(createExecutable)
 
 createLibrary(actors ${ACTORS_PATH})
 createLibrary(articulation ${ARTICULATION_PATH})
-createLibrary(core ${CORE_PATH})
+createLibrary(core ${CORE_PATH} articulation)
 createLibrary(renderer_glut ${RENDERER_GLUT_PATH})
 
 set(ALL_MODULE_NO_RENDERER actors articulation core)
@@ -126,3 +126,8 @@ if (${BUILD_TESTS} MATCHES true)
     createExecutable(unitTests ${TESTS_PATH} ${ALL_MODULE} ${ALL_EXT_LIBS} ${GTEST_LIBRARIES})
 
 endif()
+
+execute_process(
+    COMMAND cp -rf "${PROJECT_SOURCE_DIR}/resources" "${CMAKE_BINARY_DIR}"
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+)

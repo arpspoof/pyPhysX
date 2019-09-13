@@ -31,7 +31,7 @@ extern Articulation* articulation;
 
 extern PxReal motions[98][36];
 
-int idMap[] = { 0, 8, 22, 4, 17, 31, 12, 26, 21, 35, 13, 27 };
+int idMap[] = { 0, 8, 22, 31, 4, 17, 12, 26, 35, 21, 13, 27 };
 
 void InitControl() {
 	vector<float> kps, kds, fls;

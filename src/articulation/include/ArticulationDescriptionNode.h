@@ -6,6 +6,25 @@
 
 #include <string>
 #include <vector>
+#include <cassert>
+
+class ArticulationAxis
+{
+public:
+	enum Enum { X, Y, Z };
+	Enum axis;
+	ArticulationAxis(Enum axis) :axis(axis) {}
+	operator physx::PxArticulationAxis::Enum() const {
+		switch (axis) {
+			case X: return physx::PxArticulationAxis::eTWIST;
+			case Y: return physx::PxArticulationAxis::eSWING1;
+			case Z: return physx::PxArticulationAxis::eSWING2;
+			default:
+				assert(false);
+				return physx::PxArticulationAxis::eTWIST;
+		}
+	}
+};
 
 class ArticulationDescriptionNode {
 public:
@@ -29,7 +48,7 @@ public:
 
 class NULLDescriptionNode : public ArticulationDescriptionNode {
 public:
-	NULLDescriptionNode(std::string linkName, NULLLinkBody *body);
+	NULLDescriptionNode(std::string linkName, LinkBody *body);
 	Joint* CreateJoint(Articulation&, Link *,
 		physx::PxTransform,
 		physx::PxTransform) const override;

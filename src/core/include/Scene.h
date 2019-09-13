@@ -5,6 +5,7 @@
 #include "Articulation.h"
 #include "PrimitiveObjects.h"
 #include "ArticulationTree.h"
+#include "UrdfLoader.h"
 #include "MathInterface.h"
 #include "Actor.h"
 
@@ -31,7 +32,8 @@ public:
 public:
     Material* CreateMaterial(float staticFriction, float dynamicFriction, float restitution);
     Plane* CreatePlane(Material* material, vec3 planeNormal, float distance);
-    Articulation* CreateArticulation(const ArticulationTree* tree, vec3 basePosition);
+    Articulation* CreateArticulation(UrdfLoader* urdfLoader, Material* material, vec3 basePosition);
+    Articulation* CreateArticulation(std::string urdfFilePath, Material* material, vec3 basePosition);
 
     Scene();
     void Step();
@@ -48,6 +50,7 @@ private:
     std::unordered_set<Articulation*> articulations;
 	void BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode,
 		Link* parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const;
+    Articulation* CreateArticulation(const ArticulationTree* tree, vec3 basePosition);
 private:
     const Foundation* foundation;
     physx::PxScene* pxScene;

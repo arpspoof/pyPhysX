@@ -39,7 +39,7 @@ Link* ArticulationDescriptionNode::CreateLink(Articulation& ar, Link *parentLink
 	return link;
 }
 
-NULLDescriptionNode::NULLDescriptionNode(string linkName, NULLLinkBody *body)
+NULLDescriptionNode::NULLDescriptionNode(string linkName, LinkBody *body)
     : ArticulationDescriptionNode(linkName, "", body,
         PxVec3(0, 0, 0), PxVec3(0, 0, 0)) 
 {

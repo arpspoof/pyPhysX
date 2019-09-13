@@ -83,6 +83,22 @@ Plane* Scene::CreatePlane(Material* material, vec3 planeNormal, float distance)
 	return plane;
 }
 
+Articulation* Scene::CreateArticulation(UrdfLoader* urdfLoader, Material* material, vec3 basePosition)
+{
+	ArticulationTree tree;
+	urdfLoader->BuildArticulationTree(tree, material);
+	return CreateArticulation(&tree, basePosition);
+}
+
+Articulation* Scene::CreateArticulation(string urdfFilePath, Material* material, vec3 basePosition)
+{
+	UrdfLoader urdfLoader;
+	urdfLoader.LoadDescriptionFromFile(urdfFilePath);
+	Articulation* articulation = CreateArticulation(&urdfLoader, material, basePosition);
+	urdfLoader.Dispose();
+	return articulation;
+}
+
 Articulation* Scene::CreateArticulation(const ArticulationTree* tree, vec3 basePosition)
 {
 	Articulation* articulation = new Articulation();
@@ -98,7 +114,6 @@ Articulation* Scene::CreateArticulation(const ArticulationTree* tree, vec3 baseP
 
 	return articulation;
 }
-
 
 void Scene::BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode,
 	Link* parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const

@@ -179,13 +179,13 @@ TEST_F(ArticulationTestFixture, test_articulation_joint_params)
 		{ "chest", make_pair(3, 0) },
 		{ "right_hip", make_pair(3, 3) },
 		{ "left_hip", make_pair(3, 6) },
-		{ "neck", make_pair(3, 9) },
-		{ "right_shoulder", make_pair(3, 12) },
-		{ "left_shoulder", make_pair(3, 15) },
+		{ "neck", make_pair(3, 12) },
+		{ "right_shoulder", make_pair(3, 15) },
+		{ "left_shoulder", make_pair(3, 9) },
 		{ "right_knee", make_pair(1, 18) },
 		{ "left_knee", make_pair(1, 19) },
-		{ "right_elbow", make_pair(1, 20) },
-		{ "left_elbow", make_pair(1, 21) },
+		{ "right_elbow", make_pair(1, 21) },
+		{ "left_elbow", make_pair(1, 20) },
 		{ "right_ankle", make_pair(3, 22) },
 		{ "left_ankle", make_pair(3, 25) }
 	};
