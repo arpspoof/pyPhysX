@@ -28,6 +28,7 @@ void UrdfLoader::LoadDescriptionFromFile(std::string path)
 
 void UrdfLoader::Dispose()
 {
+    doc.clear();
     delete buffer;
 }
 
@@ -219,13 +220,11 @@ void UrdfLoader::ParseJoints(ArticulationTree& tree)
         if (parentLinkMap.find(kvp.first) == parentLinkMap.end()) {
             tree.CreateNULLDescriptionNode(kvp.first, kvp.second);
             tree.SetRoot(kvp.first);
-            printf("base is %s\n", kvp.first.c_str());
         }
     }
 
     for (auto &kvp : parentLinkMap) {
         tree.Connect(kvp.second, kvp.first);
-        printf("connect %s -> %s\n", kvp.second.c_str(), kvp.first.c_str());
     }
 }
 

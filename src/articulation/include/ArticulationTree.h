@@ -37,4 +37,8 @@ public:
 	ArticulationDescriptionNode* GetRootNode() const;
 
 	virtual ~ArticulationTree();
+public:
+	// For testing purpose only
+	std::unordered_set<LinkBody*> GetLinkBodies();
+	std::unordered_map<std::string, ArticulationDescriptionNode*> GetNodeMap();
 };

@@ -24,7 +24,7 @@ struct SceneDescription
 
 class Foundation;
 
-class Scene : public physx::PxSimulationEventCallback, IDisposable
+class Scene : public physx::PxSimulationEventCallback, public IDisposable
 {
 // API BEGIN
 public:

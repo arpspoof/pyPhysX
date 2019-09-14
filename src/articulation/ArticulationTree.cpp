@@ -1,6 +1,7 @@
 #include "ArticulationTree.h"
 #include <cassert>
 
+using namespace std;
 using namespace physx;
 
 LinkBody* ArticulationTree::CreateNullLinkBody()
@@ -96,4 +97,14 @@ ArticulationTree::~ArticulationTree() {
 	for (auto& p : linkBodies) {
 		delete p;
 	}
+}
+
+unordered_set<LinkBody*> ArticulationTree::GetLinkBodies()
+{
+	return linkBodies;
+}
+
+unordered_map<string, ArticulationDescriptionNode*> ArticulationTree::GetNodeMap()
+{
+	return nodeMap;
 }
