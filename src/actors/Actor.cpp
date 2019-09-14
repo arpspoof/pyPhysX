@@ -2,7 +2,7 @@
 
 using namespace physx;
 
-void RigidActor::setupCollisionFiltering(int collisionGroup, int collisionMask)
+void RigidActor::SetupCollisionFiltering(int collisionGroup, int collisionMask)
 {
     PxRigidActor* actor = (PxRigidActor*)pxActor;
     PxFilterData filterData;

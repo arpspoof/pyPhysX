@@ -1,13 +1,11 @@
-#pragma once
-
-#include "Actor.h"
+%{
+    #include "PrimitiveObjects.h"
+%}
 
 class Material
 {
 // API BEGIN
 // API END
-public:
-    physx::PxMaterial* pxMaterial;
 };
 
 class Plane :public RigidActorStatic

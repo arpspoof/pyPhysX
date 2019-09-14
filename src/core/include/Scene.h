@@ -12,6 +12,7 @@
 #include <vector>
 #include <unordered_set>
 
+// API BEGIN
 struct SceneDescription
 {
     float gravity;
@@ -21,6 +22,7 @@ struct SceneDescription
 
     SceneDescription();
 };
+// API END
 
 class Foundation;
 

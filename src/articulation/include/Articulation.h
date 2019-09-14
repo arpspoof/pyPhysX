@@ -11,20 +11,27 @@ class Articulation :public IDisposable
 {
 // API BEGIN
 public:
-	std::unordered_map<std::string, Link*> linkMap;
-	std::unordered_map<std::string, Joint*> jointMap;
-public:
     int GetNDof() const;
     int GetNActiveJoints() const;
     void SetFixBaseFlag(bool shouldFixBase);
     const std::vector<int>& GetJointDofsInIdOrder() const;
+    const Link* GetLinkByName(std::string name) const;
+    const Joint* GetJointByName(std::string name) const;
 public:
     std::vector<float> kps, kds, forceLimits;
+    void SetKPs(const std::vector<float>& kps);
+    void SetKDs(const std::vector<float>& kds);
+    void SetForceLimits(const std::vector<float>& forceLimits);
+    void AddSPDForces(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
+// API END
+public:
+	std::unordered_map<std::string, Link*> linkMap;
+	std::unordered_map<std::string, Joint*> jointMap;
+public:
     void SetKPs(const float kps[]);
     void SetKDs(const float kds[]);
     void SetForceLimits(const float forceLimits[]);
     void AddSPDForces(const float targetPositions[], float timeStep); // WXYZ or angle
-// API END
 private:
     std::vector<Joint*> jointList;
     std::vector<int> jointDofs;

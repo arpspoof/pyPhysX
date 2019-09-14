@@ -24,12 +24,29 @@ float targetPositions[36] = {
     0.5813480000, //35
     0.1705710000f, //21
     0.9993660000f, 0.0099520000f, 0.0326540000f, 0.0100980000f, //13-16
-    0.9828790000f, 0.1013910000 -0.0551600000f, 0.1436190000f, //27-30
+    0.9828790000f, 0.1013910000, -0.0551600000f, 0.1436190000f, //27-30
+};
+
+#include "GlutRenderer.h"
+
+class GlutHandler :public glutRenderer::GlutRendererCallback
+{
+public:
+    Articulation* articulation;
+    Scene* scene;
+	void keyboardHandler(unsigned char /*key*/) override
+	{
+	}
+	void beforeSimulationHandler() override
+	{
+		articulation->AddSPDForces(targetPositions, scene->timeStep);
+	}
 };
 
 class PerformanceIntegrationTestFixture :public Test
 {
 public:
+    static GlutHandler glutHandler;
     static ArticulationTestResources res;
     static void SetUpTestCase()
     {
@@ -43,6 +60,9 @@ public:
         vector<float> kds(res.articulation->GetNDof(), 400.f);
         res.articulation->SetKPs(kps.data());
         res.articulation->SetKDs(kds.data());
+
+        glutHandler.scene = res.scene;
+        glutHandler.articulation = res.articulation;
     }
     static void TearDownTestCase()
     {
@@ -52,12 +72,9 @@ public:
 };
 
 ArticulationTestResources PerformanceIntegrationTestFixture::res;
+GlutHandler PerformanceIntegrationTestFixture::glutHandler;
 
 #define RENDER_LAST_FRAME 0
-
-#if(RENDER_LAST_FRAME)
-#include "GlutRenderer.h"
-#endif
 
 TEST_F(PerformanceIntegrationTestFixture, test_performance_integration)
 {
@@ -69,11 +86,11 @@ TEST_F(PerformanceIntegrationTestFixture, test_performance_integration)
 	}
     auto endtime = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(endtime - starttime).count();
-    printf("simulation time is %lld, this should be less than 690000 ...\n", duration);
+    printf("simulation time is %ld, this should be less than 690000 ...\n", duration);
     ASSERT_LE(duration, 690000);
 #if(RENDER_LAST_FRAME)
 	auto renderer = glutRenderer::GlutRenderer::GetInstance();
-	renderer->AttachScene(res.scene);
+	renderer->AttachScene(res.scene, &glutHandler);
 	renderer->StartRenderLoop();
 #endif
 }

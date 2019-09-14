@@ -1,4 +1,6 @@
-#pragma once
+%{
+    #include "IDisposable.h"
+%}
 
 // Interface only
 // API BEGIN

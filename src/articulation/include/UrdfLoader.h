@@ -12,10 +12,13 @@
 
 class UrdfLoader :public IDisposable
 {
+// API BEGIN
 public:
     UrdfLoader();
     void Dispose() override;
     void LoadDescriptionFromFile(std::string path);
+// API END
+public:
     void BuildArticulationTree(ArticulationTree& tree, Material* material);
 private:
     char* buffer;
@@ -25,6 +28,6 @@ private:
     std::unordered_map<std::string, vec3> linkOffsetMap;
     std::unordered_map<std::string, std::string> parentLinkMap;
     void ParseLinkBodies(ArticulationTree& tree, Material* material);
-    void ParseLinkOffsets(ArticulationTree& tree);
+    void ParseLinkOffsets();
     void ParseJoints(ArticulationTree& tree);
 };

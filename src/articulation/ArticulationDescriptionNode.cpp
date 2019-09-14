@@ -14,8 +14,8 @@ static PxTransform GetJointPose(PxVec3 offset)
 ArticulationDescriptionNode::ArticulationDescriptionNode(string linkName, string jointName, LinkBody *body,
     PxVec3 posOffsetLinkToInboundJoint, PxVec3 posOffsetJointToParentJoint)
     :linkName(linkName), jointName(jointName), body(body),
-    posOffsetJointToParentJoint(posOffsetJointToParentJoint),
-    posOffsetLinkToInboundJoint(posOffsetLinkToInboundJoint) 
+    posOffsetLinkToInboundJoint(posOffsetLinkToInboundJoint),
+    posOffsetJointToParentJoint(posOffsetJointToParentJoint)
 {
 }
 

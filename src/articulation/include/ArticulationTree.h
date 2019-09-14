@@ -10,6 +10,7 @@
 #include <string>
 
 class ArticulationTree {
+private:
 	std::unordered_set<LinkBody*> linkBodies;
 	std::unordered_map<std::string, ArticulationDescriptionNode*> nodeMap;
 	ArticulationDescriptionNode *root;
@@ -38,7 +39,7 @@ public:
 
 	virtual ~ArticulationTree();
 public:
-	// For testing purpose only
+// For testing purpose only
 	std::unordered_set<LinkBody*> GetLinkBodies();
 	std::unordered_map<std::string, ArticulationDescriptionNode*> GetNodeMap();
 };

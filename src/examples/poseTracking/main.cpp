@@ -39,13 +39,13 @@ void initPhysics(bool /*interactive*/)
 
 	if (getConfigI("S_GROUND")) {
 		auto plane = scene->CreatePlane(material, vec3(0, 1, 0), 0);
-		plane->setupCollisionFiltering(1, 2 | 4);
+		plane->SetupCollisionFiltering(1, 2 | 4);
 	}
 	
 	articulation = scene->CreateArticulation("resources/humanoid.urdf", material, vec3(0, 3.75f, 0));
 
-	articulation->linkMap["right_ankle"]->setupCollisionFiltering(2, 1 | 4);
-	articulation->linkMap["left_ankle"]->setupCollisionFiltering(4, 1 | 2);
+	articulation->linkMap["right_ankle"]->SetupCollisionFiltering(2, 1 | 4);
+	articulation->linkMap["left_ankle"]->SetupCollisionFiltering(4, 1 | 2);
 
 	for (auto &kvp : articulation->jointMap) {
 		printf("%s: %d\n", kvp.first.c_str(), kvp.second->cacheIndex);
@@ -67,27 +67,21 @@ PxReal motions[98][36];
 
 int xFrame = 0;
 
-void keyHandler(unsigned char key)
-{
-	switch (key) {
-	case '1':
-		writeConfigFile();
-		break;
-	case 'z': xFrame = PxMax(0, xFrame - 1); printf("xframe = %d\n", xFrame); break;
-	case 'x': xFrame = PxMin(95, xFrame + 1); printf("xframe = %d\n", xFrame); break;
-	}
-}
-
 extern void control(PxReal dt);
-
-void beforeRender()
+class GlutHandler :public glutRenderer::GlutRendererCallback
 {
-/*	auto contacts = scene->GetAllContactPairs();
-	for (auto &p: contacts) {
-		printf("%d, %d\n", p.first, p.second);
-	}*/
-	control(scene->timeStep);
-}
+	void keyboardHandler(unsigned char key) override
+	{
+		switch (key) {
+		case 'z': xFrame = PxMax(0, xFrame - 1); printf("xframe = %d\n", xFrame); break;
+		case 'x': xFrame = PxMin(95, xFrame + 1); printf("xframe = %d\n", xFrame); break;
+		}
+	}
+	void beforeSimulationHandler() override
+	{
+		control(scene->timeStep);
+	}
+} glutHandler;
 
 int main(int argc, char** argv)
 {
@@ -99,7 +93,7 @@ int main(int argc, char** argv)
 		printf("no config file specified\n");
 	}
 
-	ifstream motioninput("/home/zhiqiy/tmp/testMotion2.txt");
+	ifstream motioninput("resources/testMotion.txt");
 	for (int i = 0; i < 32; i++) {
 		for (int j = 0; j < 43; j++) {
 			PxReal tmp;motioninput >> tmp;
@@ -112,7 +106,7 @@ int main(int argc, char** argv)
 #if 1
 	initPhysics(false);
 	auto renderer = glutRenderer::GlutRenderer::GetInstance();
-	renderer->AttachScene(scene, keyHandler, beforeRender);
+	renderer->AttachScene(scene, &glutHandler);
 	renderer->StartRenderLoop();
 	cleanupPhysics(false);
 #else

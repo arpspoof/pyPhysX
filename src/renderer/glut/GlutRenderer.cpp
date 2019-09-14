@@ -53,17 +53,15 @@ GlutRenderer::GlutRenderer()
 {
 	this->renderFrequenceHz = 60;
 	this->scene = nullptr;
-	this->keyboardHandler = nullptr;
+	this->callback = nullptr;
 	this->glutCamera = nullptr;
 	this->simulating = false;
 }
 
-void GlutRenderer::AttachScene(::Scene* scene, GlutKeyboardHandler handler,
-        BeforeRenderCallback beforeRenderCallback)
+void GlutRenderer::AttachScene(::Scene* scene, GlutRendererCallback* callback)
 {
 	this->scene = scene;
-	this->keyboardHandler = handler;
-	this->beforeRenderCallback = beforeRenderCallback;
+	this->callback = callback;
 }
 
 void GlutRenderer::renderScene() {
@@ -113,8 +111,8 @@ void GlutRenderer::keyboardCallback(unsigned char key, int x, int y)
 		simulating = !simulating; return;
 	}
 
-	if(!glutCamera->handleKey(key, x, y) && keyboardHandler != nullptr)
-		keyboardHandler(key);
+	if(!glutCamera->handleKey(key, x, y) && callback != nullptr)
+		callback->keyboardHandler(key);
 
 	renderScene();
 }
@@ -136,8 +134,8 @@ void GlutRenderer::renderCallback()
 	static high_resolution_clock::time_point starttime;
 
 	if (simulating) {
-		if (beforeRenderCallback)
-			beforeRenderCallback();
+		if (callback)
+			callback->beforeSimulationHandler();
 		scene->Step();
 		phyFrameCount++;
 	}

@@ -44,6 +44,7 @@ protected:
 public:
 	Link* CreateLink(Articulation& ar, Link *parentLink,
 		physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const;
+	virtual ~ArticulationDescriptionNode() {}
 };
 
 class NULLDescriptionNode : public ArticulationDescriptionNode {

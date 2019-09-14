@@ -1,13 +1,11 @@
-#pragma once
-
-#include "PxPhysicsAPI.h"
+%{
+    #include "Actor.h"
+%}
 
 class Actor
 {
 // API BEGIN
 // API END
-public:
-    physx::PxActor* pxActor;
 };
 
 class RigidActor :public Actor

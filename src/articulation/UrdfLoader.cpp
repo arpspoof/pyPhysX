@@ -129,7 +129,7 @@ void UrdfLoader::ParseLinkBodies(ArticulationTree& tree, Material* material)
     }
 }
 
-void UrdfLoader::ParseLinkOffsets(ArticulationTree& tree)
+void UrdfLoader::ParseLinkOffsets()
 {
     auto docRoot = doc.first_node();
     auto docRootFirstChild = docRoot->first_node();
@@ -231,6 +231,6 @@ void UrdfLoader::ParseJoints(ArticulationTree& tree)
 void UrdfLoader::BuildArticulationTree(ArticulationTree& tree, Material* material)
 {
     ParseLinkBodies(tree, material);
-    ParseLinkOffsets(tree);
+    ParseLinkOffsets();
     ParseJoints(tree);
 }

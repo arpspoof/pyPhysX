@@ -80,6 +80,7 @@ void Articulation::InitControl()
 		jointList.push_back(get<1>(pijn));
 		jointDofs.push_back(get<1>(pijn)->nDof);
 		jointNames.push_back(get<2>(pijn));
+		printf("joint:%s, dof = %d\n", get<2>(pijn).c_str(), get<1>(pijn)->nDof);
 	}
 }
 
@@ -100,7 +101,6 @@ void Articulation::AssignIndices() {
 		p.second->inboundJoint->nDof = nDof;
 		p.second->inboundJoint->cacheIndex = currentIndex;
 		currentIndex += nDof;
-		printf("link id = %d, dof = %d, index = %d\n", p.first, nDof, p.second->inboundJoint->cacheIndex);
 	}
 }
 
@@ -127,22 +127,25 @@ void Articulation::SetFixBaseFlag(bool shouldFixBase)
 void Articulation::SetKPs(const float kps[])
 {
     int nDof = GetNDof();
-    for (int i = 0; i < nDof; i++)
+    for (int i = 0; i < nDof; i++) {
         this->kps[i] = kps[i];
+	}
 }
 
 void Articulation::SetKDs(const float kds[])
 {
     int nDof = GetNDof();
-    for (int i = 0; i < nDof; i++)
+    for (int i = 0; i < nDof; i++) {
         this->kds[i] = kds[i];
+	}
 }
 
 void Articulation::SetForceLimits(const float forceLimits[])
 {
     int nDof = GetNDof();
-    for (int i = 0; i < nDof; i++)
+    for (int i = 0; i < nDof; i++) {
         this->forceLimits[i] = forceLimits[i];
+	}
 }
 
 static PxQuat ConvertTwistSwingToQuaternion(float t, float s1, float s2)
@@ -271,7 +274,7 @@ void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
 	}
 
 	VectorXd qDotDot = H.llt().solve(centrifugalCoriolisGravityExternal + proportionalTorquePlusQDotDeltaT + derivativeTorque);
-	for (PxU32 i = 0; i < nDof; i++) {
+	for (int i = 0; i < nDof; i++) {
 		forces[i] = (PxReal)(proportionalTorquePlusQDotDeltaT(i) + derivativeTorque(i) - timeStep * kds[i] * qDotDot(i));
 		if (forceLimits[i] > 0 && forces[i] > forceLimits[i]) {
 			forces[i] = forceLimits[i];
@@ -279,4 +282,46 @@ void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
 	}
 
 	pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
+}
+
+const Link* Articulation::GetLinkByName(std::string name) const
+{
+	const auto& it = linkMap.find(name);
+	if (it == linkMap.end()) {
+		printf("Error: Link with name %s not found.\n", name.c_str());
+		assert(false);
+		return nullptr;
+	}
+	return it->second;
+}
+
+const Joint* Articulation::GetJointByName(std::string name) const
+{
+	const auto& it = jointMap.find(name);
+	if (it == jointMap.end()) {
+		printf("Error: Joint with name %s not found.\n", name.c_str());
+		assert(false);
+		return nullptr;
+	}
+	return it->second;
+}
+
+void Articulation::SetKPs(const std::vector<float>& kps)
+{
+	SetKPs(kps.data());
+}
+
+void Articulation::SetKDs(const std::vector<float>& kds)
+{
+	SetKDs(kds.data());
+}
+
+void Articulation::SetForceLimits(const std::vector<float>& forceLimits)
+{
+	SetForceLimits(forceLimits.data());
+}
+
+void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float timeStep)
+{
+	AddSPDForces(targetPositions.data(), timeStep);
 }

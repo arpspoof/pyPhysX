@@ -16,7 +16,7 @@ LinkBody::~LinkBody()
 }
 
 LinkBody::LinkBody(float mass, PxGeometry *geometry, Material *material) 
-	:mass(mass), hasGeometry(true), geometry(geometry)
+	:hasGeometry(true), mass(mass), geometry(geometry)
 {
     this->material = material ? material->pxMaterial : nullptr;
 }

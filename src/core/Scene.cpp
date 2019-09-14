@@ -165,7 +165,7 @@ PxFilterFlags Scene::CollisionShader(
 	return PxFilterFlag::eDEFAULT;
 }
 
-void Scene::onContact(const PxContactPairHeader &pairHeader, 
+void Scene::onContact(const PxContactPairHeader &/*pairHeader*/, 
     const PxContactPair *pairs, PxU32 nbPairs) 
 {
     for (PxU32 i = 0; i < nbPairs; i++)

@@ -1,8 +1,8 @@
-#pragma once
+%{
+    #include "GlutRenderer.h"
+%}
 
-#include "Scene.h"
-#include "GlutCamera.h"
-#include <functional>
+%feature("director") glutRenderer::GlutRendererCallback;
 
 namespace glutRenderer
 {
@@ -28,21 +28,6 @@ public:
 public:
     int renderFrequenceHz;
 // API END
-private:
-    static GlutRenderer globalGlutRenderer;
-private:
-    ::Scene* scene;
-    GlutCamera* glutCamera;
-    GlutRendererCallback* callback;
-    bool simulating;
-private:
-    void renderScene();
-    void motionCallback(int x, int y);
-    void keyboardCallback(unsigned char key, int x, int y);
-    void mouseCallback(int button, int state, int x, int y);
-    void idleCallback();
-    void renderCallback();
-    void exitCallback();
 };
 
 }
