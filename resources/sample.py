@@ -1,23 +1,25 @@
 from pyPhysX import *
 
 foundation = Foundation()
-scene = foundation.CreateScene(SceneDescription(), 0.001)
+scene = foundation.CreateScene(SceneDescription(), 0.016)
 
 material = scene.CreateMaterial(1.0, 1.0, 0.0)
 
 plane = scene.CreatePlane(material, vec3(0, 1, 0), 0)
 plane.SetupCollisionFiltering(1, 2 | 4)
 
-articulation = scene.CreateArticulation("../resources/humanoid.urdf", material, vec3(0, 3.75, 0))
+articulation = scene.CreateArticulation("../resources/humanoid.urdf", material, vec3(0, 3.55, 0))
 
 articulation.GetLinkByName("right_ankle").SetupCollisionFiltering(2, 1 | 4)
 articulation.GetLinkByName("left_ankle").SetupCollisionFiltering(4, 1 | 2)
 
-nDof = articulation.GetNDof()
+kps = [500]*3 + [250]*6 + [200]*3 + [50]*3 + [200]*3 + [250]*2 + [150]*2 + [200]*6
+kds = [100]*3 + [50]*6 + [40]*3 + [10]*3 + [40]*3 + [50]*2 + [30]*2 + [40]*6
 
-articulation.SetKPs([10000.0] * nDof)
-articulation.SetKDs([400.0] * nDof)
+articulation.SetKPs(kps)
+articulation.SetKDs(kds)
 
+'''
 targetPositions = [
     0.9988130000, 0.0094850000, -0.0475600000, -0.0044750000, # 0-3
     0.9649400000, 0.0243690000, -0.0575550000, 0.2549220000, #8-11
@@ -32,19 +34,45 @@ targetPositions = [
     0.9993660000, 0.0099520000, 0.0326540000, 0.0100980000, #13-16
     0.9828790000, 0.1013910000, -0.0551600000, 0.1436190000, #27-30
 ]
+'''
+q = [1, 0, 0, 0]
+targetPositions = q*6 + [0]*4 + q*2
 
 '''
+idmap = [0, 8, 22, 31, 4, 17, 12, 26, 35, 21, 13, 27]
+dofs = [4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 4, 4]
+
+targets = [[]] * 39
+
+import io
+with open("../resources/testMotion.txt") as fp:
+    for cnt, line in enumerate(fp):
+        line = line.strip()
+        segs = line.split(' ')
+        for i in range(12):
+            dof = dofs[i]
+            id = idmap[i]
+            for j in range(dof):
+                targets[cnt].append(float(segs[id + 7 + j]))
+
+print(targets)
+
+frm = 0
+'''
+
 import time
 
 start_t = time.time()
 for _ in range(10000):
     articulation.AddSPDForces(targetPositions, scene.timeStep)
     scene.Step()
+    scene.GetAllContactPairs()
+#    print(len(contactList))
 end_t = time.time()
 
 print("total time is ", int((end_t - start_t) * 1000000.0))
-'''
 
+'''
 class GlutHandler(GlutRendererCallback):
     def __init__(self):
         GlutRendererCallback.__init__(self)
@@ -58,6 +86,6 @@ handler = GlutHandler()
 renderer = GlutRenderer.GetInstance()
 renderer.AttachScene(scene, handler)
 renderer.StartRenderLoop()
-
+'''
 
 foundation.Dispose()
