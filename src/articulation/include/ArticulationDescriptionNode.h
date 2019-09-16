@@ -8,6 +8,12 @@
 #include <vector>
 #include <cassert>
 
+/**
+ * @internal
+ * @brief Wrapper class for physx::PxArticulationAxis. This specifies the
+ * 	rotational axis for a revolute joint
+ * 
+ */
 class ArticulationAxis
 {
 public:

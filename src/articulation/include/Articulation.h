@@ -11,6 +11,11 @@ class Articulation :public IDisposable
 {
 // API BEGIN
 public:
+    /**
+     * @brief Get the number of total degrees of freedom in this articulation
+     * 
+     * @return int The number of degrees of freedom
+     */
     int GetNDof() const;
     int GetNActiveJoints() const;
     void SetFixBaseFlag(bool shouldFixBase);
