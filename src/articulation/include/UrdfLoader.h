@@ -10,12 +10,34 @@
 #include <string>
 #include <unordered_map>
 
+/**
+ * @brief Loader for URDF skeleton files
+ * 
+ */
 class UrdfLoader :public IDisposable
 {
 // API BEGIN
 public:
+    /**
+     * @brief Construct an empty loader. Call LoadDescriptionFromFile
+     *  to load a new URDF file.
+     * 
+     */
     UrdfLoader();
+    /**
+     * @brief Dispose all resources allocated by the loader. If a Urdf loader
+     *  is created in your code logic, you must call this when it is not needed.
+     * 
+     */
     void Dispose() override;
+    /**
+     * @brief Load a new skeleton description.
+     * @note Old skeleton description will be discarded.
+     * @remark See https://github.com/gruvi-animation/pyPhysX/wiki/Urdf-Loader-and-Limitations
+     *  for more information about Urdf Loader
+     * 
+     * @param path File path to URDF skeleton file
+     */
     void LoadDescriptionFromFile(std::string path);
 // API END
 public:

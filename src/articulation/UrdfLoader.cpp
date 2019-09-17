@@ -17,6 +17,8 @@ UrdfLoader::UrdfLoader() :buffer(nullptr)
 
 void UrdfLoader::LoadDescriptionFromFile(std::string path)
 {
+    Dispose();
+
     ifstream t(path);
 	string str((istreambuf_iterator<char>(t)), istreambuf_iterator<char>());
 

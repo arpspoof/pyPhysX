@@ -66,8 +66,9 @@ start_t = time.time()
 for _ in range(10000):
     articulation.AddSPDForces(targetPositions, scene.timeStep)
     scene.Step()
-    scene.GetAllContactPairs()
-#    print(len(contactList))
+    contactList = scene.GetAllContactPairs()
+    for contact in contactList:
+        print(contact[0], contact[1])
 end_t = time.time()
 
 print("total time is ", int((end_t - start_t) * 1000000.0))

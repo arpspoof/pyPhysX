@@ -13,13 +13,42 @@
 #include <unordered_set>
 
 // API BEGIN
+/**
+ * @brief Description of properties of the scene in creation stage.
+ * 
+ */
 struct SceneDescription
 {
+    /**
+     * @brief Gravity. Default is -9.81
+     * 
+     */
     float gravity;
+    /**
+     * @brief Number of extra worker threads used for paralleled simulation.
+     *  Default is 0.
+     * @note If you're just simulating one articulation (not along with many
+     *  other objects), set this to 0 to achieve best performance. Try tuning
+     *  this parameter when the number of objects grows in this scene.
+     * 
+     */
     int nWorkerThreads;
+    /**
+     * @brief Choose whether to enable GPU dynamics. Default is false.
+     * @note Set this to false until PhysX fixes all issues.
+     * 
+     */
     bool enableGPUDynamics;
+    /**
+     * @brief Choose whether to enable GPU broad phase. Default is false.
+     * @note Set this to false until PhysX fixes all issues.
+     * 
+     */
     bool enableGPUBroadPhase;
-
+    /**
+     * @brief Construct a new SceneDescription object using all default values.
+     * 
+     */
     SceneDescription();
 };
 // API END
@@ -34,6 +63,10 @@ class Scene : public physx::PxSimulationEventCallback, public IDisposable
 {
 // API BEGIN
 public:
+    /**
+     * @brief Simulation time step.
+     * 
+     */
     float timeStep;
 public:
     /**
@@ -54,11 +87,44 @@ public:
      * @return Pointer to the created Plane object.
      */
     Plane* CreatePlane(Material* material, vec3 planeNormal, float distance);
+    /**
+     * @brief Create an Articulation and add it into the scene.
+     * 
+     * @param urdfLoader Pointer to a UrdfLoader. Make sure the loader has already
+     *  loaded some files via UrdfLoader::LoadDescriptionFromFile.
+     * @param material Pointer to a Material object. This material will be applied
+     *  to all link surfaces of this articulation.
+     * @param basePosition A 3d vector specifying the position to place the articulation
+     *  in world space coordinates.
+     * @return Articulation* Pointer to the created Articulation object.
+     */
     Articulation* CreateArticulation(UrdfLoader* urdfLoader, Material* material, vec3 basePosition);
+    /**
+     * @brief Create an Articulation and add it into the scene.
+     * 
+     * @param urdfFilePath Path to a Urdf file.
+     * @param material Pointer to a Material object. This material will be applied
+     *  to all link surfaces of this articulation.
+     * @param basePosition A 3d vector specifying the position to place the articulation
+     *  in world space coordinates.
+     * @return Articulation* Pointer to the created Articulation object.
+     */
     Articulation* CreateArticulation(std::string urdfFilePath, Material* material, vec3 basePosition);
 
     Scene();
+
+    /**
+     * @brief Step forward the simulation.
+     * 
+     */
     void Step();
+    /**
+     * @brief Dispose the scene and everything created inside this scene.
+     * @note Usually Foundation will take care of cleaning up unused scenes.
+     *  Do not call this unless you know what you're doing. Also, do not
+     *  access anything created by this scene after disposing it.
+     * 
+     */
     void Dispose() override;
 
     /**

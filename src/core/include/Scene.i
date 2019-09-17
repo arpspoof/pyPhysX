@@ -2,11 +2,13 @@
     #include "Scene.h"
 %}
 
+%include "std_pair.i"
 %include "std_vector.i"
 %include "std_string.i"
 
 namespace std {
-   %template() vector<pair<int, int>>;
+   %template(PII) pair<int, int>;
+   %template(VPII) vector<pair<int, int>>;
 };
 
 // API BEGIN
