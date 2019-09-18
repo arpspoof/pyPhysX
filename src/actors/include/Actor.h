@@ -41,6 +41,7 @@ public:
      * 
      * @remark By using this collision system, there're only 32 available
      *  collision groups.
+     * @remark See [Collision System](wiki/CollisionSystem.md) page for details.
      */
     void SetupCollisionFiltering(int collisionGroup, int collisionMask);
 // API END

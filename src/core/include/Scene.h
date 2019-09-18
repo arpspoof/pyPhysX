@@ -135,6 +135,7 @@ public:
      *  collision groups involving in a contact.
      * @note If contact information is not retrieved after one scene
      *  stepping, it will be lost after the next scene step.
+     * @remark See [Collision System](wiki/CollisionSystem.md) page for details.
      */
     const std::vector<std::pair<int, int>>& GetAllContactPairs() const;
 // API END

@@ -7,4 +7,9 @@ doxygen Doxyfile
 
 #### Wiki Index
 
-[Build and set up](wiki/setup.md)
+##### Preperation
+* [Build and set up](wiki/Setup.md)
+
+##### Usage
+* [Collision System](wiki/CollisionSystem.md)
+* [Urdf Loader](wiki/UrdfLoader.md)
