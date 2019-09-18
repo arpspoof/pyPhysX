@@ -8,7 +8,7 @@ static PxQuat rtzinv(-PxPi / 2, PxVec3(0, 0, 1));
 
 static PxTransform GetJointPose(PxVec3 offset) 
 {
-	return PxTransform(rtzinv.rotate(offset));
+    return PxTransform(rtzinv.rotate(offset));
 }
 
 ArticulationDescriptionNode::ArticulationDescriptionNode(string linkName, string jointName, LinkBody *body,
@@ -20,23 +20,23 @@ ArticulationDescriptionNode::ArticulationDescriptionNode(string linkName, string
 }
 
 Link* ArticulationDescriptionNode::CreateLink(Articulation& ar, Link *parentLink,
-	PxVec3 parentJointPos, PxVec3 parentLinkPos) const 
+    PxVec3 parentJointPos, PxVec3 parentLinkPos) const 
 {
-	PxVec3 jointPos = parentJointPos + posOffsetJointToParentJoint;
-	PxVec3 linkPos = jointPos + posOffsetLinkToInboundJoint;
-	Link *link = ar.AddLink(linkName, parentLink, PxTransform(linkPos, rtz), body);
-	link->globalPositionOffset = linkPos;
-	if (parentLink) {
-		Joint *joint = CreateJoint(ar, link,
-			GetJointPose(jointPos - parentLinkPos),
-			GetJointPose(jointPos - linkPos)
-		);
-		link->inboundJoint = joint;
-		joint->globalPositionOffset = jointPos;
-		joint->childLink = link;
-		joint->parentLink = parentLink;
-	}
-	return link;
+    PxVec3 jointPos = parentJointPos + posOffsetJointToParentJoint;
+    PxVec3 linkPos = jointPos + posOffsetLinkToInboundJoint;
+    Link *link = ar.AddLink(linkName, parentLink, PxTransform(linkPos, rtz), body);
+    link->globalPositionOffset = linkPos;
+    if (parentLink) {
+        Joint *joint = CreateJoint(ar, link,
+            GetJointPose(jointPos - parentLinkPos),
+            GetJointPose(jointPos - linkPos)
+        );
+        link->inboundJoint = joint;
+        joint->globalPositionOffset = jointPos;
+        joint->childLink = link;
+        joint->parentLink = parentLink;
+    }
+    return link;
 }
 
 NULLDescriptionNode::NULLDescriptionNode(string linkName, LinkBody *body)
@@ -60,10 +60,10 @@ FixedDescriptionNode::FixedDescriptionNode(string linkName, string jointName, Li
 }
 
 Joint* FixedDescriptionNode::CreateJoint(Articulation& ar, Link *link,
-	PxTransform parentPose,
-	PxTransform childPose) const 
+    PxTransform parentPose,
+    PxTransform childPose) const 
 {
-	return ar.AddFixedJoint(jointName, link, parentPose, childPose);
+    return ar.AddFixedJoint(jointName, link, parentPose, childPose);
 }
 
 SpericalDescriptionNode::SpericalDescriptionNode(string linkName, string jointName, LinkBody *body,
@@ -74,10 +74,10 @@ SpericalDescriptionNode::SpericalDescriptionNode(string linkName, string jointNa
 }
 
 Joint* SpericalDescriptionNode::CreateJoint(Articulation& ar, Link *link,
-	PxTransform parentPose,
-	PxTransform childPose) const 
+    PxTransform parentPose,
+    PxTransform childPose) const 
 {
-	return ar.AddSpericalJoint(jointName, link, parentPose, childPose);
+    return ar.AddSpericalJoint(jointName, link, parentPose, childPose);
 }
 
 RevoluteDescriptionNode::RevoluteDescriptionNode(string linkName, string jointName, LinkBody *body,
@@ -89,8 +89,8 @@ RevoluteDescriptionNode::RevoluteDescriptionNode(string linkName, string jointNa
 }
 
 Joint* RevoluteDescriptionNode::CreateJoint(Articulation& ar, Link *link,
-	PxTransform parentPose,
-	PxTransform childPose) const 
+    PxTransform parentPose,
+    PxTransform childPose) const 
 {
-	return ar.AddRevoluteJoint(jointName, link, axis, parentPose, childPose);
+    return ar.AddRevoluteJoint(jointName, link, axis, parentPose, childPose);
 }

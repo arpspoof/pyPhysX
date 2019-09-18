@@ -145,8 +145,8 @@ private:
     std::unordered_set<Material*> materials;
     std::unordered_set<physx::PxActor*> actors;
     std::unordered_set<Articulation*> articulations;
-	void BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode,
-		Link* parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const;
+    void BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode,
+        Link* parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const;
     Articulation* CreateArticulation(const ArticulationTree* tree, vec3 basePosition);
 private:
     const Foundation* foundation;
@@ -155,14 +155,14 @@ private:
 private:
     std::vector<std::pair<int, int>> contacts;
     void onContact(const physx::PxContactPairHeader &pairHeader, 
-		const physx::PxContactPair *pairs, physx::PxU32 nbPairs) override;
-	void onConstraintBreak(physx::PxConstraintInfo * /*constraints*/, 
+        const physx::PxContactPair *pairs, physx::PxU32 nbPairs) override;
+    void onConstraintBreak(physx::PxConstraintInfo * /*constraints*/, 
         physx::PxU32 /*count*/) override {}
-	void onWake(physx::PxActor ** /*actors*/, physx::PxU32 /*count*/) override {}
-	void onSleep(physx::PxActor ** /*actors*/, physx::PxU32 /*count*/) override {}
-	void onTrigger(physx::PxTriggerPair * /*pairs*/, physx::PxU32 /*count*/) override {}
-	void onAdvance(const physx::PxRigidBody *const * /*bodyBuffer*/, 
-		const physx::PxTransform * /*poseBuffer*/, const physx::PxU32 /*count*/) override {}
+    void onWake(physx::PxActor ** /*actors*/, physx::PxU32 /*count*/) override {}
+    void onSleep(physx::PxActor ** /*actors*/, physx::PxU32 /*count*/) override {}
+    void onTrigger(physx::PxTriggerPair * /*pairs*/, physx::PxU32 /*count*/) override {}
+    void onAdvance(const physx::PxRigidBody *const * /*bodyBuffer*/, 
+        const physx::PxTransform * /*poseBuffer*/, const physx::PxU32 /*count*/) override {}
 public:
     static physx::PxFilterFlags CollisionShader(
         physx::PxFilterObjectAttributes attributes0, physx::PxFilterData filterData0,

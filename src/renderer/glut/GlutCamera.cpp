@@ -40,81 +40,81 @@ namespace glutRenderer
 
 GlutCamera::GlutCamera(const PxVec3& eye, const PxVec3& dir)
 {
-	mEye = eye;
-	mDir = dir.getNormalized();
-	mMouseX = 0;
-	mMouseY = 0;
+    mEye = eye;
+    mDir = dir.getNormalized();
+    mMouseX = 0;
+    mMouseY = 0;
 }
 
 void GlutCamera::handleMouse(int button, int state, int x, int y)
 {
-	PX_UNUSED(state);
-	PX_UNUSED(button);
-	mMouseX = x;
-	mMouseY = y;
+    PX_UNUSED(state);
+    PX_UNUSED(button);
+    mMouseX = x;
+    mMouseY = y;
 }
 
 bool GlutCamera::handleKey(unsigned char key, int x, int y, float speed)
 {
-	PX_UNUSED(x);
-	PX_UNUSED(y);
+    PX_UNUSED(x);
+    PX_UNUSED(y);
 
-	PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
-	switch(toupper(key))
-	{
-	case 'W':	mEye += mDir*2.0f*speed;		break;
-	case 'S':	mEye -= mDir*2.0f*speed;		break;
-	case 'A':	mEye -= viewY*2.0f*speed;		break;
-	case 'D':	mEye += viewY*2.0f*speed;		break;
-	default:							return false;
-	}
-	return true;
+    PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
+    switch(toupper(key))
+    {
+    case 'W':	mEye += mDir*2.0f*speed;		break;
+    case 'S':	mEye -= mDir*2.0f*speed;		break;
+    case 'A':	mEye -= viewY*2.0f*speed;		break;
+    case 'D':	mEye += viewY*2.0f*speed;		break;
+    default:							return false;
+    }
+    return true;
 }
 
 void GlutCamera::handleAnalogMove(float x, float y)
 {
-	PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
-	mEye += mDir*y;
-	mEye += viewY*x;
+    PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
+    mEye += mDir*y;
+    mEye += viewY*x;
 }
 
 void GlutCamera::handleMotion(int x, int y)
 {
-	int dx = mMouseX - x;
-	int dy = mMouseY - y;
+    int dx = mMouseX - x;
+    int dy = mMouseY - y;
 
-	PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
+    PxVec3 viewY = mDir.cross(PxVec3(0,1,0)).getNormalized();
 
-	PxQuat qx(PxPi * dx / 180.0f, PxVec3(0,1,0));
-	mDir = qx.rotate(mDir);
-	PxQuat qy(PxPi * dy / 180.0f, viewY);
-	mDir = qy.rotate(mDir);
+    PxQuat qx(PxPi * dx / 180.0f, PxVec3(0,1,0));
+    mDir = qx.rotate(mDir);
+    PxQuat qy(PxPi * dy / 180.0f, viewY);
+    mDir = qy.rotate(mDir);
 
-	mDir.normalize();
+    mDir.normalize();
 
-	mMouseX = x;
-	mMouseY = y;
+    mMouseX = x;
+    mMouseY = y;
 }
 
 PxTransform GlutCamera::getTransform() const
 {
-	PxVec3 viewY = mDir.cross(PxVec3(0,1,0));
+    PxVec3 viewY = mDir.cross(PxVec3(0,1,0));
 
-	if(viewY.normalize()<1e-6f) 
-		return PxTransform(mEye);
+    if(viewY.normalize()<1e-6f) 
+        return PxTransform(mEye);
 
-	PxMat33 m(mDir.cross(viewY), viewY, -mDir);
-	return PxTransform(mEye, PxQuat(m));
+    PxMat33 m(mDir.cross(viewY), viewY, -mDir);
+    return PxTransform(mEye, PxQuat(m));
 }
 
 PxVec3 GlutCamera::getEye() const
 { 
-	return mEye; 
+    return mEye; 
 }
 
 PxVec3 GlutCamera::getDir() const
 { 
-	return mDir; 
+    return mDir; 
 }
 
 }

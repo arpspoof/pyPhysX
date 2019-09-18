@@ -10,11 +10,11 @@
 class ArticulationTestResources
 {
 public:
-	Foundation* foundation;
-	Material* material;
-	Articulation* articulation;
-	Scene* scene;
+    Foundation* foundation;
+    Material* material;
+    Articulation* articulation;
+    Scene* scene;
 
-	void Init();
-	void Dispose();
+    void Init();
+    void Dispose();
 };

@@ -34,13 +34,13 @@ class GlutHandler :public glutRenderer::GlutRendererCallback
 public:
     Articulation* articulation;
     Scene* scene;
-	void keyboardHandler(unsigned char /*key*/) override
-	{
-	}
-	void beforeSimulationHandler() override
-	{
-		articulation->AddSPDForces(targetPositions, scene->timeStep);
-	}
+    void keyboardHandler(unsigned char /*key*/) override
+    {
+    }
+    void beforeSimulationHandler() override
+    {
+        articulation->AddSPDForces(targetPositions, scene->timeStep);
+    }
 };
 
 class PerformanceIntegrationTestFixture :public Test
@@ -54,7 +54,7 @@ public:
 
         res.Init();
 
-		res.scene->CreatePlane(res.material, vec3(0, 1, 0), 0);
+        res.scene->CreatePlane(res.material, vec3(0, 1, 0), 0);
 
         vector<float> kps(res.articulation->GetNDof(), 10000.f);
         vector<float> kds(res.articulation->GetNDof(), 400.f);
@@ -80,17 +80,17 @@ TEST_F(PerformanceIntegrationTestFixture, test_performance_integration)
 {
     static const PxU32 frameCount = 10000;
     auto starttime = high_resolution_clock::now();
-	for(PxU32 i=0; i<frameCount; i++) {
-		res.articulation->AddSPDForces(targetPositions, res.scene->timeStep);
-		res.scene->Step();
-	}
+    for(PxU32 i=0; i<frameCount; i++) {
+        res.articulation->AddSPDForces(targetPositions, res.scene->timeStep);
+        res.scene->Step();
+    }
     auto endtime = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(endtime - starttime).count();
     printf("simulation time is %ld, this should be less than 690000 ...\n", duration);
     ASSERT_LE(duration, 690000);
 #if(RENDER_LAST_FRAME)
-	auto renderer = glutRenderer::GlutRenderer::GetInstance();
-	renderer->AttachScene(res.scene, &glutHandler);
-	renderer->StartRenderLoop();
+    auto renderer = glutRenderer::GlutRenderer::GetInstance();
+    renderer->AttachScene(res.scene, &glutHandler);
+    renderer->StartRenderLoop();
 #endif
 }

@@ -16,12 +16,12 @@ SceneDescription::SceneDescription()
 
 Scene::Scene()
 {
-	// For API binding only. 
-	assert("false");
+    // For API binding only. 
+    assert("false");
 }
 
 Scene::Scene(Foundation* foundation, SceneDescription description, float timeStep)
-	:foundation(foundation)
+    :foundation(foundation)
 {
     PxSceneDesc pxSceneDesc(foundation->GetPxPhysics()->getTolerancesScale());
 
@@ -29,140 +29,140 @@ Scene::Scene(Foundation* foundation, SceneDescription description, float timeSte
     pxSceneDesc.cudaContextManager = foundation->GetPxCudaContextManager();
     pxSceneDesc.solverType = PxSolverType::eTGS;
     pxSceneDesc.filterShader = CollisionShader;
-	pxSceneDesc.simulationEventCallback = this;
+    pxSceneDesc.simulationEventCallback = this;
 
     pxCpuDispatcher = PxDefaultCpuDispatcherCreate(description.nWorkerThreads);
     pxSceneDesc.cpuDispatcher = pxCpuDispatcher;
 
-	if (description.enableGPUDynamics)
-		pxSceneDesc.flags |= PxSceneFlag::eENABLE_GPU_DYNAMICS;
-	if (description.enableGPUBroadPhase)
-		pxSceneDesc.broadPhaseType = PxBroadPhaseType::eGPU;
-	
-	pxScene = foundation->GetPxPhysics()->createScene(pxSceneDesc);
-	this->timeStep = timeStep;
+    if (description.enableGPUDynamics)
+        pxSceneDesc.flags |= PxSceneFlag::eENABLE_GPU_DYNAMICS;
+    if (description.enableGPUBroadPhase)
+        pxSceneDesc.broadPhaseType = PxBroadPhaseType::eGPU;
+    
+    pxScene = foundation->GetPxPhysics()->createScene(pxSceneDesc);
+    this->timeStep = timeStep;
 }
 
 void Scene::Dispose()
 {
     printf("disposing materials, actors, articulations ...\n");
-	for (auto &p : materials) {
-		delete p;
-	}
-	for (auto &p : actors) {
-		if (p->isReleasable()) {
-			p->release();
-		}
-	}
-	for (auto &p : articulations) {
-		p->Dispose();
-		delete p;
-	}
+    for (auto &p : materials) {
+        delete p;
+    }
+    for (auto &p : actors) {
+        if (p->isReleasable()) {
+            p->release();
+        }
+    }
+    for (auto &p : articulations) {
+        p->Dispose();
+        delete p;
+    }
     pxScene->release();
     pxCpuDispatcher->release();
 }
 
 Material* Scene::CreateMaterial(float staticFriction, float dynamicFriction, float restitution)
 {
-	Material* material = new Material();
-	material->pxMaterial = foundation->GetPxPhysics()->createMaterial(staticFriction, dynamicFriction, restitution);
-	materials.insert(material);
-	return material;
+    Material* material = new Material();
+    material->pxMaterial = foundation->GetPxPhysics()->createMaterial(staticFriction, dynamicFriction, restitution);
+    materials.insert(material);
+    return material;
 }
 
 Plane* Scene::CreatePlane(Material* material, vec3 planeNormal, float distance)
 {
-	Plane* plane = new Plane();
-	plane->pxActor = PxCreatePlane(
-		*foundation->GetPxPhysics(), 
-		PxPlane(planeNormal.x, planeNormal.y, planeNormal.z, distance), 
-		*material->pxMaterial
-	);
-	actors.insert(plane->pxActor);
-	pxScene->addActor(*plane->pxActor);
-	return plane;
+    Plane* plane = new Plane();
+    plane->pxActor = PxCreatePlane(
+        *foundation->GetPxPhysics(), 
+        PxPlane(planeNormal.x, planeNormal.y, planeNormal.z, distance), 
+        *material->pxMaterial
+    );
+    actors.insert(plane->pxActor);
+    pxScene->addActor(*plane->pxActor);
+    return plane;
 }
 
 Articulation* Scene::CreateArticulation(UrdfLoader* urdfLoader, Material* material, vec3 basePosition)
 {
-	ArticulationTree tree;
-	urdfLoader->BuildArticulationTree(tree, material);
-	return CreateArticulation(&tree, basePosition);
+    ArticulationTree tree;
+    urdfLoader->BuildArticulationTree(tree, material);
+    return CreateArticulation(&tree, basePosition);
 }
 
 Articulation* Scene::CreateArticulation(string urdfFilePath, Material* material, vec3 basePosition)
 {
-	UrdfLoader urdfLoader;
-	urdfLoader.LoadDescriptionFromFile(urdfFilePath);
-	Articulation* articulation = CreateArticulation(&urdfLoader, material, basePosition);
-	urdfLoader.Dispose();
-	return articulation;
+    UrdfLoader urdfLoader;
+    urdfLoader.LoadDescriptionFromFile(urdfFilePath);
+    Articulation* articulation = CreateArticulation(&urdfLoader, material, basePosition);
+    urdfLoader.Dispose();
+    return articulation;
 }
 
 Articulation* Scene::CreateArticulation(const ArticulationTree* tree, vec3 basePosition)
 {
-	Articulation* articulation = new Articulation();
-	articulation->pxArticulation = foundation->GetPxPhysics()->createArticulationReducedCoordinate();
+    Articulation* articulation = new Articulation();
+    articulation->pxArticulation = foundation->GetPxPhysics()->createArticulationReducedCoordinate();
 
-	assert(tree->GetRootNode() != nullptr);
-	BuildArticulation(*articulation, tree->GetRootNode(), nullptr, basePosition, basePosition);
+    assert(tree->GetRootNode() != nullptr);
+    BuildArticulation(*articulation, tree->GetRootNode(), nullptr, basePosition, basePosition);
 
-	pxScene->addArticulation(*articulation->pxArticulation);
+    pxScene->addArticulation(*articulation->pxArticulation);
 
-	articulation->InitControl();
-	articulations.insert(articulation);
+    articulation->InitControl();
+    articulations.insert(articulation);
 
-	return articulation;
+    return articulation;
 }
 
 void Scene::BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode,
-	Link* parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const
+    Link* parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const
 {
-	Link *link = startNode->CreateLink(ar, parentLink, parentJointPos, parentLinkPos);
-	for (auto it : startNode->children) {
-		BuildArticulation(ar, it, link,
-			parentJointPos + startNode->posOffsetJointToParentJoint,
-			link->globalPositionOffset);
-	}
+    Link *link = startNode->CreateLink(ar, parentLink, parentJointPos, parentLinkPos);
+    for (auto it : startNode->children) {
+        BuildArticulation(ar, it, link,
+            parentJointPos + startNode->posOffsetJointToParentJoint,
+            link->globalPositionOffset);
+    }
 }
 
 void Scene::Step()
 {
-	contacts.clear();
+    contacts.clear();
     pxScene->simulate(timeStep);
-	pxScene->fetchResults(true);
+    pxScene->fetchResults(true);
 }
 
 const vector<pair<int, int>>& Scene::GetAllContactPairs() const
 {
-	return contacts;
+    return contacts;
 }
 
 PxScene* Scene::GetPxScene() const
 {
-	return pxScene;
+    return pxScene;
 }
 
 PxFilterFlags Scene::CollisionShader(
-	PxFilterObjectAttributes attributes0, PxFilterData filterData0,
-	PxFilterObjectAttributes attributes1, PxFilterData filterData1,
-	PxPairFlags& pairFlags, const void* /*constantBlock*/, PxU32 /*constantBlockSize*/)
+    PxFilterObjectAttributes attributes0, PxFilterData filterData0,
+    PxFilterObjectAttributes attributes1, PxFilterData filterData1,
+    PxPairFlags& pairFlags, const void* /*constantBlock*/, PxU32 /*constantBlockSize*/)
 {
-	// let triggers through
-	if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
-	{
-		pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
-		return PxFilterFlag::eDEFAULT;
-	}
-	// generate contacts for all that were not filtered above
-	pairFlags = PxPairFlag::eCONTACT_DEFAULT;
+    // let triggers through
+    if (PxFilterObjectIsTrigger(attributes0) || PxFilterObjectIsTrigger(attributes1))
+    {
+        pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
+        return PxFilterFlag::eDEFAULT;
+    }
+    // generate contacts for all that were not filtered above
+    pairFlags = PxPairFlag::eCONTACT_DEFAULT;
 
-	// trigger the contact callback for pairs (A,B) where 
-	// the filtermask of A contains the ID of B and vice versa.
-	if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1))
-		pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
+    // trigger the contact callback for pairs (A,B) where 
+    // the filtermask of A contains the ID of B and vice versa.
+    if ((filterData0.word0 & filterData1.word1) && (filterData1.word0 & filterData0.word1))
+        pairFlags |= PxPairFlag::eNOTIFY_TOUCH_FOUND;
 
-	return PxFilterFlag::eDEFAULT;
+    return PxFilterFlag::eDEFAULT;
 }
 
 void Scene::onContact(const PxContactPairHeader &/*pairHeader*/, 
@@ -174,9 +174,9 @@ void Scene::onContact(const PxContactPairHeader &/*pairHeader*/,
 
         if (cp.events & PxPairFlag::eNOTIFY_TOUCH_FOUND)
         {
-			int collisionGroup0 = cp.shapes[0]->getSimulationFilterData().word0;
-			int collisionGroup1 = cp.shapes[1]->getSimulationFilterData().word0;
-			contacts.push_back(make_pair(collisionGroup0, collisionGroup1));
+            int collisionGroup0 = cp.shapes[0]->getSimulationFilterData().word0;
+            int collisionGroup1 = cp.shapes[1]->getSimulationFilterData().word0;
+            contacts.push_back(make_pair(collisionGroup0, collisionGroup1));
         }
     }
 }

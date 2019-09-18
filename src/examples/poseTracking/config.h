@@ -5,51 +5,51 @@
 #include <map>
 
 enum ConfigType {
-	_INT, _FLOAT
+    _INT, _FLOAT
 };
 
 struct ConfigEntry {
-	ConfigType type;
-	unsigned char buffer[8];
+    ConfigType type;
+    unsigned char buffer[8];
 
-	ConfigEntry(ConfigType _type) {
-		type = _type;
-		memset(buffer, 0, sizeof(buffer));
-	}
+    ConfigEntry(ConfigType _type) {
+        type = _type;
+        memset(buffer, 0, sizeof(buffer));
+    }
 
-	ConfigEntry() : ConfigEntry(ConfigType::_INT) {
-	}
+    ConfigEntry() : ConfigEntry(ConfigType::_INT) {
+    }
 
-	ConfigEntry(int i) : ConfigEntry(ConfigType::_INT) {
-		int* intbuffer = (int*)buffer;
-		*intbuffer = i;
-	}
+    ConfigEntry(int i) : ConfigEntry(ConfigType::_INT) {
+        int* intbuffer = (int*)buffer;
+        *intbuffer = i;
+    }
 
-	ConfigEntry(float f) : ConfigEntry(ConfigType::_FLOAT) {
-		float* floatbuffer = (float*)buffer;
-		*floatbuffer = f;
-	}
+    ConfigEntry(float f) : ConfigEntry(ConfigType::_FLOAT) {
+        float* floatbuffer = (float*)buffer;
+        *floatbuffer = f;
+    }
 
-	int i() { return *(int*)buffer; }
-	float f() { return *(float*)buffer; }
+    int i() { return *(int*)buffer; }
+    float f() { return *(float*)buffer; }
 
-	std::string toString() {
-		std::string typestr;
-		std::string valuestr;
+    std::string toString() {
+        std::string typestr;
+        std::string valuestr;
 
-		switch (type) {
-		case ConfigType::_INT: 
-			typestr = "int";
-			valuestr = std::to_string(i());
-			break;
-		case ConfigType::_FLOAT: 
-			typestr = "float";
-			valuestr = std::to_string(f());
-			break;
-		}
-		
-		return typestr + "\t" + valuestr;
-	}
+        switch (type) {
+        case ConfigType::_INT: 
+            typestr = "int";
+            valuestr = std::to_string(i());
+            break;
+        case ConfigType::_FLOAT: 
+            typestr = "float";
+            valuestr = std::to_string(f());
+            break;
+        }
+        
+        return typestr + "\t" + valuestr;
+    }
 };
 
 typedef std::map<std::string, ConfigEntry> Config;

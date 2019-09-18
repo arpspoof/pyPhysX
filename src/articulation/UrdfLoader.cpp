@@ -20,12 +20,12 @@ void UrdfLoader::LoadDescriptionFromFile(std::string path)
     Dispose();
 
     ifstream t(path);
-	string str((istreambuf_iterator<char>(t)), istreambuf_iterator<char>());
+    string str((istreambuf_iterator<char>(t)), istreambuf_iterator<char>());
 
-	buffer = new char[str.length() + 1];
-	strcpy(buffer, str.c_str());
+    buffer = new char[str.length() + 1];
+    strcpy(buffer, str.c_str());
 
-	doc.parse<0>(buffer);
+    doc.parse<0>(buffer);
 }
 
 void UrdfLoader::Dispose()

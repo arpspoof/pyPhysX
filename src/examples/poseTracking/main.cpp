@@ -32,32 +32,32 @@ void InitControl();
 
 void initPhysics(bool /*interactive*/)
 {
-	foundation = new Foundation();
-	scene = foundation->CreateScene(SceneDescription(), 0.001f);
+    foundation = new Foundation();
+    scene = foundation->CreateScene(SceneDescription(), 0.001f);
 
-	material = scene->CreateMaterial(1.f, 1.f, 0.f);
+    material = scene->CreateMaterial(1.f, 1.f, 0.f);
 
-	if (getConfigI("S_GROUND")) {
-		auto plane = scene->CreatePlane(material, vec3(0, 1, 0), 0);
-		plane->SetupCollisionFiltering(1, 2 | 4);
-	}
-	
-	articulation = scene->CreateArticulation("resources/humanoid.urdf", material, vec3(0, 3.75f, 0));
+    if (getConfigI("S_GROUND")) {
+        auto plane = scene->CreatePlane(material, vec3(0, 1, 0), 0);
+        plane->SetupCollisionFiltering(1, 2 | 4);
+    }
+    
+    articulation = scene->CreateArticulation("resources/humanoid.urdf", material, vec3(0, 3.75f, 0));
 
-	articulation->linkMap["right_ankle"]->SetupCollisionFiltering(2, 1 | 4);
-	articulation->linkMap["left_ankle"]->SetupCollisionFiltering(4, 1 | 2);
+    articulation->linkMap["right_ankle"]->SetupCollisionFiltering(2, 1 | 4);
+    articulation->linkMap["left_ankle"]->SetupCollisionFiltering(4, 1 | 2);
 
-	for (auto &kvp : articulation->jointMap) {
-		printf("%s: %d\n", kvp.first.c_str(), kvp.second->cacheIndex);
-	}
+    for (auto &kvp : articulation->jointMap) {
+        printf("%s: %d\n", kvp.first.c_str(), kvp.second->cacheIndex);
+    }
 
-	InitControl();
+    InitControl();
 }
-	
+    
 void cleanupPhysics(bool /*interactive*/)
 {
-	foundation->Dispose();
-	delete foundation;
+    foundation->Dispose();
+    delete foundation;
 }
 
 PxReal motions[98][36];
@@ -70,57 +70,57 @@ int xFrame = 0;
 extern void control(PxReal dt);
 class GlutHandler :public glutRenderer::GlutRendererCallback
 {
-	void keyboardHandler(unsigned char key) override
-	{
-		switch (key) {
-		case 'z': xFrame = PxMax(0, xFrame - 1); printf("xframe = %d\n", xFrame); break;
-		case 'x': xFrame = PxMin(95, xFrame + 1); printf("xframe = %d\n", xFrame); break;
-		}
-	}
-	void beforeSimulationHandler() override
-	{
-		control(scene->timeStep);
-	}
+    void keyboardHandler(unsigned char key) override
+    {
+        switch (key) {
+        case 'z': xFrame = PxMax(0, xFrame - 1); printf("xframe = %d\n", xFrame); break;
+        case 'x': xFrame = PxMin(95, xFrame + 1); printf("xframe = %d\n", xFrame); break;
+        }
+    }
+    void beforeSimulationHandler() override
+    {
+        control(scene->timeStep);
+    }
 } glutHandler;
 
 int main(int argc, char** argv)
 {
-	if (argc > 1) {
-		const char* config_path = argv[1];
-		readConfigFile(config_path);
-	}
-	else {
-		printf("no config file specified\n");
-	}
+    if (argc > 1) {
+        const char* config_path = argv[1];
+        readConfigFile(config_path);
+    }
+    else {
+        printf("no config file specified\n");
+    }
 
-	ifstream motioninput("resources/testMotion.txt");
-	for (int i = 0; i < 32; i++) {
-		for (int j = 0; j < 43; j++) {
-			PxReal tmp;motioninput >> tmp;
-			if (j < 7) continue;
-			motions[i][j - 7] = tmp;
-		}
-	}
-	motioninput.close();
+    ifstream motioninput("resources/testMotion.txt");
+    for (int i = 0; i < 32; i++) {
+        for (int j = 0; j < 43; j++) {
+            PxReal tmp;motioninput >> tmp;
+            if (j < 7) continue;
+            motions[i][j - 7] = tmp;
+        }
+    }
+    motioninput.close();
 
 #if 1
-	initPhysics(false);
-	auto renderer = glutRenderer::GlutRenderer::GetInstance();
-	renderer->AttachScene(scene, &glutHandler);
-	renderer->StartRenderLoop();
-	cleanupPhysics(false);
+    initPhysics(false);
+    auto renderer = glutRenderer::GlutRenderer::GetInstance();
+    renderer->AttachScene(scene, &glutHandler);
+    renderer->StartRenderLoop();
+    cleanupPhysics(false);
 #else
-	static const PxU32 frameCount = 10000;
-	initPhysics(false);
+    static const PxU32 frameCount = 10000;
+    initPhysics(false);
     auto starttime = high_resolution_clock::now();
-	for(PxU32 i=0; i<frameCount; i++) {
-		control(scene->timeStep);
-		scene->Step();
-	}
+    for(PxU32 i=0; i<frameCount; i++) {
+        control(scene->timeStep);
+        scene->Step();
+    }
     auto endtime = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(endtime - starttime).count();
     printf("%lld\n", duration);
-	cleanupPhysics(false);
+    cleanupPhysics(false);
 #endif
-	return 0;
+    return 0;
 }

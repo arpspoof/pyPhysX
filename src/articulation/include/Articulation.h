@@ -121,8 +121,8 @@ public:
     void AddSPDForces(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
 // API END
 public:
-	std::unordered_map<std::string, Link*> linkMap;
-	std::unordered_map<std::string, Joint*> jointMap;
+    std::unordered_map<std::string, Link*> linkMap;
+    std::unordered_map<std::string, Joint*> jointMap;
 public:
     void SetKPs(const float kps[]);
     void SetKDs(const float kds[]);
@@ -142,12 +142,12 @@ public:
     physx::PxArticulationReducedCoordinate* pxArticulation;
 public:
     Link* AddLink(std::string name, Link *parent, physx::PxTransform transform, LinkBody *body);
-	Joint* AddSpericalJoint(std::string name, Link *link,
-		physx::PxTransform parentPose, physx::PxTransform childPose);
-	Joint* AddRevoluteJoint(std::string name, Link *link, physx::PxArticulationAxis::Enum axis,
-		physx::PxTransform parentPose, physx::PxTransform childPose);
-	Joint* AddFixedJoint(std::string name, Link *link, 
-		physx::PxTransform parentPose, physx::PxTransform childPose);
+    Joint* AddSpericalJoint(std::string name, Link *link,
+        physx::PxTransform parentPose, physx::PxTransform childPose);
+    Joint* AddRevoluteJoint(std::string name, Link *link, physx::PxArticulationAxis::Enum axis,
+        physx::PxTransform parentPose, physx::PxTransform childPose);
+    Joint* AddFixedJoint(std::string name, Link *link, 
+        physx::PxTransform parentPose, physx::PxTransform childPose);
 public:
     void InitControl();
     void Dispose() override;

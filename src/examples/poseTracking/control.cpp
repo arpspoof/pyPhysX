@@ -34,29 +34,29 @@ extern PxReal motions[98][36];
 int idMap[] = { 0, 8, 22, 31, 4, 17, 12, 26, 35, 21, 13, 27 };
 
 void InitControl() {
-	vector<float> kps, kds, fls;
-	int totalDof = articulation->GetNDof();
+    vector<float> kps, kds, fls;
+    int totalDof = articulation->GetNDof();
 
-	kps = vector<float>(totalDof);
-	kds = vector<float>(totalDof);
-	fls = vector<float>(totalDof);
+    kps = vector<float>(totalDof);
+    kds = vector<float>(totalDof);
+    fls = vector<float>(totalDof);
 
-	for (auto &kvp : articulation->jointMap) {
-		auto &joint = kvp.second;
-		const string &name = kvp.first;
+    for (auto &kvp : articulation->jointMap) {
+        auto &joint = kvp.second;
+        const string &name = kvp.first;
 
-		int nDof = joint->nDof;
-		int cacheIndex = joint->cacheIndex;
+        int nDof = joint->nDof;
+        int cacheIndex = joint->cacheIndex;
 
-		for (int i = 0; i < nDof; i++) {
-			kps[cacheIndex + i] = getConfigF("P_KP_" + name) * 10;
-			kds[cacheIndex + i] = getConfigF("P_KD_" + name) * 1;
-			fls[cacheIndex + i] = getConfigF("P_FL_" + name);
-		}
-	}
+        for (int i = 0; i < nDof; i++) {
+            kps[cacheIndex + i] = getConfigF("P_KP_" + name) * 10;
+            kds[cacheIndex + i] = getConfigF("P_KD_" + name) * 1;
+            fls[cacheIndex + i] = getConfigF("P_FL_" + name);
+        }
+    }
 
-	articulation->SetKPs(kps.data());
-	articulation->SetKDs(kds.data());
+    articulation->SetKPs(kps.data());
+    articulation->SetKDs(kds.data());
 }
 
 extern int xFrame;
@@ -64,16 +64,16 @@ extern int xFrame;
 float targetPosition[36];
 
 void control(PxReal dt) {
-	int index = 0;
-	auto dofs = articulation->GetJointDofsInIdOrder();
-	for (int i = 0; i < 12; i++) {
-		int dof = dofs[i];
-		int dataid = idMap[i];
-		int loopcount = dof == 3 ? 4 : 1;
-		for (int j = 0; j < loopcount; j++) {
-			targetPosition[index + j] = motions[xFrame][dataid + j];
-		}
-		index += loopcount;
-	}
-	articulation->AddSPDForces(targetPosition, dt);
+    int index = 0;
+    auto dofs = articulation->GetJointDofsInIdOrder();
+    for (int i = 0; i < 12; i++) {
+        int dof = dofs[i];
+        int dataid = idMap[i];
+        int loopcount = dof == 3 ? 4 : 1;
+        for (int j = 0; j < loopcount; j++) {
+            targetPosition[index + j] = motions[xFrame][dataid + j];
+        }
+        index += loopcount;
+    }
+    articulation->AddSPDForces(targetPosition, dt);
 }

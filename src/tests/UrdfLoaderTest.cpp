@@ -82,17 +82,17 @@ TEST_F(UrdfLoaderTestFixture, test_urdf_loader_topology)
 {
     auto nodeMap = tree.GetNodeMap();
 
-	vector<string> linkNames = {
-		"root", "chest", "neck", "right_shoulder", "left_shoulder", 
-		"right_elbow", "left_elbow", "right_wrist", "left_wrist",
-		"right_hip", "left_hip", "right_knee", "left_knee", "right_ankle", "left_ankle"
-	};
+    vector<string> linkNames = {
+        "root", "chest", "neck", "right_shoulder", "left_shoulder", 
+        "right_elbow", "left_elbow", "right_wrist", "left_wrist",
+        "right_hip", "left_hip", "right_knee", "left_knee", "right_ankle", "left_ankle"
+    };
 
-	vector<string> parentLinkNames = {
-		"base", "root", "chest", "chest", "chest", 
-		"right_shoulder", "left_shoulder", "right_elbow", "left_elbow",
-		"root", "root", "right_hip", "left_hip", "right_knee", "left_knee"
-	};
+    vector<string> parentLinkNames = {
+        "base", "root", "chest", "chest", "chest", 
+        "right_shoulder", "left_shoulder", "right_elbow", "left_elbow",
+        "root", "root", "right_hip", "left_hip", "right_knee", "left_knee"
+    };
 
     printf("checking description node parent node one by one ...\n");
 

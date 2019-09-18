@@ -16,7 +16,7 @@ LinkBody::~LinkBody()
 }
 
 LinkBody::LinkBody(float mass, PxGeometry *geometry, Material *material) 
-	:hasGeometry(true), mass(mass), geometry(geometry)
+    :hasGeometry(true), mass(mass), geometry(geometry)
 {
     this->material = material ? material->pxMaterial : nullptr;
 }
@@ -45,7 +45,7 @@ PxGeometry& NULLLinkBody::getGeometry() const
 
 float BoxLinkBody::getDensity() const 
 {
-	return mass / (lenX * lenY * lenZ);
+    return mass / (lenX * lenY * lenZ);
 }
 
 BoxLinkBody::BoxLinkBody(float mass, float lenX, float lenY, float lenZ, Material *material)
