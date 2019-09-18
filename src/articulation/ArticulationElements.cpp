@@ -3,7 +3,7 @@
 using namespace physx;
 
 Joint::Joint(Link *link, PxTransform parentPose, PxTransform childPose)
-    : nDof(-1), cacheIndex(-1) {
+    : nDof(-1), jointOrder(-1), cacheIndex(-1) {
     joint = static_cast<PxArticulationJointReducedCoordinate*>(link->link->getInboundJoint());
     joint->setParentPose(parentPose);
     joint->setChildPose(childPose);

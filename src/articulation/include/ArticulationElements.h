@@ -33,6 +33,11 @@ public:
      */
     int nDof;
     /**
+     * @brief The order (or internal id) of the joint in articulation
+     * 
+     */
+    int jointOrder;
+    /**
      * @brief Start index of this joint in any array containing all
      * 	joint information. This is suitable for any type of joint information
      * 	including generalized joint positions, velocities, forces, or 

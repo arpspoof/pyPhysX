@@ -174,26 +174,28 @@ TEST_F(ArticulationTestFixture, test_articulation_joint_params)
 {
     auto &jointMap = articulation->jointMap;
 
-    unordered_map<string, pair<int, int>> dofAndCacheIndexList = { 
-        { "root", make_pair(0, 0) },
-        { "chest", make_pair(3, 0) },
-        { "right_hip", make_pair(3, 3) },
-        { "left_hip", make_pair(3, 6) },
-        { "neck", make_pair(3, 12) },
-        { "right_shoulder", make_pair(3, 15) },
-        { "left_shoulder", make_pair(3, 9) },
-        { "right_knee", make_pair(1, 18) },
-        { "left_knee", make_pair(1, 19) },
-        { "right_elbow", make_pair(1, 21) },
-        { "left_elbow", make_pair(1, 20) },
-        { "right_ankle", make_pair(3, 22) },
-        { "left_ankle", make_pair(3, 25) }
+    unordered_map<string, tuple<int, int, int>> dof_order_CacheIndexList = { 
+        { "root", make_tuple(0, 0, 0) },
+        { "chest", make_tuple(3, 1, 0) },
+        { "right_hip", make_tuple(3, 2, 3) },
+        { "left_hip", make_tuple(3, 3, 6) },
+        { "left_shoulder", make_tuple(3, 4, 9) },
+        { "neck", make_tuple(3, 5, 12) },
+        { "right_shoulder", make_tuple(3, 6, 15) },
+        { "right_knee", make_tuple(1, 7, 18) },
+        { "left_knee", make_tuple(1, 8, 19) },
+        { "left_elbow", make_tuple(1, 9, 20) },
+        { "right_elbow", make_tuple(1, 10, 21) },
+        { "right_ankle", make_tuple(3, 11, 22) },
+        { "left_ankle", make_tuple(3, 12, 25) }
     };
 
-    for (auto &kvp : dofAndCacheIndexList) {
-        printf("%s joint should have dof %d and cache index %d ...\n", kvp.first.c_str(), kvp.second.first, kvp.second.second);
-        ASSERT_EQ(jointMap[kvp.first]->nDof, kvp.second.first);
-        ASSERT_EQ(jointMap[kvp.first]->cacheIndex, kvp.second.second);
+    for (auto &kvp : dof_order_CacheIndexList) {
+        printf("%s joint should have dof %d, order %d and cache index %d ...\n", 
+            kvp.first.c_str(), get<0>(kvp.second), get<1>(kvp.second), get<2>(kvp.second));
+        ASSERT_EQ(jointMap[kvp.first]->nDof, get<0>(kvp.second));
+        ASSERT_EQ(jointMap[kvp.first]->jointOrder, get<1>(kvp.second));
+        ASSERT_EQ(jointMap[kvp.first]->cacheIndex, get<2>(kvp.second));
     }
 }
 

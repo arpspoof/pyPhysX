@@ -93,12 +93,14 @@ void Articulation::AssignIndices() {
     sort(linkIndices.begin(), linkIndices.end(), [=](PIDL a, PIDL b) { return a.first < b.first; });
 
     int currentIndex = 0;
+    int jointOrder = 0;
     for (PIDL &p : linkIndices) {
         int nDof = (int)p.second->link->getInboundJointDof();
         if (!p.second->inboundJoint) {
             continue;
         }
         p.second->inboundJoint->nDof = nDof;
+        p.second->inboundJoint->jointOrder = jointOrder++;
         p.second->inboundJoint->cacheIndex = currentIndex;
         currentIndex += nDof;
     }
