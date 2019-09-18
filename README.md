@@ -1,3 +1,5 @@
 # pyPhysX
 
-### See 'wiki' for current documentation!
+#### Documentation Index
+
+[Build and set up](wiki/setup.md)

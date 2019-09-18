@@ -33,7 +33,7 @@ public:
     /**
      * @brief Load a new skeleton description.
      * @note Old skeleton description will be discarded.
-     * @remark See https://github.com/gruvi-animation/pyPhysX/wiki/Urdf-Loader-and-Limitations
+     * @remark Refer to [Urdf Loader Details](wiki/urdfLoader.md)
      *  for more information about Urdf Loader
      * 
      * @param path File path to URDF skeleton file
