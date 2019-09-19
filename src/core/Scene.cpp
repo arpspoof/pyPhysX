@@ -131,6 +131,9 @@ void Scene::Step()
     contacts.clear();
     pxScene->simulate(timeStep);
     pxScene->fetchResults(true);
+    for (auto &ar : articulations) {
+        ar->FetchKinematicData();
+    }
 }
 
 const vector<pair<int, int>>& Scene::GetAllContactPairs() const

@@ -168,6 +168,9 @@ TEST_F(ArticulationTestFixture, test_articulation_joint_connection)
         printf("%s joint should have parent link %s ...\n", linkNames[i].c_str(), parentLinkNames[i].c_str());
         ASSERT_EQ(jointMap[linkNames[i]]->parentLink, linkMap[parentLinkNames[i]]);
     }
+
+    printf("root joint should be base ...\n");
+    ASSERT_EQ(linkMap["base"], articulation->GetRootLink());
 }
 
 TEST_F(ArticulationTestFixture, test_articulation_joint_params)

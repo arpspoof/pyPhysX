@@ -8,7 +8,7 @@ material = scene.CreateMaterial(1.0, 1.0, 0.0)
 plane = scene.CreatePlane(material, vec3(0, 1, 0), 0)
 plane.SetupCollisionFiltering(1, 2 | 4)
 
-articulation = scene.CreateArticulation("../resources/humanoid.urdf", material, vec3(0, 3.55, 0))
+articulation = scene.CreateArticulation("../resources/humanoid.urdf", material, vec3(0, 3.55 + 0.2, 0))
 
 articulation.GetLinkByName("right_ankle").SetupCollisionFiltering(2, 1 | 4)
 articulation.GetLinkByName("left_ankle").SetupCollisionFiltering(4, 1 | 2)
@@ -19,7 +19,13 @@ kds = [100]*3 + [50]*6 + [40]*3 + [10]*3 + [40]*3 + [50]*2 + [30]*2 + [40]*6
 articulation.SetKPs(kps)
 articulation.SetKDs(kds)
 
-'''
+articulation.SetKPs([1000000]*28)
+articulation.SetKDs([30000]*28)
+
+for x in articulation.GetJointPositionsQuaternion():
+    print(x)
+
+
 targetPositions = [
     0.9988130000, 0.0094850000, -0.0475600000, -0.0044750000, # 0-3
     0.9649400000, 0.0243690000, -0.0575550000, 0.2549220000, #8-11
@@ -34,32 +40,16 @@ targetPositions = [
     0.9993660000, 0.0099520000, 0.0326540000, 0.0100980000, #13-16
     0.9828790000, 0.1013910000, -0.0551600000, 0.1436190000, #27-30
 ]
+
+targetPositions = [0.998882, 0.008140, -0.046491, -0.002662, 0.969510, 0.023147, -0.057908, 0.236983, 0.994017, -0.018894, 0.088918, -0.060546, 0.965883, 0.189091, -0.142044, 0.105536, 0.999747, -0.000444, 0.001263, 0.022440, 0.985677, -0.064570, 0.093506, -0.124615, -0.263540, -0.366493, 0.580173, 0.171861, 0.999382, 0.010043, 0.032873, 0.007294, 0.981241, 0.102200, -0.061424, 0.151488]
+
+
 '''
 q = [1, 0, 0, 0]
 targetPositions = q*6 + [0]*4 + q*2
-
-'''
-idmap = [0, 8, 22, 31, 4, 17, 12, 26, 35, 21, 13, 27]
-dofs = [4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 4, 4]
-
-targets = [[]] * 39
-
-import io
-with open("../resources/testMotion.txt") as fp:
-    for cnt, line in enumerate(fp):
-        line = line.strip()
-        segs = line.split(' ')
-        for i in range(12):
-            dof = dofs[i]
-            id = idmap[i]
-            for j in range(dof):
-                targets[cnt].append(float(segs[id + 7 + j]))
-
-print(targets)
-
-frm = 0
 '''
 
+'''
 import time
 
 start_t = time.time()
@@ -72,14 +62,19 @@ for _ in range(10000):
 end_t = time.time()
 
 print("total time is ", int((end_t - start_t) * 1000000.0))
-
 '''
+
+
 class GlutHandler(GlutRendererCallback):
     def __init__(self):
         GlutRendererCallback.__init__(self)
     def keyboardHandler(self, key):
         pass
     def beforeSimulationHandler(self):
+        print("positions")
+        print(articulation.GetJointPositionsQuaternion())
+        print("velocities")
+        print(articulation.GetJointVelocitiesPack4())
         articulation.AddSPDForces(targetPositions, scene.timeStep)
 
 handler = GlutHandler()
@@ -87,6 +82,6 @@ handler = GlutHandler()
 renderer = GlutRenderer.GetInstance()
 renderer.AttachScene(scene, handler)
 renderer.StartRenderLoop()
-'''
+
 
 foundation.Dispose()

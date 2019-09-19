@@ -7,8 +7,8 @@
 %include "std_string.i"
 
 namespace std {
-   %template() vector<int>;
-   %template() vector<float>;
+   %template(vectori) vector<int>;
+   %template(vectorf) vector<float>;
 };
 
 class Articulation :public IDisposable
@@ -21,11 +21,15 @@ public:
     const std::vector<int>& GetJointDofsInIdOrder() const;
     const Link* GetLinkByName(std::string name) const;
     const Joint* GetJointByName(std::string name) const;
+    const Link* GetRootLink() const;
+public:
+    std::vector<float> GetJointPositionsQuaternion() const;
+    std::vector<float> GetJointVelocitiesPack4() const;
 public:
     std::vector<float> kps, kds, forceLimits;
     void SetKPs(const std::vector<float>& kps);
     void SetKDs(const std::vector<float>& kds);
     void SetForceLimits(const std::vector<float>& forceLimits);
-    void AddSPDForces(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
+    void AddSPDForces(const std::vector<float>& targetPositions, float timeStep);
 // API END
 };

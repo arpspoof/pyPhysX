@@ -75,5 +75,12 @@ void control(PxReal dt) {
         }
         index += loopcount;
     }
+    auto pos = articulation->GetJointPositionsQuaternion();
+    printf("position:\n");
+    for (auto x : pos) {
+        printf("%f, ", x);
+    }
+    printf("\n");
+    articulation->linkMap["neck"]->link->addForce(PxVec3(-100, 0, 0));
     articulation->AddSPDForces(targetPosition, dt);
 }

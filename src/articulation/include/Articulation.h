@@ -14,7 +14,7 @@
 class Articulation :public IDisposable
 {
 // API BEGIN
-public:
+public: // components
     /**
      * @brief Get the number of total degrees of freedom in this articulation
      * 
@@ -54,7 +54,43 @@ public:
      * @return Pointer to Joint object.
      */
     const Joint* GetJointByName(std::string name) const;
-public:
+    /**
+     * @brief Get the root Link of the Articulation
+     * 
+     * @return Pointer to root Link object
+     */
+    const Link* GetRootLink() const;
+public: // kinematic
+    /**
+     * @brief Get root position, orientation, and all joints' orientation
+     *  in quaternion representation. Root global translational position
+     *  is in result[0-2], root global rotational position (quaternion)
+     *  is in result[3-6]. All other joints' position info are placed into
+     *  the result by joint order (order of a joint can be obtained by
+     *  Joint::jointOrder). A one-dof joint takes up one entry in result
+     *  array representing the joint angle (radians). A three-dof joint takes
+     *  up four entries in result array representing the joint local frame
+     *  rotaion in quaternion representaion in WXYZ order.
+     * 
+     * @return All joint position information packed into one single array.
+     */
+    std::vector<float> GetJointPositionsQuaternion() const;
+    /**
+     * @brief Get root linear velocity, root angular velocity and all joints'
+     *  angular velocities. Root linear velocity is in result[0-2], root
+     *  angular velocity in global frame is in result[3-5]. Result[6] is
+     *  always zero. All other joints' velocity info are placed into the
+     *  result by joint order (order of a joint can be obtained by
+     *  Joint::jointOrder). A one-dof joint takes up one entry in result
+     *  array representing the joint velocity. A three-dof joint takes
+     *  up four entries in result array. First three of these four entries
+     *  represent the joint angular velocity (cartesian) in joint frame.
+     *  The forth entry is always zero.
+     * 
+     * @return All joint velocity information packed into one single array.
+     */
+    std::vector<float> GetJointVelocitiesPack4() const;
+public: // control
     /**
      * @brief Joint proportional gains.
      * @note All joint gains are packed into one single array here.
@@ -123,12 +159,16 @@ public:
 public:
     std::unordered_map<std::string, Link*> linkMap;
     std::unordered_map<std::string, Joint*> jointMap;
+    int nSphericalJoint, nRevoluteJoint;
 public:
     void SetKPs(const float kps[]);
     void SetKDs(const float kds[]);
     void SetForceLimits(const float forceLimits[]);
     void AddSPDForces(const float targetPositions[], float timeStep); // WXYZ or angle
+public:
+    void FetchKinematicData() const;
 private:
+    Link* rootLink;
     std::vector<Joint*> jointList;
     std::vector<int> jointDofs;
     std::vector<std::string> jointNames;

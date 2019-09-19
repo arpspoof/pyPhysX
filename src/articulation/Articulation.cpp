@@ -92,18 +92,29 @@ void Articulation::AssignIndices() {
     }
     sort(linkIndices.begin(), linkIndices.end(), [=](PIDL a, PIDL b) { return a.first < b.first; });
 
+    nSphericalJoint = 0;
+    nRevoluteJoint = 0;
+
+    rootLink = nullptr;
+
     int currentIndex = 0;
     int jointOrder = 0;
+
     for (PIDL &p : linkIndices) {
         int nDof = (int)p.second->link->getInboundJointDof();
         if (!p.second->inboundJoint) {
+            rootLink = p.second;
             continue;
         }
         p.second->inboundJoint->nDof = nDof;
         p.second->inboundJoint->jointOrder = jointOrder++;
         p.second->inboundJoint->cacheIndex = currentIndex;
         currentIndex += nDof;
+        if (nDof == 3) nSphericalJoint++;
+        if (nDof == 1) nRevoluteJoint++;
     }
+
+    assert(rootLink != nullptr);
 }
 
 int Articulation::GetNDof() const
@@ -157,11 +168,97 @@ static PxQuat ConvertTwistSwingToQuaternion(float t, float s1, float s2)
     return swingQuat * PxQuat(t, PxVec3(1, 0, 0));
 }
 
+vector<float> Articulation::GetJointPositionsQuaternion() const
+{
+    vector<float> result(7 + 4*nSphericalJoint + nRevoluteJoint);
+    
+    // transform from { x:up, y:back, z:right } to { x:front, y:up, z:right }
+    PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
+
+    PxTransform rootPose = rootLink->link->getGlobalPose();
+    PxQuat rootRotation = rootPose.q * frameTransform;
+    
+    result[0] = rootPose.p.x;
+    result[1] = rootPose.p.y;
+    result[2] = rootPose.p.z;
+
+    result[3] = rootRotation.w;
+    result[4] = rootRotation.x;
+    result[5] = rootRotation.y;
+    result[6] = rootRotation.z;
+
+    int cacheIndex = 0;
+    int resultIndex = 7;
+
+    for (int jointDof : jointDofs) {
+        if (jointDof == 1) {
+            result[resultIndex++] = mainCache->jointPosition[cacheIndex++];
+        }
+        else if (jointDof == 3) {
+            PxQuat rotation = frameTransform.getConjugate() * ConvertTwistSwingToQuaternion(
+                mainCache->jointPosition[cacheIndex],
+                mainCache->jointPosition[cacheIndex + 1],
+                mainCache->jointPosition[cacheIndex + 2]
+            ) * frameTransform;
+            
+            result[resultIndex] = rotation.w;
+            result[resultIndex + 1] = rotation.x;
+            result[resultIndex + 2] = rotation.y;
+            result[resultIndex + 3] = rotation.z;
+
+            cacheIndex += 3;
+            resultIndex += 4;
+        }
+    }
+
+    return result;
+}
+
+vector<float> Articulation::GetJointVelocitiesPack4() const
+{
+    vector<float> result(7 + 4*nSphericalJoint + nRevoluteJoint);
+    
+    // transform from { x:front, y:up, z:right } to { x:up, y:back, z:right }
+    PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
+
+    PxVec3 rootLinearVelocity = rootLink->link->getLinearVelocity();
+    result[0] = rootLinearVelocity.x;
+    result[1] = rootLinearVelocity.y;
+    result[2] = rootLinearVelocity.z;
+
+    PxVec3 rootAngularVelocity = rootLink->link->getAngularVelocity();
+    result[3] = rootAngularVelocity.x;
+    result[4] = rootAngularVelocity.y;
+    result[5] = rootAngularVelocity.z;
+    result[6] = 0; // pack4
+
+    int cacheIndex = 0;
+    int resultIndex = 7;
+
+    for (int jointDof : jointDofs) {
+        if (jointDof == 1) {
+            result[resultIndex++] = mainCache->jointVelocity[cacheIndex++];
+        }
+        else if (jointDof == 3) {
+            PxVec3 angularV(mainCache->jointVelocity[cacheIndex],
+                mainCache->jointVelocity[cacheIndex + 1], mainCache->jointVelocity[cacheIndex + 2]);
+            angularV = frameTransform.rotate(angularV);
+            result[resultIndex] = angularV.x;
+            result[resultIndex + 1] = angularV.y;
+            result[resultIndex + 2] = angularV.z;
+            result[resultIndex + 3] = 0; // pack4
+
+            cacheIndex += 3;
+            resultIndex += 4;
+        }
+    }
+
+    return result;
+}
+
 void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
 {
     int nDof = GetNDof();
-
-    pxArticulation->copyInternalStateToCache(*mainCache, PxArticulationCache::eALL);
 
     pxArticulation->commonInit();
     pxArticulation->computeGeneralizedMassMatrix(*massMatrixCache);
@@ -214,8 +311,8 @@ void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
                 kps[cacheIndex + 2]
             );
 
-            PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
-            targetPosition = frameTransform * targetPosition * frameTransform.getConjugate();
+            PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
+            targetPosition = frameTransform.getConjugate() * targetPosition * frameTransform;
 
             if (targetPosition.w < 0) {
                 targetPosition = -targetPosition;
@@ -286,6 +383,11 @@ void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
 }
 
+void Articulation::FetchKinematicData() const
+{
+    pxArticulation->copyInternalStateToCache(*mainCache, PxArticulationCache::eALL);
+}
+
 const Link* Articulation::GetLinkByName(std::string name) const
 {
     const auto& it = linkMap.find(name);
@@ -306,6 +408,11 @@ const Joint* Articulation::GetJointByName(std::string name) const
         return nullptr;
     }
     return it->second;
+}
+
+const Link* Articulation::GetRootLink() const 
+{
+    return rootLink;
 }
 
 void Articulation::SetKPs(const std::vector<float>& kps)
