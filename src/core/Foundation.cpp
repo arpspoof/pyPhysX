@@ -8,9 +8,12 @@ Foundation::Foundation()
     pxPhysics = PxCreatePhysics(PX_PHYSICS_VERSION, *pxFoundation, PxTolerancesScale(), true, nullptr);
     
     PxInitExtensions(*pxPhysics, nullptr);
-
+#if 0
     PxCudaContextManagerDesc cudaContextManagerDesc;
     pxCudaContextManager = PxCreateCudaContextManager(*pxFoundation, cudaContextManagerDesc, PxGetProfilerCallback());
+#else
+    pxCudaContextManager = nullptr;
+#endif
 }
 
 void Foundation::Dispose()

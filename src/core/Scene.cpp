@@ -26,10 +26,14 @@ Scene::Scene(Foundation* foundation, SceneDescription description, float timeSte
     PxSceneDesc pxSceneDesc(foundation->GetPxPhysics()->getTolerancesScale());
 
     pxSceneDesc.gravity = PxVec3(0.f, description.gravity, 0.f);
-    pxSceneDesc.cudaContextManager = foundation->GetPxCudaContextManager();
     pxSceneDesc.solverType = PxSolverType::eTGS;
     pxSceneDesc.filterShader = CollisionShader;
     pxSceneDesc.simulationEventCallback = this;
+
+    auto cudaContextManager = foundation->GetPxCudaContextManager();
+    if (cudaContextManager) {
+        pxSceneDesc.cudaContextManager = cudaContextManager;
+    }
 
     pxCpuDispatcher = PxDefaultCpuDispatcherCreate(description.nWorkerThreads);
     pxSceneDesc.cpuDispatcher = pxCpuDispatcher;

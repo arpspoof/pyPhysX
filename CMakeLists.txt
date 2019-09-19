@@ -79,7 +79,7 @@ set(SYS_LIBS
     glut
     X11
     rt
-    cuda
+#    cuda
 )
 
 function(createLibrary varName varSrcPath)
