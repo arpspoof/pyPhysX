@@ -141,6 +141,8 @@ public: // control
      * @param kps A single array which packs all joint proportional gains.
      * @note Joint::cacheIndex will tell the start index of entry
      *  corresponding to this joint.
+     * @remark Number of parameters needed for each joint is the same
+     *  as the degree of freedom of that joint.
      */
     void SetKPs(const std::vector<float>& kps);
     /**
@@ -149,6 +151,8 @@ public: // control
      * @param kds A single array which packs all joint derivative gains.
      * @note Joint::cacheIndex will tell the start index of entry
      *  corresponding to this joint.
+     * @remark Number of parameters needed for each joint is the same
+     *  as the degree of freedom of that joint.
      */
     void SetKDs(const std::vector<float>& kds);
     /**

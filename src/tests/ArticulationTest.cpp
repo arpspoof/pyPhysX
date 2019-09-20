@@ -262,16 +262,4 @@ TEST_F(ArticulationTestFixture, test_kinematic_RW)
         printf("v%d.......\n", i);
         EXPECT_NEAR(velocities[i], newVelocities[i], 1e-3);
     }
-
-    printf("old ...\n");
-    for (int i = 0; i < (int)velocities.size(); i++) {
-        printf("%f, ", velocities[i]);
-    }
-    printf("\n");
-
-    printf("new ...\n");
-    for (int i = 0; i < (int)newVelocities.size(); i++) {
-        printf("%f, ", newVelocities[i]);
-    }
-    printf("\n");
 }
