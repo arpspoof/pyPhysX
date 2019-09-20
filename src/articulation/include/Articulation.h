@@ -100,7 +100,7 @@ public: // kinematic
      */
     std::vector<float> GetJointVelocitiesPack4() const;
     /**
-     * @brief Get root linear velocity, root angular velocity and all joints'
+     * @brief Set root linear velocity, root angular velocity and all joints'
      *  angular velocities from a packed array. See
      *  Articulation::GetJointVelocitiesPack4 for details about the
      *  structure of this array.
