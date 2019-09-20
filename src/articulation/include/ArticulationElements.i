@@ -21,7 +21,7 @@ public:
 // API END
 };
 
-class Link :public RigidActor {
+class Link :public RigidBody {
 public:
 // API BEGIN
     Link* parentLink;

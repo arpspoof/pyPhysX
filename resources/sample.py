@@ -19,8 +19,8 @@ kds = [100]*3 + [50]*6 + [40]*3 + [10]*3 + [40]*3 + [50]*2 + [30]*2 + [40]*6
 articulation.SetKPs(kps)
 articulation.SetKDs(kds)
 
-articulation.SetKPs([1000000]*28)
-articulation.SetKDs([30000]*28)
+articulation.SetKPs([2000]*28)
+articulation.SetKDs([200]*28)
 
 for x in articulation.GetJointPositionsQuaternion():
     print(x)
@@ -40,8 +40,6 @@ targetPositions = [
     0.9993660000, 0.0099520000, 0.0326540000, 0.0100980000, #13-16
     0.9828790000, 0.1013910000, -0.0551600000, 0.1436190000, #27-30
 ]
-
-targetPositions = [0.998882, 0.008140, -0.046491, -0.002662, 0.969510, 0.023147, -0.057908, 0.236983, 0.994017, -0.018894, 0.088918, -0.060546, 0.965883, 0.189091, -0.142044, 0.105536, 0.999747, -0.000444, 0.001263, 0.022440, 0.985677, -0.064570, 0.093506, -0.124615, -0.263540, -0.366493, 0.580173, 0.171861, 0.999382, 0.010043, 0.032873, 0.007294, 0.981241, 0.102200, -0.061424, 0.151488]
 
 
 '''
@@ -71,11 +69,8 @@ class GlutHandler(GlutRendererCallback):
     def keyboardHandler(self, key):
         pass
     def beforeSimulationHandler(self):
-        print("positions")
-        print(articulation.GetJointPositionsQuaternion())
-        print("velocities")
-        print(articulation.GetJointVelocitiesPack4())
         articulation.AddSPDForces(targetPositions, scene.timeStep)
+        articulation.GetLinkByName("neck").ApplyExternalForce(vec3(-100, 0, 0))
 
 handler = GlutHandler()
 

@@ -16,8 +16,16 @@ public:
 // API END
 };
 
-class RigidActorStatic :public RigidActor
+class RigidStatic :public RigidActor
 {
 // API BEGIN
+// API END
+};
+
+class RigidBody :public RigidActor
+{
+// API BEGIN
+public:
+    void ApplyExternalForce(vec3 force) const;
 // API END
 };

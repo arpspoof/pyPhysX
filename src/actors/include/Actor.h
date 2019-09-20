@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PxPhysicsAPI.h"
+#include "MathInterface.h"
 
 /**
  * @brief An abstract actor object. Everything is an actor. 
@@ -52,8 +53,25 @@ public:
  *  is a rigid actor which is also fixed in the scene.
  * 
  */
-class RigidActorStatic :public RigidActor
+class RigidStatic :public RigidActor
 {
 // API BEGIN
+// API END
+};
+
+/**
+ * @brief An abstract class for rigid bodies. Rigid bodies can be applied forces
+ * 
+ */
+class RigidBody :public RigidActor
+{
+// API BEGIN
+public:
+    /**
+     * @brief Apply external force to the rigid body
+     * 
+     * @param force Cartesian force in global frame
+     */
+    void ApplyExternalForce(vec3 force) const;
 // API END
 };

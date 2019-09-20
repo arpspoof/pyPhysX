@@ -8,7 +8,7 @@ class Material
 // API END
 };
 
-class Plane :public RigidActorStatic
+class Plane :public RigidStatic
 {
 // API BEGIN
 // API END

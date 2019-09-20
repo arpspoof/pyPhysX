@@ -63,7 +63,7 @@ protected:
  * @brief Articulation link
  * 
  */
-class Link :public RigidActor {
+class Link :public RigidBody {
 public:
 // API BEGIN
     /**

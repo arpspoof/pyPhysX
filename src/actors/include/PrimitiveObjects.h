@@ -22,7 +22,7 @@ public:
  *  Scene::CreatePlane instead.
  * 
  */
-class Plane :public RigidActorStatic
+class Plane :public RigidStatic
 {
 // API BEGIN
 // API END

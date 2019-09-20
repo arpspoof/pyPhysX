@@ -18,3 +18,9 @@ void RigidActor::SetupCollisionFiltering(int collisionGroup, int collisionMask)
     }
     free(shapes);
 }
+
+void RigidBody::ApplyExternalForce(vec3 force) const
+{
+    PxRigidBody* rigidBody = (PxRigidBody*)pxActor;
+    rigidBody->addForce(force);
+}
