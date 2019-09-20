@@ -76,6 +76,15 @@ public: // kinematic
      */
     std::vector<float> GetJointPositionsQuaternion() const;
     /**
+     * @brief Set root position, orientation, and all joints' orientation
+     *  in quaternion representation from a packed array. See
+     *  Articulation::GetJointPositionsQuaternion for details about the
+     *  structure of this array.
+     * 
+     * @param positions 
+     */
+    void SetJointPositionsQuaternion(const std::vector<float>& positions) const;
+    /**
      * @brief Get root linear velocity, root angular velocity and all joints'
      *  angular velocities. Root linear velocity is in result[0-2], root
      *  angular velocity in global frame is in result[3-5]. Result[6] is
@@ -90,6 +99,15 @@ public: // kinematic
      * @return All joint velocity information packed into one single array.
      */
     std::vector<float> GetJointVelocitiesPack4() const;
+    /**
+     * @brief Get root linear velocity, root angular velocity and all joints'
+     *  angular velocities from a packed array. See
+     *  Articulation::GetJointVelocitiesPack4 for details about the
+     *  structure of this array.
+     * 
+     * @param velocities 
+     */
+    void SetJointVelocitiesPack4(const std::vector<float>& velocities) const;
 public: // control
     /**
      * @brief Joint proportional gains.

@@ -168,6 +168,12 @@ static PxQuat ConvertTwistSwingToQuaternion(float t, float s1, float s2)
     return swingQuat * PxQuat(t, PxVec3(1, 0, 0));
 }
 
+static void SeparateTwistSwing(const PxQuat& q, PxQuat& swing, PxQuat& twist)
+{
+	twist = q.x != 0.0f ? PxQuat(q.x, 0, 0, q.w).getNormalized() : PxQuat(PxIdentity);
+	swing = q * twist.getConjugate();
+}
+
 vector<float> Articulation::GetJointPositionsQuaternion() const
 {
     vector<float> result(7 + 4*nSphericalJoint + nRevoluteJoint);
@@ -214,6 +220,50 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
     return result;
 }
 
+void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) const
+{
+    assert((int)positions.size() == 7 + 4*nSphericalJoint + nRevoluteJoint);
+
+    PxVec3 rootGlobalTranslation(positions[0], positions[1], positions[2]);
+    PxQuat rootGlobalRotation(positions[4], positions[5], positions[6], positions[3]);
+    
+    // transform from { x:front, y:up, z:right } to { x:up, y:back, z:right }
+    PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
+    PxQuat rootPose = rootGlobalRotation * frameTransform;
+
+    rootLink->link->setGlobalPose(PxTransform(rootGlobalTranslation, rootPose));
+
+    int cacheIndex = 0;
+    int inputIndex = 7;
+
+    for (int jointDof : jointDofs) {
+        if (jointDof == 1) {
+            mainCache->jointPosition[cacheIndex++] = positions[inputIndex++];
+        }
+        else if (jointDof == 3) {
+            PxQuat rotation = frameTransform.getConjugate() * PxQuat(
+                positions[inputIndex + 1], positions[inputIndex + 2],
+                positions[inputIndex + 3], positions[inputIndex]
+            ) * frameTransform;
+            
+            PxQuat twist, swing;
+            SeparateTwistSwing(rotation, swing, twist);
+            float theta0 = PxAtan2(twist.x, (1.f + twist.w)) * 4.f;
+            float theta1 = PxAtan2(swing.y, (1.f + swing.w)) * 4.f;
+            float theta2 = PxAtan2(swing.z, (1.f + swing.w)) * 4.f;
+            
+            mainCache->jointPosition[cacheIndex] = theta0;
+            mainCache->jointPosition[cacheIndex + 1] = theta1;
+            mainCache->jointPosition[cacheIndex + 2] = theta2;
+
+            cacheIndex += 3;
+            inputIndex += 4;
+        }
+    }
+
+    pxArticulation->applyCache(*mainCache, PxArticulationCache::ePOSITION);
+}
+
 vector<float> Articulation::GetJointVelocitiesPack4() const
 {
     vector<float> result(7 + 4*nSphericalJoint + nRevoluteJoint);
@@ -254,6 +304,42 @@ vector<float> Articulation::GetJointVelocitiesPack4() const
     }
 
     return result;
+}
+
+void Articulation::SetJointVelocitiesPack4(const std::vector<float>& velocities) const
+{
+    assert((int)velocities.size() == 7 + 4*nSphericalJoint + nRevoluteJoint);
+
+    // transform from { x:up, y:back, z:right } to { x:front, y:up, z:right }
+    PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
+
+    PxVec3 rootLinearVelocity(velocities[0], velocities[1], velocities[2]);
+    rootLink->link->setLinearVelocity(rootLinearVelocity);
+
+    PxVec3 rootAngularVelocity(velocities[3], velocities[4], velocities[5]);
+    rootLink->link->setAngularVelocity(rootAngularVelocity);
+
+    int cacheIndex = 0;
+    int inputIndex = 7;
+
+    for (int jointDof : jointDofs) {
+        if (jointDof == 1) {
+            mainCache->jointVelocity[cacheIndex++] = velocities[inputIndex++];
+        }
+        else if (jointDof == 3) {
+            PxVec3 angularV(velocities[inputIndex], velocities[inputIndex + 1], velocities[inputIndex + 2]);
+            angularV = frameTransform.rotate(angularV);
+
+            mainCache->jointVelocity[cacheIndex] = angularV.x;
+            mainCache->jointVelocity[cacheIndex + 1] = angularV.y;
+            mainCache->jointVelocity[cacheIndex + 2] = angularV.z;
+
+            cacheIndex += 3;
+            inputIndex += 4;
+        }
+    }
+
+    pxArticulation->applyCache(*mainCache, PxArticulationCache::eVELOCITY);
 }
 
 void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
