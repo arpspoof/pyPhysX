@@ -148,7 +148,6 @@ private:
     std::unordered_set<Articulation*> articulations;
     void BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode,
         Link* parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const;
-    Articulation* CreateArticulation(const ArticulationTree* tree, vec3 basePosition);
 private:
     const Foundation* foundation;
     physx::PxScene* pxScene;

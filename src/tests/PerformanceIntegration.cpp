@@ -5,6 +5,7 @@
 #include "Actor.h"
 
 #include <chrono>
+#include <vector>
 #include <gtest/gtest.h>
 
 using namespace std;
@@ -12,20 +13,7 @@ using namespace physx;
 using namespace testing;
 using namespace chrono;
 
-float targetPositions[36] = {
-    0.9988130000f, 0.0094850000f, -0.0475600000f, -0.0044750000f, // 0-3
-    0.9649400000f, 0.0243690000f, -0.0575550000f, 0.2549220000f, //8-11
-    0.9927550000f, -0.0209010000f, 0.0888240000f, -0.0781780000f, //22-25
-    0.9659420000f, 0.1884590000f, -0.1422460000f, 0.1058540000f, //31-34
-    1.0000000000f,0.0000000000f, 0.0000000000f, 0.0000000000f, //4-7
-    0.9854980000f, -0.0644070000f, 0.0932430000f, -0.1262970000f, //17-20
-    -0.2491160000f, //12
-    -0.3915320000f, //26
-    0.5813480000, //35
-    0.1705710000f, //21
-    0.9993660000f, 0.0099520000f, 0.0326540000f, 0.0100980000f, //13-16
-    0.9828790000f, 0.1013910000, -0.0551600000f, 0.1436190000f, //27-30
-};
+vector<float> targetPositions = { 0.998819, 0.010960, -0.047140, -0.004159, 0.999996, 0.002537, 0.000256, 0.001070, 0.949948, 0.020403, -0.059407, 0.306028, -0.195258, 0.999520, 0.016056, 0.020116, 0.017256, 0.985617, -0.063945, 0.093094, -0.125710, 0.171284, 0.986347, -0.017107, 0.091650, -0.135749, -0.453371, 0.975329, 0.126891, -0.033021, 0.177601, 0.965989, 0.188903, -0.141940, 0.105041, 0.579958 };
 
 #include "GlutRenderer.h"
 
@@ -58,8 +46,8 @@ public:
 
         vector<float> kps(res.articulation->GetNDof(), 10000.f);
         vector<float> kds(res.articulation->GetNDof(), 400.f);
-        res.articulation->SetKPs(kps.data());
-        res.articulation->SetKDs(kds.data());
+        res.articulation->SetKPs(kps);
+        res.articulation->SetKDs(kds);
 
         glutHandler.scene = res.scene;
         glutHandler.articulation = res.articulation;

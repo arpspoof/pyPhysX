@@ -100,3 +100,22 @@ TEST_F(UrdfLoaderTestFixture, test_urdf_loader_topology)
         ASSERT_EQ(nodeMap[linkNames[i]]->parent, nodeMap[parentLinkNames[i]]);
     }
 }
+
+TEST_F(UrdfLoaderTestFixture, test_urdf_loader_joint_id)
+{
+    auto nodeMap = tree.GetNodeMap();
+
+    vector<string> jointNames = {
+        "root", "chest", "neck",
+        "right_hip", "right_knee", "right_ankle", 
+        "right_shoulder", "right_elbow", "right_wrist", 
+        "left_hip", "left_knee", "left_ankle", 
+        "left_shoulder", "left_elbow", "left_wrist"
+    };
+
+    printf("checking joint ids one by one ...\n");
+
+    for (int i = 0; i < (int)jointNames.size(); i++) {
+        ASSERT_EQ(loader.jointIdMap[jointNames[i]], i);
+    }
+}

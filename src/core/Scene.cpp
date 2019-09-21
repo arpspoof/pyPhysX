@@ -91,7 +91,19 @@ Articulation* Scene::CreateArticulation(UrdfLoader* urdfLoader, Material* materi
 {
     ArticulationTree tree;
     urdfLoader->BuildArticulationTree(tree, material);
-    return CreateArticulation(&tree, basePosition);
+
+    Articulation* articulation = new Articulation();
+    articulation->pxArticulation = foundation->GetPxPhysics()->createArticulationReducedCoordinate();
+
+    assert(tree.GetRootNode() != nullptr);
+    BuildArticulation(*articulation, tree.GetRootNode(), nullptr, basePosition, basePosition);
+
+    pxScene->addArticulation(*articulation->pxArticulation);
+
+    articulation->InitControl(urdfLoader->jointIdMap);
+    articulations.insert(articulation);
+
+    return articulation;
 }
 
 Articulation* Scene::CreateArticulation(string urdfFilePath, Material* material, vec3 basePosition)
@@ -100,22 +112,6 @@ Articulation* Scene::CreateArticulation(string urdfFilePath, Material* material,
     urdfLoader.LoadDescriptionFromFile(urdfFilePath);
     Articulation* articulation = CreateArticulation(&urdfLoader, material, basePosition);
     urdfLoader.Dispose();
-    return articulation;
-}
-
-Articulation* Scene::CreateArticulation(const ArticulationTree* tree, vec3 basePosition)
-{
-    Articulation* articulation = new Articulation();
-    articulation->pxArticulation = foundation->GetPxPhysics()->createArticulationReducedCoordinate();
-
-    assert(tree->GetRootNode() != nullptr);
-    BuildArticulation(*articulation, tree->GetRootNode(), nullptr, basePosition, basePosition);
-
-    pxScene->addArticulation(*articulation->pxArticulation);
-
-    articulation->InitControl();
-    articulations.insert(articulation);
-
     return articulation;
 }
 

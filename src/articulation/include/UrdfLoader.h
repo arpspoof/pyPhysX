@@ -41,6 +41,7 @@ public:
     void LoadDescriptionFromFile(std::string path);
 // API END
 public:
+    std::unordered_map<std::string, int> jointIdMap;
     void BuildArticulationTree(ArticulationTree& tree, Material* material);
 private:
     char* buffer;

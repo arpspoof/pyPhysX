@@ -13,34 +13,10 @@ articulation = scene.CreateArticulation("../resources/humanoid.urdf", material, 
 articulation.GetLinkByName("right_ankle").SetupCollisionFiltering(2, 1 | 4)
 articulation.GetLinkByName("left_ankle").SetupCollisionFiltering(4, 1 | 2)
 
-kps = [500]*3 + [250]*6 + [200]*3 + [50]*3 + [200]*3 + [250]*2 + [150]*2 + [200]*6
-kds = [100]*3 + [50]*6 + [40]*3 + [10]*3 + [40]*3 + [50]*2 + [30]*2 + [40]*6
-
-articulation.SetKPs(kps)
-articulation.SetKDs(kds)
-
-articulation.SetKPs([2000]*28)
+articulation.SetKPs([8000]*28)
 articulation.SetKDs([200]*28)
 
-for x in articulation.GetJointPositionsQuaternion():
-    print(x)
-
-
-targetPositions = [
-    0.9988130000, 0.0094850000, -0.0475600000, -0.0044750000, # 0-3
-    0.9649400000, 0.0243690000, -0.0575550000, 0.2549220000, #8-11
-    0.9927550000, -0.0209010000, 0.0888240000, -0.0781780000, #22-25
-    0.9659420000, 0.1884590000, -0.1422460000, 0.1058540000, #31-34
-    1.0000000000,0.0000000000, 0.0000000000, 0.0000000000, #4-7
-    0.9854980000, -0.0644070000, 0.0932430000, -0.1262970000, #17-20
-    -0.2491160000, #12
-    -0.3915320000, #26
-    0.5813480000, #35
-    0.1705710000, #21
-    0.9993660000, 0.0099520000, 0.0326540000, 0.0100980000, #13-16
-    0.9828790000, 0.1013910000, -0.0551600000, 0.1436190000, #27-30
-]
-
+targetPositions = [ 0.998819, 0.010960, -0.047140, -0.004159, 0.999996, 0.002537, 0.000256, 0.001070, 0.949948, 0.020403, -0.059407, 0.306028, -0.195258, 0.999520, 0.016056, 0.020116, 0.017256, 0.985617, -0.063945, 0.093094, -0.125710, 0.171284, 0.986347, -0.017107, 0.091650, -0.135749, -0.453371, 0.975329, 0.126891, -0.033021, 0.177601, 0.965989, 0.188903, -0.141940, 0.105041, 0.579958 ]
 
 '''
 q = [1, 0, 0, 0]
@@ -70,7 +46,6 @@ class GlutHandler(GlutRendererCallback):
         pass
     def beforeSimulationHandler(self):
         articulation.AddSPDForces(targetPositions, scene.timeStep)
-        articulation.GetLinkByName("neck").ApplyExternalForce(vec3(-100, 0, 0))
 
 handler = GlutHandler()
 

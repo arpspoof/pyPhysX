@@ -177,41 +177,43 @@ TEST_F(ArticulationTestFixture, test_articulation_joint_params)
 {
     auto &jointMap = articulation->jointMap;
 
-    unordered_map<string, tuple<int, int, int>> dof_order_CacheIndexList = { 
-        { "root", make_tuple(0, 0, 0) },
-        { "chest", make_tuple(3, 1, 0) },
-        { "right_hip", make_tuple(3, 2, 3) },
-        { "left_hip", make_tuple(3, 3, 6) },
-        { "left_shoulder", make_tuple(3, 4, 9) },
-        { "neck", make_tuple(3, 5, 12) },
-        { "right_shoulder", make_tuple(3, 6, 15) },
-        { "right_knee", make_tuple(1, 7, 18) },
-        { "left_knee", make_tuple(1, 8, 19) },
-        { "left_elbow", make_tuple(1, 9, 20) },
-        { "right_elbow", make_tuple(1, 10, 21) },
-        { "right_ankle", make_tuple(3, 11, 22) },
-        { "left_ankle", make_tuple(3, 12, 25) }
+    unordered_map<string, tuple<int, int, int>> id_dof_CacheIndexList = { 
+        { "root", make_tuple(0, 0, -1) },
+        { "chest", make_tuple(1, 3, 0) },
+        { "neck", make_tuple(2, 3, 12) },
+        { "right_hip", make_tuple(3, 3, 3) },
+        { "right_knee", make_tuple(4, 1, 18) },
+        { "right_ankle", make_tuple(5, 3, 22) },
+        { "right_shoulder", make_tuple(6, 3, 15) },
+        { "right_elbow", make_tuple(7, 1, 21) },
+        { "right_wrist", make_tuple(8, 0, -1) },
+        { "left_hip", make_tuple(9, 3, 6) },
+        { "left_knee", make_tuple(10, 1, 19) },
+        { "left_ankle", make_tuple(11, 3, 25) },
+        { "left_shoulder", make_tuple(12, 3, 9) },
+        { "left_elbow", make_tuple(13, 1, 20) },
+        { "left_wrist", make_tuple(14, 0, -1) }
     };
 
-    for (auto &kvp : dof_order_CacheIndexList) {
-        printf("%s joint should have dof %d, order %d and cache index %d ...\n", 
+    for (auto &kvp : id_dof_CacheIndexList) {
+        printf("%s joint should have id %d, dof %d, cache index %d ...\n", 
             kvp.first.c_str(), get<0>(kvp.second), get<1>(kvp.second), get<2>(kvp.second));
-        ASSERT_EQ(jointMap[kvp.first]->nDof, get<0>(kvp.second));
-        ASSERT_EQ(jointMap[kvp.first]->jointOrder, get<1>(kvp.second));
+        ASSERT_EQ(jointMap[kvp.first]->id, get<0>(kvp.second));
+        ASSERT_EQ(jointMap[kvp.first]->nDof, get<1>(kvp.second));
         ASSERT_EQ(jointMap[kvp.first]->cacheIndex, get<2>(kvp.second));
     }
 }
 
 TEST_F(ArticulationTestFixture, test_articulation_dofs)
 {
-    printf("n active joints shoule be 12 ...\n");
-    ASSERT_EQ(articulation->GetNActiveJoints(), 12);
+    printf("total joints should be 15 ...\n");
+    ASSERT_EQ(articulation->GetNJoints(), 15);
 
     printf("total dof should be 28 ...\n");
     ASSERT_EQ(articulation->GetNDof(), 28);
 
     auto dofs = articulation->GetJointDofsInIdOrder();
-    vector<int> expectedDofs = { 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 3 };
+    vector<int> expectedDofs = { 0, 3, 3, 3, 1, 3, 3, 1, 0, 3, 1, 3, 3, 1, 0 };
 
     for (int i = 0; i < (int)expectedDofs.size(); i++) {
         printf("dof of active joint %d should be %d ...\n", i, expectedDofs[i]);
@@ -221,30 +223,35 @@ TEST_F(ArticulationTestFixture, test_articulation_dofs)
 
 TEST_F(ArticulationTestFixture, test_articulation_params)
 {
-    int nActiveJoint = articulation->GetNActiveJoints();
+    int nDof = articulation->GetNDof();
 
-    vector<float> testParams(nActiveJoint);
-    for (int i = 0; i < nActiveJoint; i++)
-        testParams[i] = 100 + i;
+    vector<float> testParams(nDof);
+    for (int i = 0; i < nDof; i++)
+        testParams[i] = 10 + i;
 
-    articulation->SetKPs(testParams.data());
-    articulation->SetKDs(testParams.data());
-    articulation->SetForceLimits(testParams.data());
+    articulation->SetKPs(testParams);
+    articulation->SetKDs(testParams);
+    articulation->SetForceLimits(testParams);
+
+    vector<float> expectedParams = {
+        10, 11, 12, 16, 17, 18, 27, 28, 29, 34, 35, 36,
+        13, 14, 15, 23, 24, 25, 19, 30, 37, 26, 20, 21, 22, 31, 32, 33
+    };
     
     printf("joint params should be correctly set ...\n");
-    for (int i = 0; i < nActiveJoint; i++) {
-        ASSERT_FLOAT_EQ(articulation->kps[i], 100.f + i);
-        ASSERT_FLOAT_EQ(articulation->kds[i], 100.f + i);
-        ASSERT_FLOAT_EQ(articulation->forceLimits[i], 100.f + i);
+    for (int i = 0; i < nDof; i++) {
+        ASSERT_FLOAT_EQ(articulation->kps[i], expectedParams[i]);
+        ASSERT_FLOAT_EQ(articulation->kds[i], expectedParams[i]);
+        ASSERT_FLOAT_EQ(articulation->forceLimits[i], expectedParams[i]);
     }
 }
 
 TEST_F(ArticulationTestFixture, test_kinematic_RW)
 {
     vector<float> positions =
-    { -0.010705226100981236, 2.9520351886749268, -1.0793187618255615, 0.9849750995635986, -0.16240181028842926, -0.0562966912984848, -0.01674160361289978, 0.9991642832756042, 0.01748298667371273, -0.03642556071281433, 0.006173908710479736, 0.9542080760002136, 0.026233119890093803, -0.02625342272222042, 0.2968323826789856, 0.9903703331947327, -0.026543904095888138, 0.1235213577747345, -0.0566059947013855, 0.9678494930267334, 0.18189097940921783, -0.1365630179643631, 0.10739383101463318, 0.9999954104423523, -0.0020434020552784204, 0.0005176311242394149, -0.002176225185394287, 0.9860534071922302, -0.06559967249631882, 0.08769472688436508, -0.12531918287277222, -0.3445289134979248, -0.5505771636962891, 0.5630042552947998, 0.16350771486759186, 0.9819461107254028, 0.1464308202266693, 0.020017214119434357, -0.11806392669677734, 0.913760781288147, 0.1983564794063568, -0.000654958188533783, 0.35453569889068604 };
+    { -0.088583, 2.369318, -2.161314, 0.933701, -0.352505, 0.018137, -0.060115, 0.998819, 0.010960, -0.047140, -0.004159, 0.999996, 0.002537, 0.000256, 0.001070, 0.949948, 0.020403, -0.059407, 0.306028, -0.195258, 0.999520, 0.016056, 0.020116, 0.017256, 0.985617, -0.063945, 0.093094, -0.125710, 0.171284, 0.986347, -0.017107, 0.091650, -0.135749, -0.453371, 0.975329, 0.126891, -0.033021, 0.177601, 0.965989, 0.188903, -0.141940, 0.105041, 0.579958 };
     vector<float> velocities =
-    { 0.3752318322658539, -1.256173849105835, -2.068544864654541, -0.794529139995575, 0.01734177954494953, -0.147354394197464, 0.0, 0.0021516273263841867, 0.012157208286225796, -0.03684470057487488, 0.0, -0.00784284621477127, -0.08185304701328278, -0.0393180251121521, 0.0, 0.012893409468233585, 0.0004450793785508722, 0.007343634031713009, 0.0, 0.007491157855838537, 0.005215386860072613, 0.012697052210569382, 0.0, 0.0011133216321468353, -0.00027246022364124656, 0.02609015628695488, 0.0, -0.00166785204783082, -0.01348275039345026, 0.01385579351335764, 0.0, 0.07884275913238525, 0.06096728891134262, 0.0030121812596917152, 0.0030538737773895264, 0.5491054654121399, 0.06237462908029556, -0.20728544890880585, 0.0, 0.3967995345592499, 0.00897566694766283, -0.3366695046424866, 0.0 };
+    { 0.326730, -2.015506, -2.583195, -1.030780, 0.003017, -0.205119, 0.000000, 0.004144, 0.001047, 0.016726, 0.000000, 0.026550, -0.000165, 0.046535, 0.000000, -0.064505, 0.021811, -0.068365, 0.000000, -0.062028, 0.000961, 0.168048, 0.001768, 0.000000, -0.001193, -0.000624, 0.017256, 0.000000, 0.000266, 0.000804, -0.006196, 0.088094, 0.000000, 0.036677, -0.063728, -0.001808, -0.390550, 0.000000, 0.026291, 0.000256, 0.000952, 0.000000, 0.012650 };
 
     articulation->SetJointPositionsQuaternion(positions);
     articulation->SetJointVelocitiesPack4(velocities);
@@ -259,7 +266,6 @@ TEST_F(ArticulationTestFixture, test_kinematic_RW)
 
     printf("new and old velocities should be equal ...\n");
     for (int i = 0; i < (int)velocities.size(); i++) {
-        printf("v%d.......\n", i);
-        EXPECT_NEAR(velocities[i], newVelocities[i], 1e-3);
+        EXPECT_NEAR(velocities[i], newVelocities[i], 3e-3);
     }
 }

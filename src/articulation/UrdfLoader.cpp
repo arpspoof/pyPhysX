@@ -160,6 +160,8 @@ void UrdfLoader::ParseJoints(ArticulationTree& tree)
     auto docRoot = doc.first_node();
     auto docRootFirstChild = docRoot->first_node();
 
+    int jointId = 0;
+
     for (auto node = docRootFirstChild; node != nullptr; node = node->next_sibling()) {
         if (strcmp(node->name(), "joint") == 0) {
             auto attrJointName = FindFirstAttributeWithName(node, "name");
@@ -214,7 +216,10 @@ void UrdfLoader::ParseJoints(ArticulationTree& tree)
             else {
                 printf("unsupported joint type %s\n", jointType.c_str());
                 assert(false);
+                continue;
             }
+
+            jointIdMap[jointName] = jointId++;
         }
     }
 

@@ -1,5 +1,6 @@
 #include "Articulation.h"
 #include "Foundation.h"
+#include "CommonMath.h"
 #include "Eigen/Dense"
 
 #include <algorithm>
@@ -50,9 +51,16 @@ void Articulation::Dispose()
     }
 }
 
-void Articulation::InitControl()
+void Articulation::InitControl(unordered_map<string, int>& jointIdMap)
 {
     AssignIndices();
+
+    for (auto &kvp : linkMap) {
+        kvp.second->name = kvp.first;
+    }
+    for (auto &kvp : jointMap) {
+        kvp.second->name = kvp.first;
+    }
 
     mainCache = pxArticulation->createCache();
     massMatrixCache = pxArticulation->createCache();
@@ -65,22 +73,20 @@ void Articulation::InitControl()
     kds = vector<float>(nDof, 0);
     forceLimits = vector<float>(nDof, -1);
 
-    typedef tuple<int, Joint*, string> PIJN;
-    vector<PIJN> joints;
+    typedef tuple<int, Joint*> PIJ;
+    vector<PIJ> joints;
     
     for (auto &kvp : jointMap) {
-        if (kvp.second->nDof >= 1) {
-            joints.push_back(make_tuple(kvp.second->cacheIndex, kvp.second, kvp.first));
-        }
+        joints.push_back(make_tuple(jointIdMap[kvp.first], kvp.second));
     }
 
-    sort(joints.begin(), joints.end(), [](PIJN &a, PIJN &b) { return get<0>(a) < get<0>(b); });
+    sort(joints.begin(), joints.end(), [](PIJ &a, PIJ &b) { return get<0>(a) < get<0>(b); });
 
-    for (PIJN &pijn : joints) {
-        jointList.push_back(get<1>(pijn));
-        jointDofs.push_back(get<1>(pijn)->nDof);
-        jointNames.push_back(get<2>(pijn));
-        printf("joint:%s, dof = %d\n", get<2>(pijn).c_str(), get<1>(pijn)->nDof);
+    for (PIJ &pijn : joints) {
+        auto j = get<1>(pijn);
+        j->id = get<0>(pijn);
+        jointList.push_back(j);
+        jointDofs.push_back(j->nDof);
     }
 }
 
@@ -98,7 +104,6 @@ void Articulation::AssignIndices() {
     rootLink = nullptr;
 
     int currentIndex = 0;
-    int jointOrder = 0;
 
     for (PIDL &p : linkIndices) {
         int nDof = (int)p.second->link->getInboundJointDof();
@@ -107,8 +112,7 @@ void Articulation::AssignIndices() {
             continue;
         }
         p.second->inboundJoint->nDof = nDof;
-        p.second->inboundJoint->jointOrder = jointOrder++;
-        p.second->inboundJoint->cacheIndex = currentIndex;
+        p.second->inboundJoint->cacheIndex = nDof > 0 ? currentIndex : -1;
         currentIndex += nDof;
         if (nDof == 3) nSphericalJoint++;
         if (nDof == 1) nRevoluteJoint++;
@@ -122,11 +126,6 @@ int Articulation::GetNDof() const
     return (int)pxArticulation->getDofs();
 }
 
-int Articulation::GetNActiveJoints() const
-{
-    return (int)jointList.size();
-}
-
 const std::vector<int>& Articulation::GetJointDofsInIdOrder() const
 {
     return jointDofs;
@@ -137,41 +136,22 @@ void Articulation::SetFixBaseFlag(bool shouldFixBase)
     pxArticulation->setArticulationFlag(PxArticulationFlag::eFIX_BASE, shouldFixBase);
 }
 
-void Articulation::SetKPs(const float kps[])
+int Articulation::GetNJoints() const
 {
-    int nDof = GetNDof();
-    for (int i = 0; i < nDof; i++) {
-        this->kps[i] = kps[i];
+    return (int)jointList.size();
+}
+
+void Articulation::SetJointParams(std::vector<float>& target, const std::vector<float>& params)
+{
+    int index = 0;
+    int nJoints = GetNJoints();
+    for (int i = 0; i < nJoints; i++) {
+        int jointDof = jointList[i]->nDof;
+        for (int k = 0; k < jointDof; k++) {
+            target[jointList[i]->cacheIndex + k] = params[index + k];
+        }
+        index += jointDof;
     }
-}
-
-void Articulation::SetKDs(const float kds[])
-{
-    int nDof = GetNDof();
-    for (int i = 0; i < nDof; i++) {
-        this->kds[i] = kds[i];
-    }
-}
-
-void Articulation::SetForceLimits(const float forceLimits[])
-{
-    int nDof = GetNDof();
-    for (int i = 0; i < nDof; i++) {
-        this->forceLimits[i] = forceLimits[i];
-    }
-}
-
-static PxQuat ConvertTwistSwingToQuaternion(float t, float s1, float s2)
-{
-    PxVec3 s(0, s1, s2);
-    PxQuat swingQuat = s.isZero() ? PxQuat(0, 0, 0, 1) : PxQuat(s.magnitude(), s.getNormalized());
-    return swingQuat * PxQuat(t, PxVec3(1, 0, 0));
-}
-
-static void SeparateTwistSwing(const PxQuat& q, PxQuat& swing, PxQuat& twist)
-{
-	twist = q.x != 0.0f ? PxQuat(q.x, 0, 0, q.w).getNormalized() : PxQuat(PxIdentity);
-	swing = q * twist.getConjugate();
 }
 
 vector<float> Articulation::GetJointPositionsQuaternion() const
@@ -193,12 +173,15 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
     result[5] = rootRotation.y;
     result[6] = rootRotation.z;
 
-    int cacheIndex = 0;
+    int nJoints = GetNJoints();
     int resultIndex = 7;
 
-    for (int jointDof : jointDofs) {
+    for (int i = 0; i < nJoints; i++) {
+        const int jointDof = jointList[i]->nDof;
+        const int cacheIndex = jointList[i]->cacheIndex;
+
         if (jointDof == 1) {
-            result[resultIndex++] = mainCache->jointPosition[cacheIndex++];
+            result[resultIndex++] = mainCache->jointPosition[cacheIndex];
         }
         else if (jointDof == 3) {
             PxQuat rotation = frameTransform.getConjugate() * ConvertTwistSwingToQuaternion(
@@ -212,7 +195,6 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
             result[resultIndex + 2] = rotation.y;
             result[resultIndex + 3] = rotation.z;
 
-            cacheIndex += 3;
             resultIndex += 4;
         }
     }
@@ -233,12 +215,15 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
 
     rootLink->link->setGlobalPose(PxTransform(rootGlobalTranslation, rootPose));
 
-    int cacheIndex = 0;
+    int nJoints = GetNJoints();
     int inputIndex = 7;
 
-    for (int jointDof : jointDofs) {
+    for (int i = 0; i < nJoints; i++) {
+        const int jointDof = jointList[i]->nDof;
+        const int cacheIndex = jointList[i]->cacheIndex;
+
         if (jointDof == 1) {
-            mainCache->jointPosition[cacheIndex++] = positions[inputIndex++];
+            mainCache->jointPosition[cacheIndex] = positions[inputIndex++];
         }
         else if (jointDof == 3) {
             PxQuat rotation = frameTransform.getConjugate() * PxQuat(
@@ -256,7 +241,6 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
             mainCache->jointPosition[cacheIndex + 1] = theta1;
             mainCache->jointPosition[cacheIndex + 2] = theta2;
 
-            cacheIndex += 3;
             inputIndex += 4;
         }
     }
@@ -282,12 +266,15 @@ vector<float> Articulation::GetJointVelocitiesPack4() const
     result[5] = rootAngularVelocity.z;
     result[6] = 0; // pack4
 
-    int cacheIndex = 0;
+    int nJoints = GetNJoints();
     int resultIndex = 7;
 
-    for (int jointDof : jointDofs) {
+    for (int i = 0; i < nJoints; i++) {
+        const int jointDof = jointList[i]->nDof;
+        const int cacheIndex = jointList[i]->cacheIndex;
+
         if (jointDof == 1) {
-            result[resultIndex++] = mainCache->jointVelocity[cacheIndex++];
+            result[resultIndex++] = mainCache->jointVelocity[cacheIndex];
         }
         else if (jointDof == 3) {
             PxVec3 angularV(mainCache->jointVelocity[cacheIndex],
@@ -298,7 +285,6 @@ vector<float> Articulation::GetJointVelocitiesPack4() const
             result[resultIndex + 2] = angularV.z;
             result[resultIndex + 3] = 0; // pack4
 
-            cacheIndex += 3;
             resultIndex += 4;
         }
     }
@@ -319,12 +305,15 @@ void Articulation::SetJointVelocitiesPack4(const std::vector<float>& velocities)
     PxVec3 rootAngularVelocity(velocities[3], velocities[4], velocities[5]);
     rootLink->link->setAngularVelocity(rootAngularVelocity);
 
-    int cacheIndex = 0;
+    int nJoints = GetNJoints();
     int inputIndex = 7;
 
-    for (int jointDof : jointDofs) {
+    for (int i = 0; i < nJoints; i++) {
+        const int jointDof = jointList[i]->nDof;
+        const int cacheIndex = jointList[i]->cacheIndex;
+
         if (jointDof == 1) {
-            mainCache->jointVelocity[cacheIndex++] = velocities[inputIndex++];
+            mainCache->jointVelocity[cacheIndex] = velocities[inputIndex++];
         }
         else if (jointDof == 3) {
             PxVec3 angularV(velocities[inputIndex], velocities[inputIndex + 1], velocities[inputIndex + 2]);
@@ -334,7 +323,6 @@ void Articulation::SetJointVelocitiesPack4(const std::vector<float>& velocities)
             mainCache->jointVelocity[cacheIndex + 1] = angularV.y;
             mainCache->jointVelocity[cacheIndex + 2] = angularV.z;
 
-            cacheIndex += 3;
             inputIndex += 4;
         }
     }
@@ -342,7 +330,7 @@ void Articulation::SetJointVelocitiesPack4(const std::vector<float>& velocities)
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eVELOCITY);
 }
 
-void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
+void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float timeStep)
 {
     int nDof = GetNDof();
 
@@ -377,13 +365,15 @@ void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
     VectorXd proportionalTorquePlusQDotDeltaT(nDof);
     VectorXd derivativeTorque(nDof);
 
-    int nActiveJoints = (int)jointDofs.size();
-
-    int cacheIndex = 0;
+    int nJoints = GetNJoints();
     int targetPositionsIndex = 0;
 
-    for (int i = 0; i < nActiveJoints; i++) {
-        int jointDof = jointDofs[i];
+    for (int i = 0; i < nJoints; i++) {
+        const Joint* joint = jointList[i];
+
+        const int jointDof = joint->nDof;
+        const int cacheIndex = joint->cacheIndex;
+
         if (jointDof == 3) {
             PxQuat targetPosition(
                 targetPositions[targetPositionsIndex + 1],
@@ -438,7 +428,6 @@ void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
             H(cacheIndex + 1, cacheIndex + 1) += kds[cacheIndex + 1] * timeStep;
             H(cacheIndex + 2, cacheIndex + 2) += kds[cacheIndex + 2] * timeStep;
 
-            cacheIndex += 3;
             targetPositionsIndex += 4;
         }
         else if (jointDof == 1) {
@@ -449,8 +438,10 @@ void Articulation::AddSPDForces(const float targetPositions[], float timeStep)
             derivativeTorque(cacheIndex) = -kds[cacheIndex] * velocities[cacheIndex];
             H(cacheIndex, cacheIndex) += kds[cacheIndex] * timeStep;
 
-            cacheIndex += 1;
             targetPositionsIndex += 1;
+        }
+        else if (jointDof == 0) {
+            continue;
         }
         else {
             printf("no controller defined for Dof %d\n", jointDof);
@@ -496,6 +487,11 @@ const Joint* Articulation::GetJointByName(std::string name) const
     return it->second;
 }
 
+const vector<Joint*>& Articulation::GetAllJointsInIdOrder() const
+{
+    return jointList;
+}
+
 const Link* Articulation::GetRootLink() const 
 {
     return rootLink;
@@ -503,20 +499,15 @@ const Link* Articulation::GetRootLink() const
 
 void Articulation::SetKPs(const std::vector<float>& kps)
 {
-    SetKPs(kps.data());
+    SetJointParams(this->kps, kps);
 }
 
 void Articulation::SetKDs(const std::vector<float>& kds)
 {
-    SetKDs(kds.data());
+    SetJointParams(this->kds, kds);
 }
 
 void Articulation::SetForceLimits(const std::vector<float>& forceLimits)
 {
-    SetForceLimits(forceLimits.data());
-}
-
-void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float timeStep)
-{
-    AddSPDForces(targetPositions.data(), timeStep);
+    SetJointParams(this->forceLimits, forceLimits);
 }

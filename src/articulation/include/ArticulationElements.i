@@ -15,7 +15,6 @@ public:
     Link* parentLink;
     Link* childLink;
     int nDof;
-    int jointOrder;
     int cacheIndex;
     Joint() {} // For API only
 // API END

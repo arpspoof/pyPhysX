@@ -5,6 +5,7 @@
 #include "Actor.h"
 
 #include <vector>
+#include <string>
 
 class Link;
 
@@ -28,15 +29,20 @@ public:
      */
     Link *childLink;
     /**
+     * @brief Name of the joint
+     * 
+     */
+    std::string name;
+    /**
+     * @brief id of the joint in articulation
+     * 
+     */
+    int id;
+    /**
      * @brief Number of degrees of freedom
      * 
      */
     int nDof;
-    /**
-     * @brief The order (or internal id) of the joint in articulation
-     * 
-     */
-    int jointOrder;
     /**
      * @brief Start index of this joint in any array containing all
      * 	joint information. This is suitable for any type of joint information
@@ -78,6 +84,11 @@ public:
      * 
      */
     Joint *inboundJoint;
+    /**
+     * @brief Name of the link
+     * 
+     */
+    std::string name;
     /**
      * @brief Set of child links. Each element is a pointer to a child Link.
      * 
