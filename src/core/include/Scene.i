@@ -34,7 +34,8 @@ public:
     Material* CreateMaterial(float staticFriction, float dynamicFriction, float restitution);
     Plane* CreatePlane(Material* material, vec3 planeNormal, float distance);
     Articulation* CreateArticulation(UrdfLoader* urdfLoader, Material* material, vec3 basePosition);
-    Articulation* CreateArticulation(std::string urdfFilePath, Material* material, vec3 basePosition);
+    Articulation* CreateArticulation(std::string urdfFilePath, Material* material, 
+        vec3 basePosition, float scalingFactor = 1.0f);
 
     Scene();
     void Step();

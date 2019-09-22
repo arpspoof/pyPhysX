@@ -106,9 +106,10 @@ Articulation* Scene::CreateArticulation(UrdfLoader* urdfLoader, Material* materi
     return articulation;
 }
 
-Articulation* Scene::CreateArticulation(string urdfFilePath, Material* material, vec3 basePosition)
+Articulation* Scene::CreateArticulation(string urdfFilePath, Material* material, 
+    vec3 basePosition, float scalingFactor)
 {
-    UrdfLoader urdfLoader;
+    UrdfLoader urdfLoader(scalingFactor);
     urdfLoader.LoadDescriptionFromFile(urdfFilePath);
     Articulation* articulation = CreateArticulation(&urdfLoader, material, basePosition);
     urdfLoader.Dispose();

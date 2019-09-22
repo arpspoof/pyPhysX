@@ -8,7 +8,7 @@ class UrdfLoader :public IDisposable
 {
 // API BEGIN
 public:
-    UrdfLoader();
+    UrdfLoader(float scalingFactor = 1.0f);
     void Dispose() override;
     void LoadDescriptionFromFile(std::string path);
 // API END

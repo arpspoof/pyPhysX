@@ -23,7 +23,7 @@ public:
      *  to load a new URDF file.
      * 
      */
-    UrdfLoader();
+    UrdfLoader(float scalingFactor = 1.0f);
     /**
      * @brief Dispose all resources allocated by the loader. If a Urdf loader
      *  is created in your code logic, you must call this when it is not needed.
@@ -41,6 +41,7 @@ public:
     void LoadDescriptionFromFile(std::string path);
 // API END
 public:
+    float scalingFactor;
     std::unordered_map<std::string, int> jointIdMap;
     void BuildArticulationTree(ArticulationTree& tree, Material* material);
 private:

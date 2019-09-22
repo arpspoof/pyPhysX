@@ -11,7 +11,7 @@
 using namespace rapidxml;
 using namespace std;
 
-UrdfLoader::UrdfLoader() :buffer(nullptr)
+UrdfLoader::UrdfLoader(float scalingFactor) :scalingFactor(scalingFactor), buffer(nullptr)
 {
 }
 
@@ -101,7 +101,7 @@ void UrdfLoader::ParseLinkBodies(ArticulationTree& tree, Material* material)
                 if (sphereNode) {
                     auto attr = FindFirstAttributeWithName(sphereNode, "radius");
                     assert(attr);
-                    float radius = atof(attr->value());
+                    float radius = atof(attr->value()) * scalingFactor;
                     LinkBody* body = tree.CreateSphereLinkBody(mass, radius, material);
                     linkBodyMap[linkName] = body;
                     continue;
@@ -110,8 +110,8 @@ void UrdfLoader::ParseLinkBodies(ArticulationTree& tree, Material* material)
                     auto attrLength = FindFirstAttributeWithName(capsuleNode, "length");
                     auto attrRadius = FindFirstAttributeWithName(capsuleNode, "radius");
                     assert(attrLength && attrRadius);
-                    float length = atof(attrLength->value());
-                    float radius = atof(attrRadius->value());
+                    float length = atof(attrLength->value()) * scalingFactor;
+                    float radius = atof(attrRadius->value()) * scalingFactor;
                     LinkBody* body = tree.CreateCapsuleLinkBody(mass, radius, length, material);
                     linkBodyMap[linkName] = body;
                     continue;
@@ -122,6 +122,9 @@ void UrdfLoader::ParseLinkBodies(ArticulationTree& tree, Material* material)
                     stringstream ss(attr->value());
                     float y, x, z; // our axis: x up, y back, z right
                     ss >> y >> x >> z;
+                    x *= scalingFactor;
+                    y *= scalingFactor;
+                    z *= scalingFactor;
                     LinkBody* body = tree.CreateBoxLinkBody(mass, x, y, z, material);
                     linkBodyMap[linkName] = body;
                     continue;
@@ -150,6 +153,9 @@ void UrdfLoader::ParseLinkOffsets()
             stringstream ss(xyzAttr->value());
             float x,y,z;
             ss >> x >> y >> z;
+            x *= scalingFactor;
+            y *= scalingFactor;
+            z *= scalingFactor;
             linkOffsetMap[linkName] = vec3(x, y, z);
         }
     }   
@@ -187,6 +193,9 @@ void UrdfLoader::ParseJoints(ArticulationTree& tree)
             stringstream ss(xyzAttr->value());
             float x,y,z;
             ss >> x >> y >> z;
+            x *= scalingFactor;
+            y *= scalingFactor;
+            z *= scalingFactor;
 
             if (jointType == "fixed") {
                 tree.CreateFixedDescriptionNode(childLinkName, jointName, linkBodyMap[childLinkName],

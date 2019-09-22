@@ -107,9 +107,11 @@ public:
      *  to all link surfaces of this articulation.
      * @param basePosition A 3d vector specifying the position to place the articulation
      *  in world space coordinates.
+     * @param scalingFactor Specify this parameter to scale the model. 
      * @return Articulation* Pointer to the created Articulation object.
      */
-    Articulation* CreateArticulation(std::string urdfFilePath, Material* material, vec3 basePosition);
+    Articulation* CreateArticulation(std::string urdfFilePath, Material* material, 
+        vec3 basePosition, float scalingFactor = 1.0f);
 
     Scene();
 
