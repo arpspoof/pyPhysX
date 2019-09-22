@@ -17,7 +17,7 @@ SceneDescription::SceneDescription()
 Scene::Scene()
 {
     // For API binding only. 
-    assert("false");
+    assert(false);
 }
 
 Scene::Scene(Foundation* foundation, SceneDescription description, float timeStep)
