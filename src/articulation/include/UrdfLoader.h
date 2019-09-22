@@ -21,6 +21,7 @@ public:
     /**
      * @brief Construct an empty loader. Call LoadDescriptionFromFile
      *  to load a new URDF file.
+     * @param scalingFactor Specify this parameter to scale the model. 
      * 
      */
     UrdfLoader(float scalingFactor = 1.0f);
