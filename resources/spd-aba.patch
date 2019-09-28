@@ -1,0 +1,89 @@
+From 34aa4dbfee2ee23433662e814c64db629c8015c1 Mon Sep 17 00:00:00 2001
+From: Zhiqi Yin <zhiqiy@sfu.ca>
+Date: Sat, 28 Sep 2019 10:40:13 -0700
+Subject: [PATCH] spd aba
+
+---
+ .../include/DyFeatherstoneArticulation.h      |  2 +-
+ .../src/DyFeatherstoneForwardDynamic.cpp      | 24 ++++++++++++++++---
+ 2 files changed, 22 insertions(+), 4 deletions(-)
+
+diff --git a/physx/source/lowleveldynamics/include/DyFeatherstoneArticulation.h b/physx/source/lowleveldynamics/include/DyFeatherstoneArticulation.h
+index c8b48d5b..07483b84 100644
+--- a/physx/source/lowleveldynamics/include/DyFeatherstoneArticulation.h
++++ b/physx/source/lowleveldynamics/include/DyFeatherstoneArticulation.h
+@@ -723,7 +723,7 @@ namespace Dy
+ 			ScratchData& scratchData, Cm::SpatialVectorF* tZ, Cm::SpatialVectorF* tDeltaV);
+ 
+ 		void computeIs(ArticulationLinkData& linkDatum, ArticulationJointCoreData& jointDatum, const PxU32 linkID);
+-		static SpatialMatrix computePropagateSpatialInertia(const PxU8 jointType, ArticulationJointCoreData& jointDatum,
++		static SpatialMatrix computePropagateSpatialInertia(PxU32 linkId, const PxU8 jointType, ArticulationJointCoreData& jointDatum,
+ 			const SpatialMatrix& articulatedInertia, const Cm::SpatialVectorF* linkIs, InvStIs& invStIs, IsInvD& isInvD, 
+ 			const SpatialSubspaceMatrix& motionMatrix);
+ 
+diff --git a/physx/source/lowleveldynamics/src/DyFeatherstoneForwardDynamic.cpp b/physx/source/lowleveldynamics/src/DyFeatherstoneForwardDynamic.cpp
+index 689bbe79..ba0aa52c 100644
+--- a/physx/source/lowleveldynamics/src/DyFeatherstoneForwardDynamic.cpp
++++ b/physx/source/lowleveldynamics/src/DyFeatherstoneForwardDynamic.cpp
+@@ -46,6 +46,9 @@
+ #include "common/PxProfileZone.h"
+ #include <stdio.h>
+ 
++float  			g_SPD_Dt = 0;
++const float* 	g_SPD_Kd = nullptr;
++const int*		g_SPD_LinkIdCacheIndexMap = nullptr;
+ 
+ #ifdef _MSC_VER
+ #pragma warning(disable:4505)
+@@ -130,7 +133,7 @@ namespace Dy
+ 	}
+ 
+ 	//compute inertia contribution part
+-	SpatialMatrix FeatherstoneArticulation::computePropagateSpatialInertia(const PxU8 jointType, ArticulationJointCoreData& jointDatum,
++	SpatialMatrix FeatherstoneArticulation::computePropagateSpatialInertia(PxU32 linkId, const PxU8 jointType, ArticulationJointCoreData& jointDatum,
+ 		const SpatialMatrix& articulatedInertia, const Cm::SpatialVectorF* linkIs, InvStIs& invStIs, IsInvD& isInvD, const SpatialSubspaceMatrix& motionMatrix)
+ 	{
+ 		SpatialMatrix spatialInertia;
+@@ -144,7 +147,13 @@ namespace Dy
+ 
+ 			const Cm::SpatialVectorF& Is = linkIs[0];
+ 
+-			const PxReal stIs = sa.innerProduct(Is);
++			PxReal stIs = sa.innerProduct(Is);
++
++			if (g_SPD_LinkIdCacheIndexMap)
++			{
++				float kd = g_SPD_Kd[g_SPD_LinkIdCacheIndexMap[linkId]];
++				stIs += kd * g_SPD_Dt;
++			}
+ 
+ 			const PxReal iStIs = (stIs > /*PX_EPS_REAL*/1e-5f) ? (1.f / stIs) : 0.f;
+ 
+@@ -191,6 +200,15 @@ namespace Dy
+ 				}
+ 			}
+ 
++			if (g_SPD_LinkIdCacheIndexMap)
++			{
++				int cacheIndex = g_SPD_LinkIdCacheIndexMap[linkId];
++				for (PxU32 i = 0; i < jointDatum.dof; ++i)
++				{
++					D[i][i] += g_SPD_Dt * g_SPD_Kd[cacheIndex + i];
++				}
++			}
++
+ 			PxMat33 invD = SpatialMatrix::invertSym33(D);
+ 			for (PxU32 ind = 0; ind < jointDatum.dof; ++ind)
+ 			{
+@@ -296,7 +314,7 @@ namespace Dy
+ 			computeIs(linkDatum, jointDatum, linkID);
+ 
+ 			//(I - Is*Inv(sIs)*sI)
+-			SpatialMatrix spatialInertiaW = computePropagateSpatialInertia(link.inboundJoint->jointType, 
++			SpatialMatrix spatialInertiaW = computePropagateSpatialInertia(linkID, link.inboundJoint->jointType, 
+ 				jointDatum, data.mWorldSpatialArticulatedInertia[linkID], linkDatum.IsW, data.mInvStIs[linkID], data.mIsInvDW[linkID], data.mWorldMotionMatrix[linkID]);
+ 
+ 			//transform spatial inertia into parent space
+-- 
+2.23.0
+

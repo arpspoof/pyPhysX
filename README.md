@@ -9,6 +9,7 @@ doxygen Doxyfile
 
 ##### Preperation
 * [Build and set up](wiki/Setup.md)
+* \[Experimental] [Build with linear time SPD](wiki/SPDABA.md)
 
 ##### Usage
 * [Collision System](wiki/CollisionSystem.md)

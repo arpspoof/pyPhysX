@@ -157,6 +157,16 @@ public: // control
      * @param timeStep Simulation time step is required. Get this via Scene::timeStep.
      */
     void AddSPDForces(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
+    /**
+     * @brief Linear time implementation of stable PD control.
+     *  See Articulation::AddSPDForces for usage instructions.
+     * 
+     * @param targetPositions 
+     * @param timeStep 
+     * 
+     * @warning Experimental
+     */
+    void AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
 // API END
 public:
     std::vector<float> kps, kds, forceLimits;
@@ -166,6 +176,7 @@ private:
     Link* rootLink;
     std::vector<Joint*> jointList;
     std::vector<int> jointDofs;
+    std::vector<int> linkIdCacheIndexMap;
     int nSphericalJoint, nRevoluteJoint;
 public:
     physx::PxArticulationReducedCoordinate* pxArticulation;

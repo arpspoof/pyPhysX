@@ -34,5 +34,6 @@ public:
     void SetKDs(const std::vector<float>& kds);
     void SetForceLimits(const std::vector<float>& forceLimits);
     void AddSPDForces(const std::vector<float>& targetPositions, float timeStep);
+    void AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep);
 // API END
 };

@@ -102,6 +102,7 @@ void Articulation::AssignIndices() {
     nRevoluteJoint = 0;
 
     rootLink = nullptr;
+    linkIdCacheIndexMap = vector<int>(pxArticulation->getNbLinks(), -1);
 
     int currentIndex = 0;
 
@@ -113,6 +114,7 @@ void Articulation::AssignIndices() {
         }
         p.second->inboundJoint->nDof = nDof;
         p.second->inboundJoint->cacheIndex = nDof > 0 ? currentIndex : -1;
+        linkIdCacheIndexMap[p.first] = p.second->inboundJoint->cacheIndex;
         currentIndex += nDof;
         if (nDof == 3) nSphericalJoint++;
         if (nDof == 1) nRevoluteJoint++;
@@ -458,6 +460,114 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
     }
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
+}
+
+void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep)
+{
+    int nDof = GetNDof();
+
+    PxReal *positions = mainCache->jointPosition;
+    PxReal *velocities = mainCache->jointVelocity;
+    PxReal *forces = mainCache->jointForce;
+
+    vector<float> proportionalTorquePlusQDotDeltaT(nDof);
+    vector<float> derivativeTorque(nDof);
+
+    int nJoints = GetNJoints();
+    int targetPositionsIndex = 0;
+
+    for (int i = 0; i < nJoints; i++) {
+        const Joint* joint = jointList[i];
+
+        const int jointDof = joint->nDof;
+        const int cacheIndex = joint->cacheIndex;
+
+        if (jointDof == 3) {
+            PxQuat targetPosition(
+                targetPositions[targetPositionsIndex + 1],
+                targetPositions[targetPositionsIndex + 2],
+                targetPositions[targetPositionsIndex + 3],
+                targetPositions[targetPositionsIndex]
+            );
+            PxVec3 kp(
+                kps[cacheIndex],
+                kps[cacheIndex + 1],
+                kps[cacheIndex + 2]
+            );
+
+            PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
+            targetPosition = frameTransform.getConjugate() * targetPosition * frameTransform;
+
+            if (targetPosition.w < 0) {
+                targetPosition = -targetPosition;
+            }
+
+            PxQuat localRotation = ConvertTwistSwingToQuaternion(
+                positions[cacheIndex],
+                positions[cacheIndex + 1], 
+                positions[cacheIndex + 2]
+            );
+
+            PxQuat posDifference = targetPosition * localRotation.getConjugate();
+            PxVec3 axis;
+            PxReal angle;
+            posDifference.toRadiansAndUnitAxis(angle, axis);
+            axis *= angle;
+
+            PxVec3 proportionalForceInParentFrame(
+                kps[cacheIndex] * axis.x,
+                kps[cacheIndex + 1] * axis.y,
+                kps[cacheIndex + 2] * axis.z
+            );
+            PxVec3 proportionalForceInChildFrame = localRotation.getConjugate().rotate(proportionalForceInParentFrame);
+
+            proportionalTorquePlusQDotDeltaT[cacheIndex] = proportionalForceInChildFrame[0] - 
+                timeStep * velocities[cacheIndex] * kps[cacheIndex];
+            proportionalTorquePlusQDotDeltaT[cacheIndex + 1] = proportionalForceInChildFrame[1] -
+                timeStep * velocities[cacheIndex + 1] * kps[cacheIndex + 1];
+            proportionalTorquePlusQDotDeltaT[cacheIndex + 2] = proportionalForceInChildFrame[2] -
+                timeStep * velocities[cacheIndex + 2] * kps[cacheIndex + 2];
+
+            derivativeTorque[cacheIndex] = -kds[cacheIndex] * velocities[cacheIndex];
+            derivativeTorque[cacheIndex + 1] = -kds[cacheIndex + 1] * velocities[cacheIndex + 1];
+            derivativeTorque[cacheIndex + 2] = -kds[cacheIndex + 2] * velocities[cacheIndex + 2];
+
+            targetPositionsIndex += 4;
+        }
+        else if (jointDof == 1) {
+            proportionalTorquePlusQDotDeltaT[cacheIndex] = kps[cacheIndex] * (
+                targetPositions[targetPositionsIndex] - positions[cacheIndex] - 
+                timeStep * velocities[cacheIndex]
+            );
+            derivativeTorque[cacheIndex] = -kds[cacheIndex] * velocities[cacheIndex];
+
+            targetPositionsIndex += 1;
+        }
+        else if (jointDof == 0) {
+            continue;
+        }
+        else {
+            printf("no controller defined for Dof %d\n", jointDof);
+            assert(false);
+        }
+    }
+
+    for (int i = 0; i < nDof; i++) {
+        forces[i] = proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i];
+        if (forceLimits[i] > 0 && forces[i] > forceLimits[i]) {
+            forces[i] = forceLimits[i];
+        }
+    }
+
+    pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
+
+    extern float  			g_SPD_Dt;
+    extern const float* 	g_SPD_Kd;
+    extern const int*		g_SPD_LinkIdCacheIndexMap;
+
+    g_SPD_Dt = timeStep;
+    g_SPD_Kd = kds.data();
+    g_SPD_LinkIdCacheIndexMap = linkIdCacheIndexMap.data();
 }
 
 void Articulation::FetchKinematicData() const
