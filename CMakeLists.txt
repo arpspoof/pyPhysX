@@ -112,6 +112,15 @@ set(ALL_MODULE ${ALL_MODULE_NO_RENDERER} renderer_glut)
 set(ALL_EXT_LIBS ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
 
 
+set(BUILD_SPD_ABA OFF CACHE BOOL "Choose whether to enable linear time SPD controller")
+
+if(${BUILD_SPD_ABA})
+
+    add_compile_definitions(ENABLE_SPD_ABA)
+
+endif()
+
+
 set(BUILD_EXAMPLES ON CACHE BOOL "Choose whether c++ examples should be built")
 
 if(${BUILD_EXAMPLES})

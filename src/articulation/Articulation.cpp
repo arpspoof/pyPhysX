@@ -560,7 +560,7 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
     }
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
-
+#ifdef ENABLE_SPD_ABA
     extern float  			g_SPD_Dt;
     extern const float* 	g_SPD_Kd;
     extern const int*		g_SPD_LinkIdCacheIndexMap;
@@ -568,6 +568,7 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
     g_SPD_Dt = timeStep;
     g_SPD_Kd = kds.data();
     g_SPD_LinkIdCacheIndexMap = linkIdCacheIndexMap.data();
+#endif
 }
 
 void Articulation::FetchKinematicData() const
