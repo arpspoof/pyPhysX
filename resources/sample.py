@@ -16,12 +16,15 @@ articulation.GetLinkByName("left_ankle").SetupCollisionFiltering(4, 1 | 2)
 articulation.SetKPs([2000]*28)
 articulation.SetKDs([200]*28)
 
+#articulation.SetFixBaseFlag(True)
+
 targetPositions = [ 0.998819, 0.010960, -0.047140, -0.004159, 0.999996, 0.002537, 0.000256, 0.001070, 0.949948, 0.020403, -0.059407, 0.306028, -0.195258, 0.999520, 0.016056, 0.020116, 0.017256, 0.985617, -0.063945, 0.093094, -0.125710, 0.171284, 0.986347, -0.017107, 0.091650, -0.135749, -0.453371, 0.975329, 0.126891, -0.033021, 0.177601, 0.965989, 0.188903, -0.141940, 0.105041, 0.579958 ]
 
-'''
+
 q = [1, 0, 0, 0]
-targetPositions = q*6 + [0]*4 + q*2
-'''
+targetPositions = q*3 + [0] + q*2 + [0] + q + [0] + q*2 + [0]
+
+targetPositions[24-7] = targetPositions[27-7] = targetPositions[38-7] = targetPositions[41-7] = 0.7071068
 
 '''
 import time
