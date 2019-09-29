@@ -8,17 +8,20 @@ material = scene.CreateMaterial(1.0, 1.0, 0.0)
 plane = scene.CreatePlane(material, vec3(0, 1, 0), 0)
 plane.SetupCollisionFiltering(1, 2 | 4)
 
-articulation = scene.CreateArticulation("../resources/humanoid.urdf", material, vec3(0, 3.55 + 0.2, 10.5))
+articulation = scene.CreateArticulation("../resources/humanoid.urdf", material, vec3(0, 3.55 + 0.2, 1.5))
 
-articulation.SetKPs([2000]*28)
-articulation.SetKDs([200]*28)
+p = 500
+d = 100
+
+articulation.SetKPs([p]*28)
+articulation.SetKDs([d]*28)
 
 articulation.SetFixBaseFlag(True)
 
-articulation2 = scene.CreateArticulation("../resources/humanoid.urdf", material, vec3(0, 3.55 + 0.2, -10.5))
+articulation2 = scene.CreateArticulation("../resources/humanoid.urdf", material, vec3(0, 3.55 + 0.2, -1.5))
 
-articulation2.SetKPs([2000]*28)
-articulation2.SetKDs([200]*28)
+articulation2.SetKPs([p]*28)
+articulation2.SetKDs([d]*28)
 
 articulation2.SetFixBaseFlag(True)
 
@@ -78,10 +81,6 @@ class GlutHandler(GlutRendererCallback):
     def beforeSimulationHandler(self):
         articulation.AddSPDForces(targetPositions, scene.timeStep)
         articulation2.AddSPDForcesABA(targetPositions, scene.timeStep)
-        pos1.append(articulation.GetJointPositionsQuaternion())
-        v1.append(articulation.GetJointVelocitiesPack4())
-        pos2.append(articulation2.GetJointPositionsQuaternion())
-        v2.append(articulation2.GetJointVelocitiesPack4())
 
 handler = GlutHandler()
 
