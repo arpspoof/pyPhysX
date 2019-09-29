@@ -390,6 +390,8 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
                 targetPositions[targetPositionsIndex + 3],
                 targetPositions[targetPositionsIndex]
             );
+            UniformQuaternion(targetPosition); // Never trust user input
+
             PxVec3 kp(
                 kps[cacheIndex],
                 kps[cacheIndex + 1],
@@ -498,6 +500,8 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
                 targetPositions[targetPositionsIndex + 3],
                 targetPositions[targetPositionsIndex]
             );
+            UniformQuaternion(targetPosition); // Never trust user input
+
             PxVec3 kp(
                 kps[cacheIndex],
                 kps[cacheIndex + 1],
