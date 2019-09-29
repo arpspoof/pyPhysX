@@ -165,6 +165,7 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
 
     PxTransform rootPose = rootLink->link->getGlobalPose();
     PxQuat rootRotation = rootPose.q * frameTransform;
+    UniformQuaternion(rootRotation);
     
     result[0] = rootPose.p.x;
     result[1] = rootPose.p.y;
@@ -191,6 +192,7 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
                 mainCache->jointPosition[cacheIndex + 1],
                 mainCache->jointPosition[cacheIndex + 2]
             ) * frameTransform;
+            UniformQuaternion(rotation);
             
             result[resultIndex] = rotation.w;
             result[resultIndex + 1] = rotation.x;
@@ -210,10 +212,12 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
 
     PxVec3 rootGlobalTranslation(positions[0], positions[1], positions[2]);
     PxQuat rootGlobalRotation(positions[4], positions[5], positions[6], positions[3]);
+    UniformQuaternion(rootGlobalRotation); // Never trust user input
     
     // transform from { x:front, y:up, z:right } to { x:up, y:back, z:right }
     PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
     PxQuat rootPose = rootGlobalRotation * frameTransform;
+    UniformQuaternion(rootPose);
 
     rootLink->link->setGlobalPose(PxTransform(rootGlobalTranslation, rootPose));
 
@@ -228,10 +232,13 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
             mainCache->jointPosition[cacheIndex] = positions[inputIndex++];
         }
         else if (jointDof == 3) {
-            PxQuat rotation = frameTransform.getConjugate() * PxQuat(
+            PxQuat rotation(
                 positions[inputIndex + 1], positions[inputIndex + 2],
                 positions[inputIndex + 3], positions[inputIndex]
-            ) * frameTransform;
+            );
+
+            UniformQuaternion(rotation); // Never trust user input
+            rotation = frameTransform.getConjugate() * rotation * frameTransform;
             
             PxQuat twist, swing;
             SeparateTwistSwing(rotation, swing, twist);
@@ -403,6 +410,8 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
             );
 
             PxQuat posDifference = targetPosition * localRotation.getConjugate();
+            UniformQuaternion(posDifference);
+
             PxVec3 axis;
             PxReal angle;
             posDifference.toRadiansAndUnitAxis(angle, axis);
@@ -509,6 +518,8 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
             );
 
             PxQuat posDifference = targetPosition * localRotation.getConjugate();
+            UniformQuaternion(posDifference);
+            
             PxVec3 axis;
             PxReal angle;
             posDifference.toRadiansAndUnitAxis(angle, axis);
