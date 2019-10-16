@@ -17,7 +17,7 @@ void InitControl() {
 
         for (int i = 0; i < nDof; i++) {
             kps.push_back(getConfigF("P_KP_" + name) * 10);
-            kds.push_back(getConfigF("P_KD_" + name) * 1);
+            kds.push_back(getConfigF("P_KD_" + name) * 5);
             fls.push_back(getConfigF("P_FL_" + name));
         }
     }
@@ -33,7 +33,7 @@ void control(PxReal dt) {
     for (int i = 0; i < 36; i++) {
         targetPosition[i] = motions[xFrame][i];
     }
-    articulation->AddSPDForcesSparse(targetPosition, dt);
+    articulation->AddSPDForcesABA(targetPosition, dt);
 
   /*  auto ps = articulation->GetJointPositionsQuaternion();
     auto vs = articulation->GetJointVelocitiesPack4();

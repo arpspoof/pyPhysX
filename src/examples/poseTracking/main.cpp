@@ -33,7 +33,7 @@ void InitControl();
 void initPhysics(bool /*interactive*/)
 {
     foundation = new Foundation();
-    scene = foundation->CreateScene(SceneDescription(), 0.001f);
+    scene = foundation->CreateScene(SceneDescription(), 0.016f);
 
     material = scene->CreateMaterial(1.f, 1.f, 0.f);
 
@@ -119,7 +119,7 @@ int main(int argc, char** argv)
     }
     auto endtime = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(endtime - starttime).count();
-    printf("%lld\n", duration);
+    printf("%ld\n", duration);
     cleanupPhysics(false);
 #endif
     return 0;
