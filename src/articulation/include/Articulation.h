@@ -166,6 +166,16 @@ public: // control
      * 
      * @warning Experimental
      */
+    void AddSPDForcesSparse(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
+    /**
+     * @brief Sparse matrix factorization implementation of stable PD control.
+     *  See Articulation::AddSPDForces for usage instructions.
+     * 
+     * @param targetPositions 
+     * @param timeStep 
+     * 
+     * @warning Experimental
+     */
     void AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
 // API END
 public:
@@ -177,6 +187,7 @@ private:
     std::vector<Joint*> jointList;
     std::vector<int> jointDofs;
     std::vector<int> linkIdCacheIndexMap;
+    std::vector<int> parentIndexMapForSparseLTL;
     int nSphericalJoint, nRevoluteJoint;
 public:
     physx::PxArticulationReducedCoordinate* pxArticulation;

@@ -33,9 +33,9 @@ void control(PxReal dt) {
     for (int i = 0; i < 36; i++) {
         targetPosition[i] = motions[xFrame][i];
     }
-    articulation->AddSPDForces(targetPosition, dt);
+    articulation->AddSPDForcesSparse(targetPosition, dt);
 
-    auto ps = articulation->GetJointPositionsQuaternion();
+  /*  auto ps = articulation->GetJointPositionsQuaternion();
     auto vs = articulation->GetJointVelocitiesPack4();
 
     printf("positions:\n");
@@ -48,5 +48,5 @@ void control(PxReal dt) {
     for (float x : vs) {
         printf("%f, ", x);
     }
-    printf("\n");
+    printf("\n");*/
 }

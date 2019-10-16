@@ -102,12 +102,13 @@ function(createExecutable varName varSrcPath)
     target_compile_options(${varName} PRIVATE -Wall -Wextra -pedantic -Werror -fPIC)
 endfunction(createExecutable)
 
+createLibrary(common ${COMMON_PATH})
 createLibrary(actors ${ACTORS_PATH})
-createLibrary(articulation ${ARTICULATION_PATH})
+createLibrary(articulation ${ARTICULATION_PATH} common)
 createLibrary(core ${CORE_PATH} articulation)
 createLibrary(renderer_glut ${RENDERER_GLUT_PATH})
 
-set(ALL_MODULE_NO_RENDERER actors articulation core)
+set(ALL_MODULE_NO_RENDERER common actors articulation core)
 set(ALL_MODULE ${ALL_MODULE_NO_RENDERER} renderer_glut)
 set(ALL_EXT_LIBS ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
 

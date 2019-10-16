@@ -4,7 +4,7 @@
 #define m(i, j) (matrix[(i - 1) * n + j - 1])
 #define v(i) (b[i - 1])
 
-void LTLInPlace(T *matrix, int *parentIndex, int n)
+void LTLInPlace(T *matrix, const int *parentIndex, int n)
 {
     int i, j;
     for (int k = n; k > 0; k--)
@@ -30,7 +30,7 @@ void LTLInPlace(T *matrix, int *parentIndex, int n)
     }
 }
 
-void backSubstitutionInPlace(T *matrix, T *b, int *parentIndex, int n)
+void backSubstitutionInPlace(T *matrix, T *b, const int *parentIndex, int n)
 {
     for (int i = n; i > 0; i--)
     {
@@ -44,7 +44,7 @@ void backSubstitutionInPlace(T *matrix, T *b, int *parentIndex, int n)
     }
 }
 
-void forwardSubstitutionInPlace(T *matrix, T *b, int *parentIndex, int n)
+void forwardSubstitutionInPlace(T *matrix, T *b, const int *parentIndex, int n)
 {
     for (int i = 1; i <= n; i++)
     {
