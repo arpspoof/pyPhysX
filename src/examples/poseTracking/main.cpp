@@ -103,24 +103,26 @@ int main(int argc, char** argv)
     }
     motioninput.close();
 
-#if 1
-    initPhysics(false);
-    auto renderer = glutRenderer::GlutRenderer::GetInstance();
-    renderer->AttachScene(scene, &glutHandler);
-    renderer->StartRenderLoop();
-    cleanupPhysics(false);
-#else
-    static const PxU32 frameCount = 10000;
-    initPhysics(false);
-    auto starttime = high_resolution_clock::now();
-    for(PxU32 i=0; i<frameCount; i++) {
-        control(scene->timeStep);
-        scene->Step();
+    if (argc > 2 && string(argv[2]) == "-p") {
+        static const PxU32 frameCount = 10000;
+        initPhysics(false);
+        auto starttime = high_resolution_clock::now();
+        for(PxU32 i=0; i<frameCount; i++) {
+            control(scene->timeStep);
+            scene->Step();
+        }
+        auto endtime = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>(endtime - starttime).count();
+        printf("%ld\n", duration);
+        cleanupPhysics(false);
     }
-    auto endtime = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(endtime - starttime).count();
-    printf("%ld\n", duration);
-    cleanupPhysics(false);
-#endif
+    else {
+        initPhysics(false);
+        auto renderer = glutRenderer::GlutRenderer::GetInstance();
+        renderer->AttachScene(scene, &glutHandler);
+        renderer->StartRenderLoop();
+        cleanupPhysics(false);
+    }
+
     return 0;
 }

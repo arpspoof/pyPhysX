@@ -156,7 +156,8 @@ public: // control
      * 
      * @param timeStep Simulation time step is required. Get this via Scene::timeStep.
      */
-    void AddSPDForces(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
+    void AddSPDForces(const std::vector<float>& targetPositions,
+        float timeStep, bool applyRootExternalForce = false); // WXYZ or angle
     /**
      * @brief Linear time implementation of stable PD control.
      *  See Articulation::AddSPDForces for usage instructions.
@@ -166,7 +167,8 @@ public: // control
      * 
      * @warning Experimental
      */
-    void AddSPDForcesSparse(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
+    void AddSPDForcesSparse(const std::vector<float>& targetPositions,
+        float timeStep, bool applyRootExternalForce = false); // WXYZ or angle
     /**
      * @brief Sparse matrix factorization implementation of stable PD control.
      *  See Articulation::AddSPDForces for usage instructions.
@@ -180,6 +182,7 @@ public: // control
 // API END
 public:
     std::vector<float> kps, kds, forceLimits;
+    std::vector<float> root_kps, root_kds;
     std::unordered_map<std::string, Link*> linkMap;
     std::unordered_map<std::string, Joint*> jointMap;
 private:

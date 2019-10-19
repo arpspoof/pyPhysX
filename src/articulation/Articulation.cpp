@@ -364,7 +364,7 @@ void Articulation::SetJointVelocitiesPack4(const std::vector<float>& velocities)
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eVELOCITY);
 }
 
-void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float timeStep)
+void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce)
 {
     int nDof = GetNDof();
 
@@ -400,7 +400,7 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
     VectorXf derivativeTorque(nDof);
 
     int nJoints = GetNJoints();
-    int targetPositionsIndex = 0;
+    int targetPositionsIndex = 7;
 
     for (int i = 0; i < nJoints; i++) {
         const Joint* joint = jointList[i];
@@ -496,9 +496,34 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
     }
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
-}
 
-void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions, float timeStep)
+    if (applyRootExternalForce) {
+        VectorXf p0c(6);
+        for (int i = 0; i < 6; i++) {
+            // Use coriolisCache by default. Any one is fine...
+            p0c(i) = coriolisCache->jointForce[nDof + i];
+        }
+        MatrixXf F(6, nDof);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 6; j < nDof + 6; j++) {
+                F(i, j - 6) = massMatrixCache->massMatrix[i * (nDof + 6) + j];
+            }
+        }
+        VectorXf FqDdotDot = F * qDotDot;
+        MatrixXf I0c(6, 6);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                I0c(i, j) = massMatrixCache->massMatrix[i * (nDof + 6) + j];
+                printf("%f, ", I0c(i, j));
+            }
+            printf("\n");
+        }
+        
+        VectorXf a0 = I0c.llt().solve(-p0c - FqDdotDot);
+    }
+}
+vector<float> pred(34);
+void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce)
 {
     int nDof = GetNDof();
 
@@ -506,14 +531,14 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
     pxArticulation->computeGeneralizedMassMatrix(*massMatrixCache, false);
 
     pxArticulation->copyInternalStateToCache(*coriolisCache, PxArticulationCache::eVELOCITY);
-    pxArticulation->computeCoriolisAndCentrifugalForce(*coriolisCache);
+    pxArticulation->computeCoriolisAndCentrifugalForce(*coriolisCache, true);
 
-    pxArticulation->computeGeneralizedGravityForce(*gravityCache);
-    pxArticulation->computeGeneralizedExternalForce(*externalForceCache);
+    pxArticulation->computeGeneralizedGravityForce(*gravityCache, true);
+    pxArticulation->computeGeneralizedExternalForce(*externalForceCache, true);
 
     vector<float> centrifugalCoriolisGravityExternal(nDof + 6);
-    for (int i = 0; i < nDof; i++) {
-        centrifugalCoriolisGravityExternal[i + 6] = -(
+    for (int i = 0; i < nDof + 6; i++) {
+        centrifugalCoriolisGravityExternal[(i + 6) % (nDof + 6)] = -(
             coriolisCache->jointForce[i] + 
             gravityCache->jointForce[i] + 
             externalForceCache->jointForce[i]
@@ -528,7 +553,7 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
     vector<float> derivativeTorque(nDof + 6);
 
     int nJoints = GetNJoints();
-    int targetPositionsIndex = 0;
+    int targetPositionsIndex = 7;
 
     for (int i = 0; i < nJoints; i++) {
         const Joint* joint = jointList[i];
@@ -621,15 +646,97 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
         rhs[i] = centrifugalCoriolisGravityExternal[i] + proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i];
     }
 
+    if (applyRootExternalForce) {
+        for (int i = 0; i < 6; i++) {
+            massMatrixCache->massMatrix[i * (nDof + 7)] += root_kds[i] * timeStep;
+        }
+        
+        PxVec3 rootGlobalPosition = rootLink->link->getGlobalPose().p;
+        PxQuat rootGlobalRotation = rootLink->link->getGlobalPose().q;
+
+        PxVec3 rootGlobalLinearVelocity = rootLink->link->getLinearVelocity();
+        
+        PxVec3 rootGlobalProportionalLinearForcePlusQDotDeltaT(
+            root_kps[0] * (targetPositions[0] - rootGlobalPosition[0] - timeStep * rootGlobalLinearVelocity[0]),
+            root_kps[1] * (targetPositions[1] - rootGlobalPosition[1] - timeStep * rootGlobalLinearVelocity[1]),
+            root_kps[2] * (targetPositions[2] - rootGlobalPosition[2] - timeStep * rootGlobalLinearVelocity[2])
+        );
+        PxVec3 rootGlobalDerivativeLinearForce(
+            -root_kds[0] * rootGlobalLinearVelocity[0],
+            -root_kds[1] * rootGlobalLinearVelocity[1],
+            -root_kds[2] * rootGlobalLinearVelocity[2]
+        );
+
+        PxVec3 rootLocalProportionalLinearForcePlusQDotDeltaT = 
+            rootGlobalRotation.rotateInv(rootGlobalProportionalLinearForcePlusQDotDeltaT);
+        PxVec3 rootLocalDerivativeLinearForce = rootGlobalRotation.rotateInv(rootGlobalDerivativeLinearForce);
+
+        for (int i = 0; i < 3; i++) {
+            proportionalTorquePlusQDotDeltaT[i] = rootLocalProportionalLinearForcePlusQDotDeltaT[i];
+            derivativeTorque[i] = rootLocalDerivativeLinearForce[i];
+            rhs[i] += proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i];
+        }
+    }
+
     LTLInPlace(massMatrixCache->massMatrix, parentIndexMapForSparseLTL.data(), nDof + 6);
     backSubstitutionInPlace(massMatrixCache->massMatrix, rhs, parentIndexMapForSparseLTL.data(), nDof + 6);
     forwardSubstitutionInPlace(massMatrixCache->massMatrix, rhs, parentIndexMapForSparseLTL.data(), nDof + 6);
+
+    printf("actual \n");
+    for (int i = 6; i < 34; i++) {
+        printf("%f, ", mainCache->jointAcceleration[i - 6]);
+    }
+    printf("\n");
+    printf("predic \n");
+    for (int i = 6; i < 34; i++) {
+        printf("%f, ", pred[i]);
+    }
+    printf("\n");
+    for (int i = 6; i < 34; i++) {
+        pred[i] = rhs[i];
+    }
+
+    PxQuat rootGlobalRotation = rootLink->link->getGlobalPose().q;
+    PxVec3 rootLocalLinearAcc(rhs[0], rhs[1], rhs[2]);
+    PxVec3 rootLocalAngularAcc(rhs[3], rhs[4], rhs[5]);
+    PxVec3 rootGlobalLinearAcc = rootGlobalRotation.rotate(rootLocalLinearAcc);
+    PxVec3 rootGlobalAngularAcc = rootGlobalRotation.rotate(rootLocalAngularAcc);
+    printf("root local linear\n");
+    for (int i = 0; i < 3; i++) printf("%f, ", rootLocalLinearAcc[i]);
+    printf("\n");
+    printf("root local angular\n");
+    for (int i = 0; i < 3; i++) printf("%f, ", rootLocalAngularAcc[i]);
+    printf("\n");
+    printf("root global linear\n");
+    for (int i = 0; i < 3; i++) printf("%f, ", rootGlobalLinearAcc[i]);
+    printf("\n");
+    printf("root global angular\n");
+    for (int i = 0; i < 3; i++) printf("%f, ", rootGlobalAngularAcc[i]);
+    printf("\n");
+
+    extern float g_ACC_test[6];
+    printf("root actual acc\n");
+    for (int i = 0; i < 6; i++) printf("%f, ", g_ACC_test[i]);
+    printf("\n");
 
     for (int i = 0; i < nDof; i++) {
         forces[i] = (PxReal)(proportionalTorquePlusQDotDeltaT[i + 6] + derivativeTorque[i + 6]
             - timeStep * kds[i] * rhs[i + 6]);
         if (forceLimits[i] > 0 && forces[i] > forceLimits[i]) {
             forces[i] = forceLimits[i];
+        }
+    }
+
+    if (applyRootExternalForce) {
+        PxVec3 rootLocalExternalLinearForce;
+        for (int i = 0; i < 3; i++) {
+            rootLocalExternalLinearForce[i] = proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i]
+                - timeStep * root_kds[i] * rhs[i];
+        }
+
+        extern float g_CRBA_RootExternalSpatialForce[6];
+        for (int i = 0; i < 3; i++) {
+            g_CRBA_RootExternalSpatialForce[i] = rootLocalExternalLinearForce[i];
         }
     }
 
@@ -649,7 +756,7 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
     vector<float> derivativeTorque(nDof);
 
     int nJoints = GetNJoints();
-    int targetPositionsIndex = 0;
+    int targetPositionsIndex = 7;
 
     for (int i = 0; i < nJoints; i++) {
         const Joint* joint = jointList[i];
