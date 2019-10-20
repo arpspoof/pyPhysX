@@ -178,7 +178,8 @@ public: // control
      * 
      * @warning Experimental
      */
-    void AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
+    void AddSPDForcesABA(const std::vector<float>& targetPositions,
+        float timeStep, bool applyRootExternalForce = false); // WXYZ or angle
 // API END
 public:
     std::vector<float> kps, kds, forceLimits;

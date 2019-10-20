@@ -559,7 +559,7 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
 
-    extern float g_CRBA_RootExternalSpatialForce[6];
+    extern float g_RootExternalSpatialForce[6];
     if (applyRootExternalForce) {
         VectorXf p0c(6);
         for (int i = 0; i < 6; i++) {
@@ -570,11 +570,11 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
         VectorXf q0DotDot = I0cPlusKdDeltaT.llt().solve(rootForcePD - p0c - F * qDotDot);
         
         for (int i = 0; i < 6; i++) {
-            g_CRBA_RootExternalSpatialForce[i] = rootForcePD(i) - timeStep * root_kds[i] * q0DotDot(i);
+            g_RootExternalSpatialForce[i] = rootForcePD(i) - timeStep * root_kds[i] * q0DotDot(i);
         }
     }
     else {
-        memset(g_CRBA_RootExternalSpatialForce, 0, sizeof(float) * 6);
+        memset(g_RootExternalSpatialForce, 0, sizeof(float) * 6);
     }
 }
 
@@ -748,7 +748,7 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
         }
     }
 
-    extern float g_CRBA_RootExternalSpatialForce[6];
+    extern float g_RootExternalSpatialForce[6];
     if (applyRootExternalForce) {
         PxVec3 rootLocalExternalLinearForce;
         for (int i = 0; i < 3; i++) {
@@ -757,18 +757,18 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
         }
 
         for (int i = 0; i < 3; i++) {
-            g_CRBA_RootExternalSpatialForce[i] = rootLocalExternalLinearForce[i];
+            g_RootExternalSpatialForce[i] = rootLocalExternalLinearForce[i];
         }
     }
     else {
-        memset(g_CRBA_RootExternalSpatialForce, 0, sizeof(float) * 6);
+        memset(g_RootExternalSpatialForce, 0, sizeof(float) * 6);
     }
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
     delete rhs;
 }
 
-void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep)
+void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce)
 {
     int nDof = GetNDof();
 
@@ -879,6 +879,44 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
     g_SPD_Kd = kds.data();
     g_SPD_LinkIdCacheIndexMap = linkIdCacheIndexMap.data();
 #endif
+
+    if (applyRootExternalForce) {
+        vector<float> rootForcePD(6, 0);
+
+        PxVec3 rootGlobalPosition = rootLink->link->getGlobalPose().p;
+        PxQuat rootGlobalRotation = rootLink->link->getGlobalPose().q;
+
+        PxVec3 rootGlobalLinearVelocity = rootLink->link->getLinearVelocity();
+        
+        PxVec3 rootGlobalProportionalLinearForcePlusQDotDeltaT(
+            root_kps[0] * (targetPositions[0] - rootGlobalPosition[0] - timeStep * rootGlobalLinearVelocity[0]),
+            root_kps[1] * (targetPositions[1] - rootGlobalPosition[1] - timeStep * rootGlobalLinearVelocity[1]),
+            root_kps[2] * (targetPositions[2] - rootGlobalPosition[2] - timeStep * rootGlobalLinearVelocity[2])
+        );
+        PxVec3 rootGlobalDerivativeLinearForce(
+            -root_kds[0] * rootGlobalLinearVelocity[0],
+            -root_kds[1] * rootGlobalLinearVelocity[1],
+            -root_kds[2] * rootGlobalLinearVelocity[2]
+        );
+
+        PxVec3 rootLocalProportionalLinearForcePlusQDotDeltaT = 
+            rootGlobalRotation.rotateInv(rootGlobalProportionalLinearForcePlusQDotDeltaT);
+        PxVec3 rootLocalDerivativeLinearForce = rootGlobalRotation.rotateInv(rootGlobalDerivativeLinearForce);
+
+        for (int i = 0; i < 3; i++) {
+            rootForcePD[i] += rootLocalProportionalLinearForcePlusQDotDeltaT[i] + rootLocalDerivativeLinearForce[i];
+        }
+
+#ifdef ENABLE_SPD_ABA
+        extern bool g_ApplyABARootForce;
+        extern float g_RootExternalSpatialForce[6];
+        extern const float* g_ABA_Root_Kd;
+
+        g_ApplyABARootForce = true;
+        g_ABA_Root_Kd = root_kds.data();
+        memcpy(g_RootExternalSpatialForce, rootForcePD.data(), 6 * sizeof(float));
+#endif
+    }
 }
 
 void Articulation::FetchKinematicData() const
