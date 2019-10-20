@@ -366,6 +366,17 @@ void Articulation::SetJointVelocitiesPack4(const std::vector<float>& velocities)
 
 void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce)
 {
+    extern const float* g_InvD_Root_Kd;
+    extern float g_InvD_Dt;
+
+    if (applyRootExternalForce) {
+        g_InvD_Root_Kd = root_kds.data();
+        g_InvD_Dt = timeStep;
+    }
+    else {
+        g_InvD_Root_Kd = nullptr;
+    }
+
     int nDof = GetNDof();
 
     pxArticulation->commonInit();
@@ -487,6 +498,57 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
         }
     }
 
+    VectorXf rootForcePD;
+    MatrixXf I0cPlusKdDeltaT;
+    MatrixXf F;
+
+    if (applyRootExternalForce) {
+        rootForcePD = VectorXf::Zero(6);
+
+        PxVec3 rootGlobalPosition = rootLink->link->getGlobalPose().p;
+        PxQuat rootGlobalRotation = rootLink->link->getGlobalPose().q;
+
+        PxVec3 rootGlobalLinearVelocity = rootLink->link->getLinearVelocity();
+        
+        PxVec3 rootGlobalProportionalLinearForcePlusQDotDeltaT(
+            root_kps[0] * (targetPositions[0] - rootGlobalPosition[0] - timeStep * rootGlobalLinearVelocity[0]),
+            root_kps[1] * (targetPositions[1] - rootGlobalPosition[1] - timeStep * rootGlobalLinearVelocity[1]),
+            root_kps[2] * (targetPositions[2] - rootGlobalPosition[2] - timeStep * rootGlobalLinearVelocity[2])
+        );
+        PxVec3 rootGlobalDerivativeLinearForce(
+            -root_kds[0] * rootGlobalLinearVelocity[0],
+            -root_kds[1] * rootGlobalLinearVelocity[1],
+            -root_kds[2] * rootGlobalLinearVelocity[2]
+        );
+
+        PxVec3 rootLocalProportionalLinearForcePlusQDotDeltaT = 
+            rootGlobalRotation.rotateInv(rootGlobalProportionalLinearForcePlusQDotDeltaT);
+        PxVec3 rootLocalDerivativeLinearForce = rootGlobalRotation.rotateInv(rootGlobalDerivativeLinearForce);
+
+        for (int i = 0; i < 3; i++) {
+            rootForcePD(i) += rootLocalProportionalLinearForcePlusQDotDeltaT[i] + rootLocalDerivativeLinearForce[i];
+        }
+
+        I0cPlusKdDeltaT = MatrixXf(6, 6);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 6; j++) {
+                I0cPlusKdDeltaT(i, j) = massMatrixCache->massMatrix[i * (nDof + 6) + j];
+            }
+        }
+        for (int i = 0; i < 6; i++) {
+            I0cPlusKdDeltaT(i, i) += root_kds[i] * timeStep;
+        }
+
+        F = MatrixXf(6, nDof);
+        for (int i = 0; i < 6; i++) {
+            for (int j = 6; j < nDof + 6; j++) {
+                F(i, j - 6) = massMatrixCache->massMatrix[i * (nDof + 6) + j];
+            }
+        }
+
+        centrifugalCoriolisGravityExternal -= F.transpose() * I0cPlusKdDeltaT.inverse() * rootForcePD;
+    }
+
     VectorXf qDotDot = H.llt().solve(centrifugalCoriolisGravityExternal + proportionalTorquePlusQDotDeltaT + derivativeTorque);
     for (int i = 0; i < nDof; i++) {
         forces[i] = (PxReal)(proportionalTorquePlusQDotDeltaT(i) + derivativeTorque(i) - timeStep * kds[i] * qDotDot(i));
@@ -497,34 +559,30 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
 
+    extern float g_CRBA_RootExternalSpatialForce[6];
     if (applyRootExternalForce) {
         VectorXf p0c(6);
         for (int i = 0; i < 6; i++) {
-            // Use coriolisCache by default. Any one is fine...
-            p0c(i) = coriolisCache->jointForce[nDof + i];
+            p0c(i) = coriolisCache->jointForce[nDof + i] + 
+                gravityCache->jointForce[nDof + i] +
+                externalForceCache->jointForce[nDof + i];
         }
-        MatrixXf F(6, nDof);
-        for (int i = 0; i < 6; i++) {
-            for (int j = 6; j < nDof + 6; j++) {
-                F(i, j - 6) = massMatrixCache->massMatrix[i * (nDof + 6) + j];
-            }
-        }
-        VectorXf FqDdotDot = F * qDotDot;
-        MatrixXf I0c(6, 6);
-        for (int i = 0; i < 6; i++) {
-            for (int j = 0; j < 6; j++) {
-                I0c(i, j) = massMatrixCache->massMatrix[i * (nDof + 6) + j];
-                printf("%f, ", I0c(i, j));
-            }
-            printf("\n");
-        }
+        VectorXf q0DotDot = I0cPlusKdDeltaT.llt().solve(rootForcePD - p0c - F * qDotDot);
         
-        VectorXf a0 = I0c.llt().solve(-p0c - FqDdotDot);
+        for (int i = 0; i < 6; i++) {
+            g_CRBA_RootExternalSpatialForce[i] = rootForcePD(i) - timeStep * root_kds[i] * q0DotDot(i);
+        }
+    }
+    else {
+        memset(g_CRBA_RootExternalSpatialForce, 0, sizeof(float) * 6);
     }
 }
-vector<float> pred(34);
+
 void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce)
 {
+    extern const float* g_InvD_Root_Kd;
+    g_InvD_Root_Kd = nullptr;
+
     int nDof = GetNDof();
 
     pxArticulation->commonInit();
@@ -682,43 +740,6 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
     backSubstitutionInPlace(massMatrixCache->massMatrix, rhs, parentIndexMapForSparseLTL.data(), nDof + 6);
     forwardSubstitutionInPlace(massMatrixCache->massMatrix, rhs, parentIndexMapForSparseLTL.data(), nDof + 6);
 
-    printf("actual \n");
-    for (int i = 6; i < 34; i++) {
-        printf("%f, ", mainCache->jointAcceleration[i - 6]);
-    }
-    printf("\n");
-    printf("predic \n");
-    for (int i = 6; i < 34; i++) {
-        printf("%f, ", pred[i]);
-    }
-    printf("\n");
-    for (int i = 6; i < 34; i++) {
-        pred[i] = rhs[i];
-    }
-
-    PxQuat rootGlobalRotation = rootLink->link->getGlobalPose().q;
-    PxVec3 rootLocalLinearAcc(rhs[0], rhs[1], rhs[2]);
-    PxVec3 rootLocalAngularAcc(rhs[3], rhs[4], rhs[5]);
-    PxVec3 rootGlobalLinearAcc = rootGlobalRotation.rotate(rootLocalLinearAcc);
-    PxVec3 rootGlobalAngularAcc = rootGlobalRotation.rotate(rootLocalAngularAcc);
-    printf("root local linear\n");
-    for (int i = 0; i < 3; i++) printf("%f, ", rootLocalLinearAcc[i]);
-    printf("\n");
-    printf("root local angular\n");
-    for (int i = 0; i < 3; i++) printf("%f, ", rootLocalAngularAcc[i]);
-    printf("\n");
-    printf("root global linear\n");
-    for (int i = 0; i < 3; i++) printf("%f, ", rootGlobalLinearAcc[i]);
-    printf("\n");
-    printf("root global angular\n");
-    for (int i = 0; i < 3; i++) printf("%f, ", rootGlobalAngularAcc[i]);
-    printf("\n");
-
-    extern float g_ACC_test[6];
-    printf("root actual acc\n");
-    for (int i = 0; i < 6; i++) printf("%f, ", g_ACC_test[i]);
-    printf("\n");
-
     for (int i = 0; i < nDof; i++) {
         forces[i] = (PxReal)(proportionalTorquePlusQDotDeltaT[i + 6] + derivativeTorque[i + 6]
             - timeStep * kds[i] * rhs[i + 6]);
@@ -727,6 +748,7 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
         }
     }
 
+    extern float g_CRBA_RootExternalSpatialForce[6];
     if (applyRootExternalForce) {
         PxVec3 rootLocalExternalLinearForce;
         for (int i = 0; i < 3; i++) {
@@ -734,10 +756,12 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
                 - timeStep * root_kds[i] * rhs[i];
         }
 
-        extern float g_CRBA_RootExternalSpatialForce[6];
         for (int i = 0; i < 3; i++) {
             g_CRBA_RootExternalSpatialForce[i] = rootLocalExternalLinearForce[i];
         }
+    }
+    else {
+        memset(g_CRBA_RootExternalSpatialForce, 0, sizeof(float) * 6);
     }
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
