@@ -26,7 +26,7 @@ void InitControl() {
     articulation->SetKDs(kds);
 
     float rootKpL = 10000.f, rootKdL = 1000.f;
-    float rootKpA = 0*10000.f, rootKdA = 0*1000.f;
+    float rootKpA = 10000.f, rootKdA = 1000.f;
     articulation->root_kps = { rootKpL, rootKpL, rootKpL, rootKpA, rootKpA, rootKpA };
     articulation->root_kds = { rootKdL, rootKdL, rootKdL, rootKdA, rootKdA, rootKdA };
 }

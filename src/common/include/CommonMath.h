@@ -26,3 +26,11 @@ inline void SeparateTwistSwing(const physx::PxQuat& quat, physx::PxQuat& swing, 
     UniformQuaternion(twist);
     UniformQuaternion(swing);
 }
+
+inline physx::PxVec3 QuatToExpMap(physx::PxQuat q)
+{
+    physx::PxVec3 axis;
+    physx::PxReal angle;
+    q.toRadiansAndUnitAxis(angle, axis);
+    return axis *= angle;
+}

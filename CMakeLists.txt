@@ -83,7 +83,7 @@ set(SYS_LIBS
 )
 
 function(createLibrary varName varSrcPath)
-    file(GLOB TMP_SRC
+    file(GLOB_RECURSE TMP_SRC
         "${varSrcPath}/include/*.h"
         "${varSrcPath}/*.cpp"
     )
@@ -93,7 +93,7 @@ function(createLibrary varName varSrcPath)
 endfunction(createLibrary)
 
 function(createExecutable varName varSrcPath)
-    file(GLOB TMP_SRC
+    file(GLOB_RECURSE TMP_SRC
         "${varSrcPath}/include/*.h"
         "${varSrcPath}/*.cpp"
     )
