@@ -10,13 +10,19 @@ plane.SetupCollisionFiltering(1, 2 | 4)
 
 articulation = scene.CreateArticulation("../resources/humanoid.urdf", material, vec3(0, 3.55 + 0.2, 0))
 
-articulation.GetLinkByName("right_ankle").SetupCollisionFiltering(2, 1 | 4)
-articulation.GetLinkByName("left_ankle").SetupCollisionFiltering(4, 1 | 2)
+# enable highest bit in collision group to disable collisions between these objects
+# -2147483648 = 0x80000000, please use this negative number otherwise there will be overflow error
+# try removing the highest bit to see differences
+articulation.GetLinkByName("right_knee").SetupCollisionFiltering(2 | (-2147483648), 1)
+articulation.GetLinkByName("left_knee").SetupCollisionFiltering(4 | (-2147483648), 1)
+articulation.GetLinkByName("right_ankle").SetupCollisionFiltering(2 | (-2147483648), 1)
+articulation.GetLinkByName("left_ankle").SetupCollisionFiltering(4 | (-2147483648), 1)
 
 articulation.SetKPs([2000]*28)
 articulation.SetKDs([200]*28)
 
-targetPositions = [ 0.998819, 0.010960, -0.047140, -0.004159, 0.999996, 0.002537, 0.000256, 0.001070, 0.949948, 0.020403, -0.059407, 0.306028, -0.195258, 0.999520, 0.016056, 0.020116, 0.017256, 0.985617, -0.063945, 0.093094, -0.125710, 0.171284, 0.986347, -0.017107, 0.091650, -0.135749, -0.453371, 0.975329, 0.126891, -0.033021, 0.177601, 0.965989, 0.188903, -0.141940, 0.105041, 0.579958 ]
+targetPositions = [0]*3 + [1, 0, 0, 0] + [ 0.998819, 0.010960, -0.047140, -0.004159, 0.999996, 0.002537, 0.000256, 0.001070, 0.949948, 0.020403, -0.059407, 0.306028, -0.195258, 0.999520, 0.016056, 0.020116, 0.017256, 0.985617, -0.063945, 0.093094, -0.125710, 0.171284, 0.986347, -0.017107, 0.091650, -0.135749, -0.453371, 0.975329, 0.126891, -0.033021, 0.177601, 0.965989, 0.188903, -0.141940, 0.105041, 0.579958 ]
+targetPositions[15] = targetPositions[16] = 0.7
 
 '''
 q = [1, 0, 0, 0]

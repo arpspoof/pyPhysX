@@ -158,6 +158,11 @@ PxFilterFlags Scene::CollisionShader(
         pairFlags = PxPairFlag::eTRIGGER_DEFAULT;
         return PxFilterFlag::eDEFAULT;
     }
+
+    // special collision group 31 is used for collision killing
+    if (filterData0.word0 & filterData1.word0 & (1 << 31))
+        return PxFilterFlag::eKILL;
+
     // generate contacts for all that were not filtered above
     pairFlags = PxPairFlag::eCONTACT_DEFAULT;
 
