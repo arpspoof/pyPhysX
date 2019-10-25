@@ -88,17 +88,39 @@ void cleanupPhysics()
     delete foundation;
 }
 
+int controller = 0; // 0-ABA 1-Sparse 2-Dense
+float trackingFrequency = 0.033f;
+
 void control(PxReal dt) {
     static int currentRound = 0;
+    static float cumulateTime = 0;
+    motions[xFrame][1] = 4;
 
-    articulation->AddSPDForcesABA(motions[xFrame], dt, true);
-    xFrame = (xFrame + 1) % motions.size();
-    
-    if (xFrame == 0) {
-        currentRound++;
-        if (nRounds > 0 && currentRound == nRounds) {
-            reset();
-            currentRound = 0;
+    switch (controller)
+    {
+    case 0:
+        articulation->AddSPDForcesABA(motions[xFrame], dt, true);
+        break;
+    case 1:
+        articulation->AddSPDForcesSparse(motions[xFrame], dt, true);
+        break;
+    case 2:
+        articulation->AddSPDForces(motions[xFrame], dt, true);
+        break;
+    default:
+        break;
+    }
+
+    cumulateTime += dt;
+    if (cumulateTime >= (currentRound * motions.size() + xFrame + 1) * trackingFrequency) {
+        xFrame = (xFrame + 1) % motions.size();
+        if (xFrame == 0) {
+            currentRound++;
+            if (nRounds > 0 && currentRound == nRounds) {
+                reset();
+                currentRound = 0;
+                cumulateTime = 0;
+            }
         }
     }
 }
@@ -124,7 +146,9 @@ int main(int argc, char** argv)
     opts.add_options()
         ("p,performance", "Run performance test")
         ("r,round", "Number of rounds", cxxopts::value<int>()->default_value("0"))
+        ("c,control", "Controller", cxxopts::value<int>()->default_value("0"))
         ("m,mocap", "Mocap data path", cxxopts::value<string>()->default_value("testMotion.txt"))
+        ("f,frequency", "Tracking frequency", cxxopts::value<float>()->default_value("0.033"))
         ("t,dt", "Time step", cxxopts::value<float>()->default_value("0.033"))
         ("kp", "Joint kp", cxxopts::value<float>()->default_value("25000"))
         ("kd", "Joint kd", cxxopts::value<float>()->default_value("6600"))
@@ -137,6 +161,8 @@ int main(int argc, char** argv)
     rkp = result["rkp"].as<float>();
     rkd = result["rkd"].as<float>();
     nRounds = result["round"].as<int>();
+    controller = result["control"].as<int>();
+    trackingFrequency = result["frequency"].as<float>();
 
     string mocap = "testMotion.txt";
     if (result["mocap"].as<string>() != "") mocap = result["mocap"].as<string>();
