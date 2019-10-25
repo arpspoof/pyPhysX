@@ -180,7 +180,7 @@ swig_add_library(pyPhysX
 swig_link_libraries(pyPhysX ${ALL_MODULE} ${ALL_EXT_LIBS})
 
 add_custom_target(copy_so ALL
-    COMMAND cp -f "${CMAKE_BINARY_DIR}/_pyPhysX.so" "${RESOURCES_PATH}/sample.py" "" "${BUILD_API_DIR}"
+    COMMAND cp -f "${CMAKE_BINARY_DIR}/_pyPhysX.so" "${RESOURCES_PATH}/sample.py" "${BUILD_API_DIR}"
     DEPENDS "${RESOURCES_PATH}/sample.py"
 )
 
