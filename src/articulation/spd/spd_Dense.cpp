@@ -7,7 +7,7 @@
 using namespace std;
 using namespace physx;
 using namespace Eigen;
-
+static vector<float> pred(36);
 void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce)
 {
     extern const float* g_InvD_Root_Kd;
@@ -218,6 +218,9 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
 
         centrifugalCoriolisGravityExternal -= F.transpose() * I0cPlusKdDeltaT.inverse() * rootForcePD;
     }
+        printf("pred:\n");
+    for (int i = 0; i < 34; i++) printf("%f, ", pred[i]);
+    printf("\n");
 
     VectorXf qDotDot = H.llt().solve(centrifugalCoriolisGravityExternal + proportionalTorquePlusQDotDeltaT + derivativeTorque);
     for (int i = 0; i < nDof; i++) {
@@ -226,6 +229,7 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
             forces[i] = forceLimits[i];
         }
     }
+    for (int i = 0; i < 28; i++) pred[i + 6] = qDotDot(i);
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
 
@@ -238,6 +242,12 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
                 externalForceCache->jointForce[nDof + i];
         }
         VectorXf q0DotDot = I0cPlusKdDeltaT.llt().solve(rootForcePD - p0c - F * qDotDot);
+
+    printf("actual:\n");
+    extern float g_ACC_test[6];
+    for (int i = 0; i < 6; i++) {printf("%f, ", g_ACC_test[i]); pred[i] = qDotDot(i);}
+    for (int i = 0; i < 28; i++) {printf("%f, ", mainCache->jointAcceleration[i]); }
+    printf("\n");
         
         for (int i = 0; i < 6; i++) {
             g_RootExternalSpatialForce[i] = rootForcePD(i) - timeStep * root_kds[i] * q0DotDot(i);
