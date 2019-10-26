@@ -31,6 +31,9 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
             externalForceCache->jointForce[i]
         );
     }
+    for (int i = 0; i < 3; i++) {
+        swap(centrifugalCoriolisGravityExternal[i], centrifugalCoriolisGravityExternal[i + 3]);
+    }
 
     PxReal *positions = mainCache->jointPosition;
     PxReal *velocities = mainCache->jointVelocity;
@@ -145,14 +148,14 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
         PxVec3 rootGlobalAngularVelocity = rootLink->link->getAngularVelocity();
         
         PxVec3 rootGlobalProportionalLinearForcePlusQDotDeltaT(
-            root_kps[0] * (targetPositions[0] - rootGlobalPosition[0] - timeStep * rootGlobalLinearVelocity[0]),
-            root_kps[1] * (targetPositions[1] - rootGlobalPosition[1] - timeStep * rootGlobalLinearVelocity[1]),
-            root_kps[2] * (targetPositions[2] - rootGlobalPosition[2] - timeStep * rootGlobalLinearVelocity[2])
+            root_kps[3] * (targetPositions[0] - rootGlobalPosition[0] - timeStep * rootGlobalLinearVelocity[0]),
+            root_kps[4] * (targetPositions[1] - rootGlobalPosition[1] - timeStep * rootGlobalLinearVelocity[1]),
+            root_kps[5] * (targetPositions[2] - rootGlobalPosition[2] - timeStep * rootGlobalLinearVelocity[2])
         );
         PxVec3 rootGlobalDerivativeLinearForce(
-            -root_kds[0] * rootGlobalLinearVelocity[0],
-            -root_kds[1] * rootGlobalLinearVelocity[1],
-            -root_kds[2] * rootGlobalLinearVelocity[2]
+            -root_kds[3] * rootGlobalLinearVelocity[0],
+            -root_kds[4] * rootGlobalLinearVelocity[1],
+            -root_kds[5] * rootGlobalLinearVelocity[2]
         );
 
         PxVec3 rootLocalProportionalLinearForcePlusQDotDeltaT = 
@@ -167,14 +170,14 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
 
         PxVec3 diffRotExpMapGlobal = QuatToExpMap(rootGlobalTargetRotation * rootGlobalRotation.getConjugate());
         PxVec3 rootGlobalProportionalTorquePlusQDotDeltaT(
-            root_kps[3] * (diffRotExpMapGlobal[0] - timeStep * rootGlobalAngularVelocity[0]),
-            root_kps[4] * (diffRotExpMapGlobal[1] - timeStep * rootGlobalAngularVelocity[1]),
-            root_kps[5] * (diffRotExpMapGlobal[2] - timeStep * rootGlobalAngularVelocity[2])
+            root_kps[0] * (diffRotExpMapGlobal[0] - timeStep * rootGlobalAngularVelocity[0]),
+            root_kps[1] * (diffRotExpMapGlobal[1] - timeStep * rootGlobalAngularVelocity[1]),
+            root_kps[2] * (diffRotExpMapGlobal[2] - timeStep * rootGlobalAngularVelocity[2])
         );
         PxVec3 rootGlobalDerivativeTorque(
-            -root_kds[3] * rootGlobalAngularVelocity[0],
-            -root_kds[4] * rootGlobalAngularVelocity[1],
-            -root_kds[5] * rootGlobalAngularVelocity[2]
+            -root_kds[0] * rootGlobalAngularVelocity[0],
+            -root_kds[1] * rootGlobalAngularVelocity[1],
+            -root_kds[2] * rootGlobalAngularVelocity[2]
         );
 
         PxVec3 rootLocalProportionalTorquePlusQDotDeltaT = 
@@ -182,16 +185,25 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
         PxVec3 rootLocalDerivativeTorque = rootGlobalRotation.rotateInv(rootGlobalDerivativeTorque);
 
         for (int i = 0; i < 3; i++) {
-            proportionalTorquePlusQDotDeltaT[i] = rootLocalProportionalLinearForcePlusQDotDeltaT[i];
-            derivativeTorque[i] = rootLocalDerivativeLinearForce[i];
+            proportionalTorquePlusQDotDeltaT[i] = rootLocalProportionalTorquePlusQDotDeltaT[i];
+            derivativeTorque[i] = rootLocalDerivativeTorque[i];
             rhs[i] += proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i];
         }
         for (int i = 3; i < 6; i++) {
-            proportionalTorquePlusQDotDeltaT[i] = rootLocalProportionalTorquePlusQDotDeltaT[i - 3];
-            derivativeTorque[i] = rootLocalDerivativeTorque[i - 3];
+            proportionalTorquePlusQDotDeltaT[i] = rootLocalProportionalLinearForcePlusQDotDeltaT[i - 3];
+            derivativeTorque[i] = rootLocalDerivativeLinearForce[i - 3];
             rhs[i] += proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i];
         }
     }
+
+    printf("mass matrix\n");
+    for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 6; j++) {
+            printf("%f, ", massMatrixCache->massMatrix[i * 34 + j]);
+        }
+        printf("\n");
+    }
+    printf("\n");
 
     LTLInPlace(massMatrixCache->massMatrix, parentIndexMapForSparseLTL.data(), nDof + 6);
     backSubstitutionInPlace(massMatrixCache->massMatrix, rhs, parentIndexMapForSparseLTL.data(), nDof + 6);
@@ -218,8 +230,12 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
 
     extern float g_RootExternalSpatialForce[6];
     if (applyRootExternalForce) {
-        for (int i = 0; i < 6; i++) {
-            g_RootExternalSpatialForce[i] = proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i]
+        for (int i = 0; i < 3; i++) {
+            g_RootExternalSpatialForce[i + 3] = proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i]
+                - timeStep * root_kds[i] * rhs[i];
+        }
+        for (int i = 3; i < 6; i++) {
+            g_RootExternalSpatialForce[i - 3] = proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i]
                 - timeStep * root_kds[i] * rhs[i];
         }
     }

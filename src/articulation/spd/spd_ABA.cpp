@@ -128,14 +128,14 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
         PxVec3 rootGlobalAngularVelocity = rootLink->link->getAngularVelocity();
         
         PxVec3 rootGlobalProportionalLinearForcePlusQDotDeltaT(
-            root_kps[0] * (targetPositions[0] - rootGlobalPosition[0] - timeStep * rootGlobalLinearVelocity[0]),
-            root_kps[1] * (targetPositions[1] - rootGlobalPosition[1] - timeStep * rootGlobalLinearVelocity[1]),
-            root_kps[2] * (targetPositions[2] - rootGlobalPosition[2] - timeStep * rootGlobalLinearVelocity[2])
+            root_kps[3] * (targetPositions[0] - rootGlobalPosition[0] - timeStep * rootGlobalLinearVelocity[0]),
+            root_kps[4] * (targetPositions[1] - rootGlobalPosition[1] - timeStep * rootGlobalLinearVelocity[1]),
+            root_kps[5] * (targetPositions[2] - rootGlobalPosition[2] - timeStep * rootGlobalLinearVelocity[2])
         );
         PxVec3 rootGlobalDerivativeLinearForce(
-            -root_kds[0] * rootGlobalLinearVelocity[0],
-            -root_kds[1] * rootGlobalLinearVelocity[1],
-            -root_kds[2] * rootGlobalLinearVelocity[2]
+            -root_kds[3] * rootGlobalLinearVelocity[0],
+            -root_kds[4] * rootGlobalLinearVelocity[1],
+            -root_kds[5] * rootGlobalLinearVelocity[2]
         );
 
         PxVec3 rootLocalProportionalLinearForcePlusQDotDeltaT = 
@@ -150,14 +150,14 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
 
         PxVec3 diffRotExpMapGlobal = QuatToExpMap(rootGlobalTargetRotation * rootGlobalRotation.getConjugate());
         PxVec3 rootGlobalProportionalTorquePlusQDotDeltaT(
-            root_kps[3] * (diffRotExpMapGlobal[0] - timeStep * rootGlobalAngularVelocity[0]),
-            root_kps[4] * (diffRotExpMapGlobal[1] - timeStep * rootGlobalAngularVelocity[1]),
-            root_kps[5] * (diffRotExpMapGlobal[2] - timeStep * rootGlobalAngularVelocity[2])
+            root_kps[0] * (diffRotExpMapGlobal[0] - timeStep * rootGlobalAngularVelocity[0]),
+            root_kps[1] * (diffRotExpMapGlobal[1] - timeStep * rootGlobalAngularVelocity[1]),
+            root_kps[2] * (diffRotExpMapGlobal[2] - timeStep * rootGlobalAngularVelocity[2])
         );
         PxVec3 rootGlobalDerivativeTorque(
-            -root_kds[3] * rootGlobalAngularVelocity[0],
-            -root_kds[4] * rootGlobalAngularVelocity[1],
-            -root_kds[5] * rootGlobalAngularVelocity[2]
+            -root_kds[0] * rootGlobalAngularVelocity[0],
+            -root_kds[1] * rootGlobalAngularVelocity[1],
+            -root_kds[2] * rootGlobalAngularVelocity[2]
         );
 
         PxVec3 rootLocalProportionalTorquePlusQDotDeltaT = 

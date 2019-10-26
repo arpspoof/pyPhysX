@@ -61,8 +61,8 @@ void InitControl() {
     float rootKpL = 0*10000.f, rootKdL = 0*1000.f;
     float rootKpA = rkp, rootKdA = rkd;
     // 2000, 1600 is a good combo for walking (t = 0.033, kp = 75000, kd = 6600)
-    articulation->root_kps = { rootKpL, rootKpL, rootKpL, rootKpA, rootKpA, rootKpA };
-    articulation->root_kds = { rootKdL, rootKdL, rootKdL, rootKdA, rootKdA, rootKdA };
+    articulation->root_kps = { rootKpA, rootKpA, rootKpA, rootKpL, rootKpL, rootKpL };
+    articulation->root_kds = { rootKdA, rootKdA, rootKdA, rootKdL, rootKdL, rootKdL };
 
     reset();
 }
