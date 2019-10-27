@@ -6,7 +6,9 @@
 
 using namespace std;
 using namespace physx;
+
 static vector<float> pred(36);
+
 void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce)
 {
     extern const float* g_InvD_Root_Kd;
@@ -197,14 +199,28 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
     backSubstitutionInPlace(massMatrixCache->massMatrix, rhs, parentIndexMapForSparseLTL.data(), nDof + 6);
     forwardSubstitutionInPlace(massMatrixCache->massMatrix, rhs, parentIndexMapForSparseLTL.data(), nDof + 6);
 
-    printf("pred:\n");
-    for (int i = 0; i < 34; i++) printf("%f, ", pred[i]);
+/*    printf("pred (exch):\n");
+    for (int i = 0; i < 6; i++) printf("%f, ", pred[(i + 3) % 6]);
+    for (int i = 6; i < 34; i++) printf("%f, ", pred[i]);
     printf("\n");
     printf("actual:\n");
     extern float g_ACC_test[6];
     for (int i = 0; i < 6; i++) printf("%f, ", g_ACC_test[i]);
     for (int i = 0; i < 28; i++) printf("%f, ", mainCache->jointAcceleration[i]);
-    printf("\n");
+    printf("\n");*/
+
+ /*   for (int i = 0; i < 3; i++) {
+        if (abs(pred[(i + 3) % 6] - g_ACC_test[i]) > 0.4f) {
+            printf("error! i = %d, e = %f\n", i, abs(pred[(i + 3) % 6] - g_ACC_test[i]));
+            getchar();
+        }
+    }
+    for (int i = 6; i < 34; i++) {
+        if (abs(pred[i] - mainCache->jointAcceleration[i - 6]) > 0.4f) {
+            printf("error! i = %d, e = %f\n", i, abs(pred[i] - mainCache->jointAcceleration[i - 6]));
+            getchar();
+        }
+    }*/
 
     for (int i = 0; i < 34; i++) pred[i] = rhs[i];
 
@@ -229,4 +245,15 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
     delete rhs;
+
+    static int parity = 0;
+    if (parity == 1)
+        AddSPDForcesABA(targetPositions, timeStep, applyRootExternalForce);
+    else {
+        extern const int*		g_SPD_LinkIdCacheIndexMap;
+        extern bool g_ApplyABARootForce;
+        g_SPD_LinkIdCacheIndexMap = nullptr;
+        g_ApplyABARootForce = false;
+    }
+  //  parity = (parity + 1) % 10;
 }

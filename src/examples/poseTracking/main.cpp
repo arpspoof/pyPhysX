@@ -91,6 +91,9 @@ void cleanupPhysics()
 int controller = 0; // 0-ABA 1-Sparse 2-Dense
 float trackingFrequency = 0.033f;
 
+static ofstream ot("/home/zhiqiy/target.txt");
+static ofstream oc("/home/zhiqiy/current.txt");
+
 void control(PxReal dt) {
     static int currentRound = 0;
     static float cumulateTime = 0;
@@ -110,6 +113,13 @@ void control(PxReal dt) {
     default:
         break;
     }
+
+    for (int i = 0; i < 43; i++) ot << motions[xFrame][i] << " ";
+    ot << endl;
+
+    auto current = articulation->GetJointPositionsQuaternion();
+    for (int i = 0; i < 43; i++) oc << current[i] << " ";
+    oc << endl;
 
     cumulateTime += dt;
     if (cumulateTime >= (currentRound * motions.size() + xFrame + 1) * trackingFrequency) {
@@ -179,7 +189,7 @@ int main(int argc, char** argv)
     for (auto & r : motions) r[1] += 3.15f;
 
     if (result["performance"].as<bool>()) {
-        static const PxU32 frameCount = 10000;
+        static const PxU32 frameCount = 800;
         initPhysics(result["dt"].as<float>());
         auto starttime = high_resolution_clock::now();
         for(PxU32 i = 0; i < frameCount; i++) {
