@@ -30,7 +30,7 @@ Articulation* articulation;
 Scene* scene;
 Material* material;
 
-float kp, kd, rkp, rkd;
+float kp, kd, rkpA, rkdA, rkpL, rkdL;
 vector<vector<float>> motions;
 int xFrame = 0;
 int nRounds = 0;
@@ -58,8 +58,8 @@ void InitControl() {
     articulation->SetKPs(kps);
     articulation->SetKDs(kds);
 
-    float rootKpL = 0*10000.f, rootKdL = 0*1000.f;
-    float rootKpA = rkp, rootKdA = rkd;
+    float rootKpL = rkpL, rootKdL = rkdL;
+    float rootKpA = rkpA, rootKdA = rkdA;
     // 2000, 1600 is a good combo for walking (t = 0.033, kp = 75000, kd = 6600)
     articulation->root_kps = { rootKpL, rootKpL, rootKpL, rootKpA, rootKpA, rootKpA };
     articulation->root_kds = { rootKdL, rootKdL, rootKdL, rootKdA, rootKdA, rootKdA };
@@ -90,6 +90,7 @@ void cleanupPhysics()
 
 int controller = 0; // 0-ABA 1-Sparse 2-Dense
 float trackingFrequency = 0.033f;
+float height;
 
 static ofstream ot("/home/zhiqiy/target.txt");
 static ofstream oc("/home/zhiqiy/current.txt");
@@ -97,24 +98,27 @@ static ofstream oc("/home/zhiqiy/current.txt");
 void control(PxReal dt) {
     static int currentRound = 0;
     static float cumulateTime = 0;
-    motions[xFrame][1] = 4;
+
+    auto motionFrame = motions[xFrame];
+    motionFrame[0] += motions.back()[0] * currentRound;
+    motionFrame[2] += motions.back()[2] * currentRound;
 
     switch (controller)
     {
     case 0:
-        articulation->AddSPDForcesABA(motions[xFrame], dt, true);
+        articulation->AddSPDForcesABA(motionFrame, dt, true);
         break;
     case 1:
-        articulation->AddSPDForcesSparse(motions[xFrame], dt, true);
+        articulation->AddSPDForcesSparse(motionFrame, dt, true);
         break;
     case 2:
-        articulation->AddSPDForces(motions[xFrame], dt, true);
+        articulation->AddSPDForces(motionFrame, dt, true);
         break;
     default:
         break;
     }
 
-    for (int i = 0; i < 43; i++) ot << motions[xFrame][i] << " ";
+    for (int i = 0; i < 43; i++) ot << motionFrame[i] << " ";
     ot << endl;
 
     auto current = articulation->GetJointPositionsQuaternion();
@@ -160,19 +164,25 @@ int main(int argc, char** argv)
         ("m,mocap", "Mocap data path", cxxopts::value<string>()->default_value("testMotion.txt"))
         ("f,frequency", "Tracking frequency", cxxopts::value<float>()->default_value("0.033"))
         ("t,dt", "Time step", cxxopts::value<float>()->default_value("0.033"))
-        ("kp", "Joint kp", cxxopts::value<float>()->default_value("25000"))
+        ("kp", "Joint kp", cxxopts::value<float>()->default_value("75000"))
         ("kd", "Joint kd", cxxopts::value<float>()->default_value("6600"))
-        ("rkp", "Root kp", cxxopts::value<float>()->default_value("2000"))
-        ("rkd", "Root kd", cxxopts::value<float>()->default_value("1800"));
+        ("rkpa", "Root kp angular", cxxopts::value<float>()->default_value("2000"))
+        ("rkda", "Root kd angular", cxxopts::value<float>()->default_value("1800"))
+        ("rkpl", "Root kp linear", cxxopts::value<float>()->default_value("2000"))
+        ("rkdl", "Root kd linear", cxxopts::value<float>()->default_value("1800"))
+        ("h,height", "height", cxxopts::value<float>()->default_value("2.35"));
     auto result = opts.parse(argc, argv);
 
     kp = result["kp"].as<float>();
     kd = result["kd"].as<float>();
-    rkp = result["rkp"].as<float>();
-    rkd = result["rkd"].as<float>();
+    rkpA = result["rkpa"].as<float>();
+    rkdA = result["rkda"].as<float>();
+    rkpL = result["rkpl"].as<float>();
+    rkdL = result["rkdl"].as<float>();
     nRounds = result["round"].as<int>();
     controller = result["control"].as<int>();
     trackingFrequency = result["frequency"].as<float>();
+    height = result["height"].as<float>();
 
     string mocap = "testMotion.txt";
     if (result["mocap"].as<string>() != "") mocap = result["mocap"].as<string>();
@@ -182,6 +192,7 @@ int main(int argc, char** argv)
     float tmp; int col = 0;
     while (motioninput >> tmp) {
         if (col == 0) motions.push_back(vector<float>(43));
+        if (col == 1) tmp += height;
         motions.back()[col] = tmp;
         col = (col + 1) % 43;
     }
