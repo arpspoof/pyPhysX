@@ -7,6 +7,7 @@
 using namespace std;
 using namespace physx;
 
+extern PxQuat g_JointQuat[256];
 static vector<float> pred(36);
 
 void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce)
@@ -72,11 +73,7 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
                 targetPosition = -targetPosition;
             }
 
-            PxQuat localRotation = ConvertTwistSwingToQuaternion(
-                positions[cacheIndex],
-                positions[cacheIndex + 1], 
-                positions[cacheIndex + 2]
-            );
+            PxQuat localRotation = g_JointQuat[cacheIndex];
 
             PxQuat posDifference = targetPosition * localRotation.getConjugate();
             UniformQuaternion(posDifference);
@@ -199,7 +196,7 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
     backSubstitutionInPlace(massMatrixCache->massMatrix, rhs, parentIndexMapForSparseLTL.data(), nDof + 6);
     forwardSubstitutionInPlace(massMatrixCache->massMatrix, rhs, parentIndexMapForSparseLTL.data(), nDof + 6);
 
-/*    printf("pred (exch):\n");
+    printf("pred (exch):\n");
     for (int i = 0; i < 6; i++) printf("%f, ", pred[(i + 3) % 6]);
     for (int i = 6; i < 34; i++) printf("%f, ", pred[i]);
     printf("\n");
@@ -207,7 +204,7 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
     extern float g_ACC_test[6];
     for (int i = 0; i < 6; i++) printf("%f, ", g_ACC_test[i]);
     for (int i = 0; i < 28; i++) printf("%f, ", mainCache->jointAcceleration[i]);
-    printf("\n");*/
+    printf("\n");
 
  /*   for (int i = 0; i < 3; i++) {
         if (abs(pred[(i + 3) % 6] - g_ACC_test[i]) > 0.4f) {

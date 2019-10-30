@@ -7,7 +7,10 @@
 using namespace std;
 using namespace physx;
 using namespace Eigen;
+
+extern PxQuat g_JointQuat[256];
 static vector<float> pred(36);
+
 void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce)
 {
     extern const float* g_InvD_Root_Kd;
@@ -85,11 +88,7 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
                 targetPosition = -targetPosition;
             }
 
-            PxQuat localRotation = ConvertTwistSwingToQuaternion(
-                positions[cacheIndex],
-                positions[cacheIndex + 1], 
-                positions[cacheIndex + 2]
-            );
+            PxQuat localRotation = g_JointQuat[cacheIndex];
 
             PxQuat posDifference = targetPosition * localRotation.getConjugate();
             UniformQuaternion(posDifference);
