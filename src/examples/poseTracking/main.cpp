@@ -119,6 +119,7 @@ void control(PxReal dt) {
         break;
     case 3:
         articulation->SetJointPositionsQuaternion(motionFrame);
+        articulation->SetJointVelocitiesPack4(vector<float>(43, 0));
         break;
     default:
         break;
