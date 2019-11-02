@@ -1,14 +1,9 @@
 #pragma once
 
-#include "ArticulationTree.h"
-#include "PrimitiveObjects.h"
+#include "Loader.h"
 #include "MathInterface.h"
-#include "IDisposable.h"
 #include "LinkBody.h"
 #include "xml/rapidxml.hpp"
-
-#include <string>
-#include <unordered_map>
 
 /**
  * @brief Loader for URDF skeleton files
@@ -16,7 +11,7 @@
  *  Blame PhysX if this brings any inconvenience...
  * 
  */
-class UrdfLoader :public IDisposable
+class UrdfLoader :public Loader
 {
 // API BEGIN
 public:
@@ -44,9 +39,7 @@ public:
     void LoadDescriptionFromFile(std::string path);
 // API END
 public:
-    float scalingFactor;
-    std::unordered_map<std::string, int> jointIdMap;
-    void BuildArticulationTree(ArticulationTree& tree, Material* material);
+    void BuildArticulationTree(ArticulationTree& tree, Material* material) override;
 private:
     char* buffer;
     rapidxml::xml_document<> doc;

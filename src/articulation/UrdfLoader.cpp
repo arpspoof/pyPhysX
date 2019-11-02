@@ -12,8 +12,9 @@
 using namespace rapidxml;
 using namespace std;
 
-UrdfLoader::UrdfLoader(float scalingFactor) :scalingFactor(scalingFactor), buffer(nullptr)
+UrdfLoader::UrdfLoader(float scalingFactor) :buffer(nullptr)
 {
+    Loader::scalingFactor = scalingFactor;
 }
 
 void UrdfLoader::LoadDescriptionFromFile(std::string path)

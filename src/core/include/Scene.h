@@ -5,7 +5,7 @@
 #include "Articulation.h"
 #include "PrimitiveObjects.h"
 #include "ArticulationTree.h"
-#include "UrdfLoader.h"
+#include "Loader.h"
 #include "MathInterface.h"
 #include "Actor.h"
 
@@ -90,15 +90,15 @@ public:
     /**
      * @brief Create an Articulation and add it into the scene.
      * 
-     * @param urdfLoader Pointer to a UrdfLoader. Make sure the loader has already
-     *  loaded some files via UrdfLoader::LoadDescriptionFromFile.
+     * @param loader Pointer to a Loader. Make sure the loader has already
+     *  loaded some files via Loader::LoadDescriptionFromFile.
      * @param material Pointer to a Material object. This material will be applied
      *  to all link surfaces of this articulation.
      * @param basePosition A 3d vector specifying the position to place the articulation
      *  in world space coordinates.
      * @return Articulation* Pointer to the created Articulation object.
      */
-    Articulation* CreateArticulation(UrdfLoader* urdfLoader, Material* material, vec3 basePosition);
+    Articulation* CreateArticulation(Loader* loader, Material* material, vec3 basePosition);
     /**
      * @brief Create an Articulation and add it into the scene.
      * 

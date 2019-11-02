@@ -1,5 +1,6 @@
 #include "Scene.h"
 #include "Foundation.h"
+#include "UrdfLoader.h"
 
 #include <cassert>
 
@@ -87,10 +88,10 @@ Plane* Scene::CreatePlane(Material* material, vec3 planeNormal, float distance)
     return plane;
 }
 
-Articulation* Scene::CreateArticulation(UrdfLoader* urdfLoader, Material* material, vec3 basePosition)
+Articulation* Scene::CreateArticulation(Loader* loader, Material* material, vec3 basePosition)
 {
     ArticulationTree tree;
-    urdfLoader->BuildArticulationTree(tree, material);
+    loader->BuildArticulationTree(tree, material);
 
     Articulation* articulation = new Articulation();
     articulation->pxArticulation = foundation->GetPxPhysics()->createArticulationReducedCoordinate();
@@ -101,7 +102,7 @@ Articulation* Scene::CreateArticulation(UrdfLoader* urdfLoader, Material* materi
 
     pxScene->addArticulation(*articulation->pxArticulation);
 
-    articulation->InitControl(urdfLoader->jointIdMap);
+    articulation->InitControl(loader->jointIdMap);
     articulations.insert(articulation);
 
     return articulation;
