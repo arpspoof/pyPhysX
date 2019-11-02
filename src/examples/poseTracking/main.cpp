@@ -222,17 +222,6 @@ int main(int argc, char** argv)
 
     initPhysics(result["dt"].as<float>());
 
-    // TODO: backflip force direction issue? What's wrong with set quat?
- /*   articulation->SetJointPositionsQuaternion(motions[3]);
-    auto test = articulation->GetJointPositionsQuaternion();
-
-    printf("origin\n");
-    for (int i = 0; i < 43; i++) printf("%f, ", motions[3][i]);
-    printf("\n");
-    printf("conver\n");
-    for (int i = 0; i < 43; i++) printf("%f, ", test[i]);
-    printf("\n");*/
-
     if (result["performance"].as<bool>()) {
         static const PxU32 frameCount = 10000;
         auto starttime = high_resolution_clock::now();

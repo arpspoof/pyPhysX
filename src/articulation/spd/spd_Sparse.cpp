@@ -160,12 +160,19 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
         PxVec3 rootLocalDerivativeLinearForce = rootGlobalRotation.rotateInv(rootGlobalDerivativeLinearForce);
 
         PxQuat rootGlobalTargetRotationUser(targetPositions[4], targetPositions[5], targetPositions[6], targetPositions[3]);
-        UniformQuaternion(rootGlobalTargetRotationUser);
+        rootGlobalTargetRotationUser.normalize();
+        
         // transform from { x:front, y:up, z:right } to { x:up, y:back, z:right }
         PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
         PxQuat rootGlobalTargetRotation = rootGlobalTargetRotationUser * frameTransform;
 
-        PxVec3 diffRotExpMapGlobal = QuatToExpMap(rootGlobalTargetRotation * rootGlobalRotation.getConjugate());
+        PxQuat diffQuat = rootGlobalTargetRotation * rootGlobalRotation.getConjugate();
+        if (PxAbs(diffQuat.w) < 0.70710678118f) {
+            diffQuat = (-rootGlobalTargetRotation) * rootGlobalRotation.getConjugate();
+        }
+        UniformQuaternion(diffQuat);
+
+        PxVec3 diffRotExpMapGlobal = QuatToExpMap(diffQuat);
         PxVec3 rootGlobalProportionalTorquePlusQDotDeltaT(
             root_kps[3] * (diffRotExpMapGlobal[0] - timeStep * rootGlobalAngularVelocity[0]),
             root_kps[4] * (diffRotExpMapGlobal[1] - timeStep * rootGlobalAngularVelocity[1]),
