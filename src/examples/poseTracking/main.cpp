@@ -46,6 +46,22 @@ void reset()
     articulation->SetJointPositionsQuaternion(p);
 }
 
+vector<string> collisionGroupNames {
+    "floor", "root", "chest", "neck",
+    "left_hip", "left_knee", "left_ankle",
+    "right_hip", "right_knee", "right_ankle",
+    "left_shoulder", "left_elbow", "left_wrist",
+    "right_shoulder", "right_elbow", "right_wrist"
+};
+
+static int GetFirstOne(int x) 
+{
+    if (x == 0) return -1;
+    int r = 0;
+    while (!(x & 1)) { r++; x >>= 1; }
+    return r;
+}
+
 void InitControl() {
     vector<float> kps, kds, fls;
 
@@ -67,6 +83,22 @@ void InitControl() {
     articulation->root_kps = { rootKpL, rootKpL, rootKpL, rootKpA, rootKpA, rootKpA };
     articulation->root_kds = { rootKdL, rootKdL, rootKdL, rootKdA, rootKdA, rootKdA };
 
+    articulation->linkMap["root"]->SetupCollisionFiltering(1 << 1, -1);
+    articulation->linkMap["chest"]->SetupCollisionFiltering(1 << 2, -1);
+    articulation->linkMap["neck"]->SetupCollisionFiltering(1 << 3, -1);
+    articulation->linkMap["right_hip"]->SetupCollisionFiltering(1 << 4, -1);
+    articulation->linkMap["right_knee"]->SetupCollisionFiltering(1 << 5, -1);
+//    articulation->linkMap["right_ankle"]->SetupCollisionFiltering(1 << 6, -1);
+    articulation->linkMap["right_shoulder"]->SetupCollisionFiltering(1 << 7, -1);
+    articulation->linkMap["right_elbow"]->SetupCollisionFiltering(1 << 8, -1);
+//    articulation->linkMap["right_wrist"]->SetupCollisionFiltering(1 << 9, -1);
+    articulation->linkMap["left_hip"]->SetupCollisionFiltering(1 << 10, -1);
+    articulation->linkMap["left_knee"]->SetupCollisionFiltering(1 << 11, -1);
+//    articulation->linkMap["left_ankle"]->SetupCollisionFiltering(1 << 12, -1);
+    articulation->linkMap["left_shoulder"]->SetupCollisionFiltering(1 << 13, -1);
+    articulation->linkMap["left_elbow"]->SetupCollisionFiltering(1 << 14, -1);
+//    articulation->linkMap["left_wrist"]->SetupCollisionFiltering(1 << 15, -1);
+
     reset();
 }
 
@@ -78,7 +110,7 @@ void initPhysics(float dt)
     material = scene->CreateMaterial(1.f, 1.f, 0.f);
 
     auto plane = scene->CreatePlane(material, vec3(0, 1, 0), 0);
-    plane->SetupCollisionFiltering(1, 2 | 4);
+    plane->SetupCollisionFiltering(1 << 0, -1);
     
     articulation = scene->CreateArticulation("resources/humanoid.urdf", material, vec3(0, 3.75f, 0));
 
@@ -159,6 +191,11 @@ class GlutHandler :public glutRenderer::GlutRendererCallback
     }
     void beforeSimulationHandler() override
     {
+        auto contacts = scene->GetAllContactPairs();
+        for (auto c : contacts) {
+            printf("contact: %s with %s\n", collisionGroupNames[GetFirstOne(c.first)].c_str(), 
+                collisionGroupNames[GetFirstOne(c.second)].c_str());
+        }
         control(scene->timeStep);
     }
 } glutHandler;
