@@ -48,7 +48,7 @@ protected:
         physx::PxTransform parentPose,
         physx::PxTransform childPose) const = 0;
 public:
-    Link* CreateLink(Articulation& ar, Link *parentLink,
+    Link* CreateLink(Articulation& ar, Link *parentLink, physx::PxQuat frameTransform,
         physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const;
     virtual ~ArticulationDescriptionNode() {}
 };

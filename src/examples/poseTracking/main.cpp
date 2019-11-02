@@ -118,6 +118,8 @@ void control(PxReal dt) {
         articulation->AddSPDForces(motionFrame, dt, true);
         break;
     case 3:
+        // Kinematic controller still has artifacts for cartwheel.
+        // Maybe still due to backend bug.
         articulation->SetJointPositionsQuaternion(motionFrame);
         articulation->SetJointVelocitiesPack4(vector<float>(43, 0));
         break;

@@ -9,12 +9,9 @@ using namespace physx;
 vector<float> Articulation::GetJointPositionsQuaternion() const
 {
     vector<float> result(7 + 4*nSphericalJoint + nRevoluteJoint);
-    
-    // transform from { x:up, y:back, z:right } to { x:front, y:up, z:right }
-    PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
 
     PxTransform rootPose = rootLink->link->getGlobalPose();
-    PxQuat rootRotation = rootPose.q * frameTransform;
+    PxQuat rootRotation = rootPose.q * frameTransform.getConjugate();
     UniformQuaternion(rootRotation);
     
     result[0] = rootPose.p.x;
@@ -37,11 +34,11 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
             result[resultIndex++] = mainCache->jointPosition[cacheIndex];
         }
         else if (jointDof == 3) {
-            PxQuat rotation = frameTransform.getConjugate() * ConvertTwistSwingToQuaternion(
+            PxQuat rotation = frameTransform * ConvertTwistSwingToQuaternion(
                 mainCache->jointPosition[cacheIndex],
                 mainCache->jointPosition[cacheIndex + 1],
                 mainCache->jointPosition[cacheIndex + 2]
-            ) * frameTransform;
+            ) * frameTransform.getConjugate();
             UniformQuaternion(rotation);
             
             result[resultIndex] = rotation.w;
@@ -62,10 +59,9 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
 
     PxVec3 rootGlobalTranslation(positions[0], positions[1], positions[2]);
     PxQuat rootGlobalRotation(positions[4], positions[5], positions[6], positions[3]);
-    UniformQuaternion(rootGlobalRotation); // Never trust user input
+    UniformQuaternion(rootGlobalRotation); 
     
     // transform from { x:front, y:up, z:right } to { x:up, y:back, z:right }
-    PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
     PxQuat rootPose = rootGlobalRotation * frameTransform;
     UniformQuaternion(rootPose);
 
@@ -110,9 +106,6 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
 vector<float> Articulation::GetJointVelocitiesPack4() const
 {
     vector<float> result(7 + 4*nSphericalJoint + nRevoluteJoint);
-    
-    // transform from { x:front, y:up, z:right } to { x:up, y:back, z:right }
-    PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
 
     PxVec3 rootLinearVelocity = rootLink->link->getLinearVelocity();
     result[0] = rootLinearVelocity.x;
@@ -155,9 +148,6 @@ void Articulation::SetJointVelocitiesPack4(const std::vector<float>& velocities)
 {
     assert((int)velocities.size() == 7 + 4*nSphericalJoint + nRevoluteJoint);
 
-    // transform from { x:up, y:back, z:right } to { x:front, y:up, z:right }
-    PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
-
     PxVec3 rootLinearVelocity(velocities[0], velocities[1], velocities[2]);
     rootLink->link->setLinearVelocity(rootLinearVelocity);
 
@@ -176,7 +166,7 @@ void Articulation::SetJointVelocitiesPack4(const std::vector<float>& velocities)
         }
         else if (jointDof == 3) {
             PxVec3 angularV(velocities[inputIndex], velocities[inputIndex + 1], velocities[inputIndex + 2]);
-            angularV = frameTransform.rotate(angularV);
+            angularV = frameTransform.rotateInv(angularV);
 
             mainCache->jointVelocity[cacheIndex] = angularV.x;
             mainCache->jointVelocity[cacheIndex + 1] = angularV.y;

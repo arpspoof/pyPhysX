@@ -67,7 +67,6 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
                 kps[cacheIndex + 2]
             );
 
-            PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
             targetPosition = frameTransform.getConjugate() * targetPosition * frameTransform;
 
             if (targetPosition.w < 0) {
@@ -163,7 +162,6 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
         rootGlobalTargetRotationUser.normalize();
         
         // transform from { x:front, y:up, z:right } to { x:up, y:back, z:right }
-        PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
         PxQuat rootGlobalTargetRotation = rootGlobalTargetRotationUser * frameTransform;
 
         PxQuat diffQuat = rootGlobalTargetRotation * rootGlobalRotation.getConjugate();

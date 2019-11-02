@@ -12,6 +12,8 @@
 
 /**
  * @brief Loader for URDF skeleton files
+ * @warning Do not attempt to load files other than humanoid.urdf.
+ *  Blame PhysX if this brings any inconvenience...
  * 
  */
 class UrdfLoader :public IDisposable

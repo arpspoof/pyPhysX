@@ -43,7 +43,6 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
                 kps[cacheIndex + 2]
             );
 
-            PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
             targetPosition = frameTransform.getConjugate() * targetPosition * frameTransform;
             UniformQuaternion(targetPosition);
 
@@ -143,7 +142,6 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
         rootGlobalTargetRotationUser.normalize();
         
         // transform from { x:front, y:up, z:right } to { x:up, y:back, z:right }
-        PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
         PxQuat rootGlobalTargetRotation = rootGlobalTargetRotationUser * frameTransform;
 
         PxQuat diffQuat = rootGlobalTargetRotation * rootGlobalRotation.getConjugate();

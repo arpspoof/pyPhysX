@@ -94,9 +94,10 @@ Articulation* Scene::CreateArticulation(UrdfLoader* urdfLoader, Material* materi
 
     Articulation* articulation = new Articulation();
     articulation->pxArticulation = foundation->GetPxPhysics()->createArticulationReducedCoordinate();
+    articulation->frameTransform = tree.frameTransform;
 
     assert(tree.GetRootNode() != nullptr);
-    BuildArticulation(*articulation, tree.GetRootNode(), nullptr, basePosition, basePosition);
+    BuildArticulation(*articulation, tree.GetRootNode(), tree.frameTransform, nullptr, basePosition, basePosition);
 
     pxScene->addArticulation(*articulation->pxArticulation);
 
@@ -116,12 +117,12 @@ Articulation* Scene::CreateArticulation(string urdfFilePath, Material* material,
     return articulation;
 }
 
-void Scene::BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode,
+void Scene::BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode, physx::PxQuat frameTransform,
     Link* parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const
 {
-    Link *link = startNode->CreateLink(ar, parentLink, parentJointPos, parentLinkPos);
+    Link *link = startNode->CreateLink(ar, parentLink, frameTransform, parentJointPos, parentLinkPos);
     for (auto it : startNode->children) {
-        BuildArticulation(ar, it, link,
+        BuildArticulation(ar, it, frameTransform, link,
             parentJointPos + startNode->posOffsetJointToParentJoint,
             link->globalPositionOffset);
     }

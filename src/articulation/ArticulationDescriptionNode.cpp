@@ -3,14 +3,6 @@
 using namespace physx;
 using namespace std;
 
-static PxQuat rtz(PxPi / 2, PxVec3(0, 0, 1));
-static PxQuat rtzinv(-PxPi / 2, PxVec3(0, 0, 1));
-
-static PxTransform GetJointPose(PxVec3 offset) 
-{
-    return PxTransform(rtzinv.rotate(offset));
-}
-
 ArticulationDescriptionNode::ArticulationDescriptionNode(string linkName, string jointName, LinkBody *body,
     PxVec3 posOffsetLinkToInboundJoint, PxVec3 posOffsetJointToParentJoint)
     :linkName(linkName), jointName(jointName), body(body),
@@ -19,17 +11,17 @@ ArticulationDescriptionNode::ArticulationDescriptionNode(string linkName, string
 {
 }
 
-Link* ArticulationDescriptionNode::CreateLink(Articulation& ar, Link *parentLink,
+Link* ArticulationDescriptionNode::CreateLink(Articulation& ar, Link *parentLink, PxQuat frameTransform,
     PxVec3 parentJointPos, PxVec3 parentLinkPos) const 
 {
     PxVec3 jointPos = parentJointPos + posOffsetJointToParentJoint;
     PxVec3 linkPos = jointPos + posOffsetLinkToInboundJoint;
-    Link *link = ar.AddLink(linkName, parentLink, PxTransform(linkPos, rtz), body);
+    Link *link = ar.AddLink(linkName, parentLink, PxTransform(linkPos, frameTransform), body);
     link->globalPositionOffset = linkPos;
     if (parentLink) {
         Joint *joint = CreateJoint(ar, link,
-            GetJointPose(jointPos - parentLinkPos),
-            GetJointPose(jointPos - linkPos)
+            PxTransform(frameTransform.rotateInv(jointPos - parentLinkPos)),
+            PxTransform(frameTransform.rotateInv(jointPos - linkPos))
         );
         link->inboundJoint = joint;
         joint->globalPositionOffset = jointPos;

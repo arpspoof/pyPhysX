@@ -15,6 +15,8 @@ private:
     std::unordered_map<std::string, ArticulationDescriptionNode*> nodeMap;
     ArticulationDescriptionNode *root;
 public:
+    physx::PxQuat frameTransform;
+
     LinkBody* CreateNullLinkBody();
     LinkBody* CreateSphereLinkBody(float mass, float radius, Material *material);
     LinkBody* CreateCapsuleLinkBody(float mass, float radius, float length, Material *material);

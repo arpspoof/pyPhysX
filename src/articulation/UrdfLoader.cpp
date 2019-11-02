@@ -1,5 +1,6 @@
 #include "UrdfLoader.h"
 #include "xml/rapidxml.hpp"
+#include "PxPhysicsAPI.h"
 
 #include <fstream>
 #include <streambuf>
@@ -246,6 +247,8 @@ void UrdfLoader::ParseJoints(ArticulationTree& tree)
 
 void UrdfLoader::BuildArticulationTree(ArticulationTree& tree, Material* material)
 {
+    // This is hard coded here. Blame PhysX, do not blame me...
+    tree.frameTransform = physx::PxQuat(physx::PxPi / 2, physx::PxVec3(0, 0, 1));
     ParseLinkBodies(tree, material);
     ParseLinkOffsets();
     ParseJoints(tree);

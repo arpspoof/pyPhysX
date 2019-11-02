@@ -186,6 +186,7 @@ public:
     std::vector<float> root_kps, root_kds;
     std::unordered_map<std::string, Link*> linkMap;
     std::unordered_map<std::string, Joint*> jointMap;
+    physx::PxQuat frameTransform;
 private:
     Link* rootLink;
     std::vector<Joint*> jointList;

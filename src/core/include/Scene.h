@@ -148,7 +148,7 @@ private:
     std::unordered_set<Material*> materials;
     std::unordered_set<physx::PxActor*> actors;
     std::unordered_set<Articulation*> articulations;
-    void BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode,
+    void BuildArticulation(Articulation &ar, ArticulationDescriptionNode* startNode, physx::PxQuat frameTransform,
         Link* parentLink, physx::PxVec3 parentJointPos, physx::PxVec3 parentLinkPos) const;
 private:
     const Foundation* foundation;
