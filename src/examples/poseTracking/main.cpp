@@ -17,6 +17,7 @@
 #include "PrimitiveObjects.h"
 #include "Foundation.h"
 #include "UrdfLoader.h"
+#include "JsonLoader.h"
 #include "Scene.h"
 #include "Actor.h"
 #include "cxxopts.hpp"
@@ -38,10 +39,29 @@ static int nRounds = 0;
 extern bool debug;
 extern bool dump;
 
+static int dim;
+
 void reset()
 {
-    vector<float> p { 0, 3.55f, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0};
-    vector<float> v(43, 0);
+    dim = 7;
+    auto dofs = articulation->GetJointDofsInIdOrder();
+
+    vector<float> p { 0, 3.55f, 0, 1, 0, 0, 0 };
+    for (int d : dofs) {
+        if (d == 1) {
+            dim++;
+            p.push_back(0);
+        }
+        else if (d == 3) {
+            dim += 4;
+            p.push_back(1);
+            p.push_back(0);
+            p.push_back(0);
+            p.push_back(0);
+        }
+    }
+
+    vector<float> v(dim, 0);
     articulation->SetJointVelocitiesPack4(v);
     articulation->SetJointPositionsQuaternion(p);
 }
@@ -79,8 +99,12 @@ void initPhysics(float dt)
 
     auto plane = scene->CreatePlane(material, vec3(0, 1, 0), 0);
     plane->SetupCollisionFiltering(1, 2 | 4);
+
+    JsonLoader jsonLoader(4);
+    jsonLoader.LoadDescriptionFromFile("resources/dog3d.txt");
+    articulation = scene->CreateArticulation(&jsonLoader, material, vec3(0, 3.75f, 0));
     
-    articulation = scene->CreateArticulation("resources/humanoid.urdf", material, vec3(0, 3.75f, 0));
+ //   articulation = scene->CreateArticulation("resources/humanoid.urdf", material, vec3(0, 3.75f, 0));
 
     InitControl();
 }
