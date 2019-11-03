@@ -61,6 +61,7 @@ public:
 // API END
     physx::PxArticulationJointReducedCoordinate *joint;
     physx::PxVec3 globalPositionOffset;
+    physx::PxVec3 posOffsetJointToParentJoint;
 protected:
     Joint(Link *link, physx::PxTransform parentPose, physx::PxTransform childPose);
 };
@@ -98,6 +99,7 @@ public:
 // API END
     physx::PxArticulationLink *link;
     physx::PxVec3 globalPositionOffset;
+    physx::PxVec3 posOffsetLinkToInboundJoint;
     Link(physx::PxArticulationReducedCoordinate* pxArticulation, Link *parent, 
         physx::PxTransform transform, LinkBody *body);
 };
