@@ -26,6 +26,7 @@ Link* ArticulationDescriptionNode::CreateLink(Articulation& ar, Link *parentLink
     PxVec3 linkPos = jointPos + posOffsetLinkToInboundJoint;
     Link *link = ar.AddLink(linkName, parentLink, PxTransform(linkPos, rtz), body);
     link->globalPositionOffset = linkPos;
+    link->posOffsetLinkToInboundJoint = posOffsetLinkToInboundJoint;
     if (parentLink) {
         Joint *joint = CreateJoint(ar, link,
             GetJointPose(jointPos - parentLinkPos),
@@ -33,6 +34,7 @@ Link* ArticulationDescriptionNode::CreateLink(Articulation& ar, Link *parentLink
         );
         link->inboundJoint = joint;
         joint->globalPositionOffset = jointPos;
+        joint->posOffsetJointToParentJoint = posOffsetJointToParentJoint;
         joint->childLink = link;
         joint->parentLink = parentLink;
     }
