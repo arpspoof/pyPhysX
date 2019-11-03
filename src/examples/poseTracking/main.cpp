@@ -61,6 +61,16 @@ void reset()
         }
     }
 
+    if (dim == 95) {
+        // dog
+        float r2 = 0.70710678118f;
+        int legs[4] = { 23, 39, 55, 71 };
+        for (int i = 0; i < 4; i++) {
+            p[legs[i]] = r2;
+            p[legs[i] + 3] = -r2;
+        }
+    }
+
     vector<float> v(dim, 0);
     articulation->SetJointVelocitiesPack4(v);
     articulation->SetJointPositionsQuaternion(p);
@@ -145,18 +155,18 @@ void control(PxReal dt) {
         // Kinematic controller still has artifacts for cartwheel.
         // Maybe still due to backend bug.
         articulation->SetJointPositionsQuaternion(motionFrame);
-        articulation->SetJointVelocitiesPack4(vector<float>(43, 0));
+        articulation->SetJointVelocitiesPack4(vector<float>(dim, 0));
         break;
     default:
         break;
     }
 
     if (dump) {
-        for (int i = 0; i < 43; i++) ot << motionFrame[i] << " ";
+        for (int i = 0; i < dim; i++) ot << motionFrame[i] << " ";
         ot << endl;
 
         auto current = articulation->GetJointPositionsQuaternion();
-        for (int i = 0; i < 43; i++) oc << current[i] << " ";
+        for (int i = 0; i < dim; i++) oc << current[i] << " ";
         oc << endl;
     }
 
@@ -230,6 +240,8 @@ int main(int argc, char** argv)
         oc.open("/home/zhiqiy/current.txt");
     }
 
+    initPhysics(result["dt"].as<float>());
+
     string mocap = result["mocap"].as<string>();
     printf("mocap is %s\n", mocap.c_str());
 
@@ -237,16 +249,14 @@ int main(int argc, char** argv)
 
     float tmp; int col = 0;
     while (motioninput >> tmp) {
-        if (col == 0) motions.push_back(vector<float>(43));
+        if (col == 0) motions.push_back(vector<float>(dim));
         if (col <= 2) tmp *= 4;
         if (col == 1) tmp += height;
         motions.back()[col] = tmp;
-        col = (col + 1) % 43;
+        col = (col + 1) % dim;
     }
     motioninput.close();
     printf("%ld lines\n", motions.size());
-
-    initPhysics(result["dt"].as<float>());
 
     if (result["performance"].as<bool>()) {
         static const PxU32 frameCount = 10000;

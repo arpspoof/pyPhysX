@@ -148,13 +148,6 @@ if (${BUILD_TESTS})
 
 endif()
 
-execute_process(
-    COMMAND cp -rf "${RESOURCES_PATH}" "${CMAKE_BINARY_DIR}"
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-)
-
-
-
 set(BUILD_API ON CACHE BOOL "Choose whether python binding API should be built")
 set(BUILD_API_DIR "${CMAKE_BINARY_DIR}/pyPhysX" CACHE PATH "Directory to place generated python API files")
 
@@ -182,6 +175,11 @@ swig_link_libraries(pyPhysX ${ALL_MODULE} ${ALL_EXT_LIBS})
 add_custom_target(copy_so ALL
     COMMAND cp -f "${CMAKE_BINARY_DIR}/_pyPhysX.so" "${RESOURCES_PATH}/sample.py" "${BUILD_API_DIR}"
     DEPENDS "${RESOURCES_PATH}/sample.py"
+)
+
+add_custom_target(copy_resources ALL
+    COMMAND cp -rf "${RESOURCES_PATH}" "${CMAKE_BINARY_DIR}"
+    DEPENDS "${RESOURCES_PATH}"
 )
 
 add_dependencies(copy_so pyPhysX)
