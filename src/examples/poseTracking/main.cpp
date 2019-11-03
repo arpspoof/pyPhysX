@@ -39,6 +39,8 @@ static int nRounds = 0;
 extern bool debug;
 extern bool dump;
 
+static bool useDog;
+
 static int dim;
 
 void reset()
@@ -110,11 +112,14 @@ void initPhysics(float dt)
     auto plane = scene->CreatePlane(material, vec3(0, 1, 0), 0);
     plane->SetupCollisionFiltering(1, 2 | 4);
 
-    JsonLoader jsonLoader(4);
-    jsonLoader.LoadDescriptionFromFile("resources/dog3d.txt");
-    articulation = scene->CreateArticulation(&jsonLoader, material, vec3(0, 3.75f, 0));
-    
- //   articulation = scene->CreateArticulation("resources/humanoid.urdf", material, vec3(0, 3.75f, 0));
+    if (useDog) {
+        JsonLoader jsonLoader(4);
+        jsonLoader.LoadDescriptionFromFile("resources/dog3d.txt");
+        articulation = scene->CreateArticulation(&jsonLoader, material, vec3(0, 3.75f, 0));
+    }
+    else {
+        articulation = scene->CreateArticulation("resources/humanoid.urdf", material, vec3(0, 3.75f, 0));
+    }
 
     InitControl();
 }
@@ -203,6 +208,7 @@ int main(int argc, char** argv)
 {
     cxxopts::Options opts("Example", "Pose tracking");
     opts.add_options()
+        ("d,dog", "Use dog model")
         ("p,performance", "Run performance test")
         ("dbg", "Print debug info")
         ("dmp", "Dump simulation target and actuals")
@@ -223,6 +229,7 @@ int main(int argc, char** argv)
 
     debug = result["dbg"].as<bool>();
     dump = result["dmp"].as<bool>();
+    useDog = result["dog"].as<bool>();
 
     kp = result["kp"].as<float>();
     kd = result["kd"].as<float>();
