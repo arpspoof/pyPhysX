@@ -56,6 +56,7 @@ GlutRenderer::GlutRenderer()
     this->callback = nullptr;
     this->glutCamera = nullptr;
     this->simulating = false;
+    this->autoStepping = false;
 }
 
 void GlutRenderer::AttachScene(::Scene* scene, GlutRendererCallback* callback)
@@ -136,7 +137,8 @@ void GlutRenderer::renderCallback()
     if (simulating) {
         if (callback)
             callback->beforeSimulationHandler();
-        scene->Step();
+        if (autoStepping) 
+            scene->Step();
         phyFrameCount++;
     }
 
