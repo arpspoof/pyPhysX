@@ -170,7 +170,7 @@ int main(int argc, char** argv)
 #if 1
     initPhysics(false);
     articulation->SetJointPositionsQuaternion(jp);
-    auto jpos = articulation->CalculateJointPositionsInIdOrder();
+    auto jpos = articulation->CalculateJointPositionsInIdOrder(jp);
     printf("joint positions\n");
     for (vec3 v : jpos) {
         printf("%f, %f, %f\n", v.x, v.y, v.z);

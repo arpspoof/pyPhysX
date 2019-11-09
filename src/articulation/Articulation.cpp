@@ -638,18 +638,45 @@ void Articulation::SetForceLimits(const std::vector<float>& forceLimits)
     SetJointParams(this->forceLimits, forceLimits);
 }
 
-vector<vec3> Articulation::CalculateJointPositionsInIdOrder() const
+vector<vec3> Articulation::CalculateJointPositionsInIdOrder(vector<float>& jData) const
 {
     auto allJoints = GetAllJointsInIdOrder();
-    vector<vec3> result;
-    for (Joint* j : allJoints) {
-        Link* childLink = j->childLink;
-        PxQuat rtz(PxPi / 2, PxVec3(0, 0, 1));
-        PxVec3 offsetLinkToJoint = -rtz.rotateInv(childLink->posOffsetLinkToInboundJoint);
-        PxTransform childLinkTransform = childLink->link->getGlobalPose();
-        PxVec3 jointPos = childLinkTransform.p + childLinkTransform.q.rotate(offsetLinkToJoint);
-        result.push_back(vec3(jointPos.x, jointPos.y, jointPos.z));
+    vector<PxVec3> pos(allJoints.size());
+    vector<PxQuat> quat(allJoints.size());
+    vector<PxQuat> localQuat(allJoints.size());
+
+    pos[0] = PxVec3(jData[0], jData[1], jData[2]);
+    quat[0] = PxQuat(jData[4], jData[5], jData[6], jData[3]);
+    localQuat[0] = quat[0];
+
+    int jIndex = 7;
+    for (int i = 1; i < (int)allJoints.size(); i++) {
+        int dof = allJoints[i]->nDof;
+        switch (dof)
+        {
+        case 1:
+            localQuat[i] = PxQuat(jData[jIndex], PxVec3(0, 0, 1));
+            jIndex++;
+            break;
+        case 3:
+            localQuat[i] = PxQuat(jData[jIndex + 1], jData[jIndex + 2], jData[jIndex + 3], jData[jIndex]);
+            jIndex += 4;
+            break;
+        default:
+            localQuat[i] = PxQuat(PxIdentity);
+            break;
+        }
+        Joint* j = allJoints[i];
+        int pjid = j->parentLink->inboundJoint->id;
+        quat[j->id] = quat[pjid] * localQuat[j->id];
+        pos[j->id] = pos[pjid] + quat[pjid].rotate(j->posOffsetJointToParentJoint);
     }
+
+    vector<vec3> result(allJoints.size());
+    for (int i = 0; i < (int)allJoints.size(); i++) {
+        result[i] = vec3(pos[i].x, pos[i].y, pos[i].z);
+    }
+
     return result;
 }
 
