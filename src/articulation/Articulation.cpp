@@ -255,6 +255,11 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
     }
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::ePOSITION);
+    printf("set joint position is called\n");
+    for (int i = 0; i < (int)positions.size(); i++) {
+        printf("%f, ", positions[i]);
+    }
+    printf("\n");
 }
 
 vector<float> Articulation::GetJointVelocitiesPack4() const
