@@ -113,7 +113,13 @@ public: // kinematic
      * @param velocities 
      */
     void SetJointVelocitiesPack4(const std::vector<float>& velocities) const;
-    std::vector<vec3> CalculateJointPositionsInIdOrder(std::vector<float>& jData) const;
+public:
+    std::vector<physx::PxVec3> jointPositions;
+    std::vector<physx::PxQuat> jointLocalRotations;
+    std::vector<physx::PxQuat> jointGlobalRotations;
+    std::vector<physx::PxVec3> linkPositions;
+    std::vector<physx::PxQuat> linkGlobalRotations;
+    void CalculateFK(std::vector<float>& jData);
 public: // control
     /**
      * @brief Set joint proportional gains through a single array
