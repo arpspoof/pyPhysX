@@ -170,28 +170,26 @@ int main(int argc, char** argv)
 #if 1
     initPhysics(false);
     articulation->SetJointPositionsQuaternion(jp);
-    auto jpos = articulation->CalculateJointPositionsInIdOrder(jp);
-    printf("joint positions\n");
-    for (vec3 v : jpos) {
-        printf("%f, %f, %f\n", v.x, v.y, v.z);
+    
+    
+    articulation->CalculateFK(jp);
+    auto alljoints = articulation->GetAllJointsInIdOrder();
+    for (auto j : alljoints) {
+        printf("link name = %s\n", j->name.c_str());
+        PxVec3 pos = articulation->linkPositions[j->id];
+        PxQuat rot = articulation->linkGlobalRotations[j->id];
+        auto link = articulation->GetLinkByName(j->name);
+        auto linkTransform = link->link->getGlobalPose();
+        PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
+        PxVec3 pxpos = linkTransform.p;
+        PxQuat pxrot = linkTransform.q * frameTransform;
+        printf("my transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
+            pos.x, pos.y, pos.z, rot.w, rot.x, rot.y, rot.z);
+        printf("px transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
+            pxpos.x, pxpos.y, pxpos.z, pxrot.w, pxrot.x, pxrot.y, pxrot.z);
     }
-    printf("\n");
-    printf("abs err\n");
-    for (int i = 0; i < 15; i++) {
-        printf("%f, ", jpos[i].x - jposcmp[i * 3]);
-        printf("%f, ", jpos[i].y - jposcmp[i * 3 + 1]);
-        printf("%f, ", jpos[i].z - jposcmp[i * 3 + 2]);
-        printf("\n");
-    }
-    printf("\n");
-    printf("rel err\n");
-    for (int i = 0; i < 15; i++) {
-        printf("%f, ", PxAbs(jpos[i].x - jposcmp[i * 3]) / jposcmp[i * 3]);
-        printf("%f, ", PxAbs(jpos[i].y - jposcmp[i * 3 + 1]) / jposcmp[i * 3 + 1]);
-        printf("%f, ", PxAbs(jpos[i].z - jposcmp[i * 3 + 2]) / jposcmp[i * 3 + 2]);
-        printf("\n");
-    }
-    printf("\n");
+
+
     auto renderer = glutRenderer::GlutRenderer::GetInstance();
     renderer->AttachScene(scene, &glutHandler);
     renderer->StartRenderLoop();
