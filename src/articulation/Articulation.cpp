@@ -9,8 +9,6 @@ using namespace physx;
 using namespace std;
 using namespace Eigen;
 
-extern PxQuat g_JointQuat[256];
-
 Link* Articulation::AddLink(std::string name, Link *parent, physx::PxTransform transform, LinkBody *body) 
 {
     Link *link = new Link(pxArticulation, parent, transform, body);
@@ -189,7 +187,13 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
             result[resultIndex++] = mainCache->jointPosition[cacheIndex];
         }
         else if (jointDof == 3) {
-            PxQuat rotation = frameTransform.getConjugate() * g_JointQuat[cacheIndex] * frameTransform;
+            PxVec3 jointPosition(
+                mainCache->jointPosition[cacheIndex],
+                mainCache->jointPosition[cacheIndex + 1],
+                mainCache->jointPosition[cacheIndex + 2]
+            );
+            PxQuat jointQuat(jointPosition.magnitude(), jointPosition.getNormalized());
+            PxQuat rotation = frameTransform.getConjugate() * jointQuat * frameTransform;
             UniformQuaternion(rotation);
             
             result[resultIndex] = rotation.w;
@@ -237,8 +241,6 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
 
             UniformQuaternion(rotation); // Never trust user input
             rotation = frameTransform.getConjugate() * rotation * frameTransform;
-            
-            g_JointQuat[cacheIndex] = rotation;
 
             PxVec3 axis;
             float angle;
