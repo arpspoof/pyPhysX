@@ -66,7 +66,6 @@ public:
     GlutRenderer(); // For API only
 public:
     int renderFrequenceHz;
-    bool autoStepping;
 // API END
 private:
     static GlutRenderer globalGlutRenderer;
