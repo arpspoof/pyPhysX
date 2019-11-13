@@ -238,15 +238,16 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
             UniformQuaternion(rotation); // Never trust user input
             rotation = frameTransform.getConjugate() * rotation * frameTransform;
             
-            PxQuat twist, swing;
-            SeparateTwistSwing(rotation, swing, twist);
-            float theta0 = PxAtan2(twist.x, (1.f + twist.w)) * 4.f;
-            float theta1 = PxAtan2(swing.y, (1.f + swing.w)) * 4.f;
-            float theta2 = PxAtan2(swing.z, (1.f + swing.w)) * 4.f;
+            g_JointQuat[cacheIndex] = rotation;
+
+            PxVec3 axis;
+            float angle;
+            rotation.toRadiansAndUnitAxis(angle, axis);
+            axis *= angle;
             
-            mainCache->jointPosition[cacheIndex] = theta0;
-            mainCache->jointPosition[cacheIndex + 1] = theta1;
-            mainCache->jointPosition[cacheIndex + 2] = theta2;
+            mainCache->jointPosition[cacheIndex] = axis.x;
+            mainCache->jointPosition[cacheIndex + 1] = axis.y;
+            mainCache->jointPosition[cacheIndex + 2] = axis.z;
 
             inputIndex += 4;
         }
@@ -408,9 +409,9 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
                 targetPosition = -targetPosition;
             }
 
-            PxQuat localRotation = g_JointQuat[cacheIndex];
-            printf("local rot: %f, %f, %f, %f\n", localRotation.w, localRotation.x, localRotation.y, localRotation.z);
-
+            PxVec3 jointVar(positions[cacheIndex], positions[cacheIndex + 1], positions[cacheIndex + 2]);
+            PxQuat localRotation(jointVar.magnitude(), jointVar.getNormalized());
+           
             PxQuat posDifference = targetPosition * localRotation.getConjugate();
             UniformQuaternion(posDifference);
 
@@ -515,7 +516,8 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
                 targetPosition = -targetPosition;
             }
 
-            PxQuat localRotation = g_JointQuat[cacheIndex];
+            PxVec3 jointVar(positions[cacheIndex], positions[cacheIndex + 1], positions[cacheIndex + 2]);
+            PxQuat localRotation(jointVar.magnitude(), jointVar.getNormalized());
 
             PxQuat posDifference = targetPosition * localRotation.getConjugate();
             UniformQuaternion(posDifference);
