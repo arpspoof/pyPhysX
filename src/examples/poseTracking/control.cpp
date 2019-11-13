@@ -34,8 +34,9 @@ void control(PxReal dt) {
         targetPosition[i] = motions[xFrame][i];
     }
     articulation->AddSPDForces(targetPosition, dt);
+    
 
-    auto ps = articulation->GetJointPositionsQuaternion();
+ /*   auto ps = articulation->GetJointPositionsQuaternion();
     auto vs = articulation->GetJointVelocitiesPack4();
 
     printf("positions:\n");
@@ -48,5 +49,23 @@ void control(PxReal dt) {
     for (float x : vs) {
         printf("%f, ", x);
     }
-    printf("\n");
+    printf("\n");*/
+
+    auto jp = articulation->GetJointPositionsQuaternion();
+    articulation->CalculateFK(jp);
+    auto alljoints = articulation->GetAllJointsInIdOrder();
+    for (auto j : alljoints) {
+        printf("link name = %s\n", j->name.c_str());
+        PxVec3 pos = articulation->linkPositions[j->id];
+        PxQuat rot = articulation->linkGlobalRotations[j->id];
+        auto link = articulation->GetLinkByName(j->name);
+        auto linkTransform = link->link->getGlobalPose();
+        PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
+        PxVec3 pxpos = linkTransform.p;
+        PxQuat pxrot = linkTransform.q * frameTransform;
+        printf("my transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
+            pos.x, pos.y, pos.z, rot.w, rot.x, rot.y, rot.z);
+        printf("px transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
+            pxpos.x, pxpos.y, pxpos.z, pxrot.w, pxrot.x, pxrot.y, pxrot.z);
+    }
 }
