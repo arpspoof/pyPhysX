@@ -156,6 +156,7 @@ void Articulation::SetJointParams(std::vector<float>& target, const std::vector<
     }
 }
 
+extern PxQuat g_JointQuat[256];
 vector<float> Articulation::GetJointPositionsQuaternion() const
 {
     vector<float> result(7 + 4*nSphericalJoint + nRevoluteJoint);
@@ -187,11 +188,7 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
             result[resultIndex++] = mainCache->jointPosition[cacheIndex];
         }
         else if (jointDof == 3) {
-            PxQuat rotation = frameTransform.getConjugate() * ConvertTwistSwingToQuaternion(
-                mainCache->jointPosition[cacheIndex],
-                mainCache->jointPosition[cacheIndex + 1],
-                mainCache->jointPosition[cacheIndex + 2]
-            ) * frameTransform;
+            PxQuat rotation = frameTransform.getConjugate() * g_JointQuat[256] * frameTransform;
             UniformQuaternion(rotation);
             
             result[resultIndex] = rotation.w;
