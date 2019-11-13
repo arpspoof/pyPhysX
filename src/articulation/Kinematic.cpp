@@ -6,6 +6,8 @@
 using namespace std;
 using namespace physx;
 
+extern PxQuat g_JointQuat[256];
+
 vector<float> Articulation::GetJointPositionsQuaternion() const
 {
     vector<float> result(7 + 4*nSphericalJoint + nRevoluteJoint);
@@ -34,11 +36,7 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
             result[resultIndex++] = mainCache->jointPosition[cacheIndex];
         }
         else if (jointDof == 3) {
-            PxQuat rotation = frameTransform * ConvertTwistSwingToQuaternion(
-                mainCache->jointPosition[cacheIndex],
-                mainCache->jointPosition[cacheIndex + 1],
-                mainCache->jointPosition[cacheIndex + 2]
-            ) * frameTransform.getConjugate();
+            PxQuat rotation = frameTransform * g_JointQuat[cacheIndex] * frameTransform.getConjugate();
             UniformQuaternion(rotation);
             
             result[resultIndex] = rotation.w;
