@@ -220,8 +220,8 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
     PxQuat frameTransform(PxPi / 2, PxVec3(0, 0, 1));
     PxQuat rootPose = rootGlobalRotation * frameTransform;
     UniformQuaternion(rootPose);
-
-    rootLink->link->setGlobalPose(PxTransform(rootGlobalTranslation, rootPose));
+    
+    pxArticulation->teleportRootLink(PxTransform(rootGlobalTranslation, rootPose), true);
 
     int nJoints = GetNJoints();
     int inputIndex = 7;
