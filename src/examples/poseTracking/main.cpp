@@ -165,6 +165,9 @@ void control(PxReal dt) {
         articulation->SetJointPositionsQuaternion(motionFrame);
         articulation->SetJointVelocitiesPack4(vector<float>(dim, 0));
         break;
+    case 4:
+        articulation->AddSPDForcesAcc(motionFrame, dt);
+        break;
     default:
         break;
     }
@@ -338,6 +341,8 @@ int main(int argc, char** argv)
 
     motioninput.close();
     printf("%ld lines\n", motions.size());
+
+    articulation->SetJointPositionsQuaternion(motions[0]);
 
     if (result["performance"].as<bool>()) {
         static const PxU32 frameCount = 10000;

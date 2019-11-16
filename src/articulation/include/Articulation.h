@@ -187,6 +187,7 @@ public: // control
      */
     void AddSPDForcesABA(const std::vector<float>& targetPositions,
         float timeStep, bool applyRootExternalForce = false); // WXYZ or angle
+    void AddSPDForcesAcc(const std::vector<float>& targetPositions, float timeStep);
 // API END
 public:
     std::vector<float> kps, kds, forceLimits;
