@@ -102,7 +102,7 @@ void InitControl() {
     articulation->root_kps = { rootKpL, rootKpL, rootKpL, rootKpA, rootKpA, rootKpA };
     articulation->root_kds = { rootKdL, rootKdL, rootKdL, rootKdA, rootKdA, rootKdA };
 
-    reset();
+//    reset();
 }
 
 void initPhysics(float dt)
@@ -113,7 +113,7 @@ void initPhysics(float dt)
     material = scene->CreateMaterial(1.f, 1.f, 0.f);
 
     auto plane = scene->CreatePlane(material, vec3(0, 1, 0), 0);
-    plane->SetupCollisionFiltering(1, 2 | 4);
+    plane->SetupCollisionFiltering(1, -1);
 
     if (useDog) {
         JsonLoader jsonLoader(4);
@@ -121,10 +121,16 @@ void initPhysics(float dt)
         articulation = scene->CreateArticulation(&jsonLoader, material, vec3(0, 3.25f, 0));
     }
     else {
-        articulation = scene->CreateArticulation("resources/humanoid.urdf", material, vec3(0, 2.781f, 0));
+        articulation = scene->CreateArticulation("resources/humanoid.urdf", material, vec3(0, 2.781f, 0), 0.25f);
     }
 
     InitControl();
+
+    auto alljoints = articulation->GetAllJointsInIdOrder();
+    for (auto j : alljoints) {
+        j->childLink->SetupCollisionFiltering(2 << (j->id), -1);
+        printf("group for %s is %d\n", j->name.c_str(), 2 << (j->id));
+    }
 }
     
 void cleanupPhysics()
@@ -228,6 +234,32 @@ class GlutHandler :public glutRenderer::GlutRendererCallback
         control(scene->timeStep);
     }
 } glutHandler;
+
+vector<float> setpos {
+    1.53139758,  0.76897873,  0.,          0.97438135,  0.07631286,  0.03776851,
+ -0.20816072,  0.99517433, -0.08416767,  0.00331635, -0.05032751,  1.,
+  0.,          0.,          0.,          0.96076651, -0.10451415, -0.07597877,
+  0.24542148, -1.72684866,  0.98388587,  0.17281356, -0.04579028, -0.00271015,
+  0.93162382, -0.25565315,  0.24258843, -0.08870958,  1.00557206,  0.89450882,
+ -0.09429659, -0.04680736,  0.43447806, -0.92785196,  0.96074693,  0.01482465,
+ -0.00889803,  0.27688699,  0.94699727,  0.25834359, -0.18217961,  0.0571433,
+  1.3976368
+};
+
+vector<float> setvel {
+    2.83644298,  0.14862616,  0.,          0.25620783,  0.88736969, -1.21504141,
+  0.,          0.81095874, -0.41069279, -0.05612331,  0.,          0.,
+  0.,          0.,          0.,          0.11502411, -0.37685434,  9.63703945,
+  0.,         -2.26660043,  0.74523553, -0.31609161,  2.85611727,  0.,
+  1.76529462,  4.96363324, -4.7674136,   0.,         -4.75561945, -0.48500878,
+ -0.49944053, -2.74588429,  0.,          0.57918268,  0.90546744, -0.65763673,
+  3.1667057,   0.,          3.26858449,  0.59680633,  9.85829134,  0.,
+  2.30806795
+};
+
+vector<float> setspd {
+    0.9954484105110168, -0.07091088593006134, -0.06349769979715347, -0.004711734596639872, 0.9968694448471069, -0.058582376688718796, 0.029735218733549118, 0.04399218037724495, 0.9144092202186584, -0.1510108858346939, -0.05221044644713402, 0.37192144989967346, -2.0294315814971924, 0.967540979385376, 0.24877884984016418, -0.03705485537648201, -0.024506621062755585, 0.8977230191230774, -0.25066307187080383, 0.293827623128891, -0.21195927262306213, 0.9495632648468018, 0.8612546920776367, -0.13943254947662354, -0.09141234308481216, 0.48004451394081116, -1.1590757369995117, 0.9470224976539612, 0.010832543484866619, -0.029360629618167877, 0.3196389079093933, 0.8936602473258972, 0.31390172243118286, -0.29510733485221863, 0.1254938393831253, 1.4383859634399414
+};
 
 int main(int argc, char** argv)
 {
@@ -342,7 +374,43 @@ int main(int argc, char** argv)
     motioninput.close();
     printf("%ld lines\n", motions.size());
 
-    articulation->SetJointPositionsQuaternion(motions[0]);
+//    articulation->SetJointPositionsQuaternion(motions[0]);
+
+    articulation->SetJointPositionsQuaternion(setpos);
+    articulation->SetJointVelocitiesPack4(setvel);
+    scene->timeStep = 0.00001f;
+    scene->Step();
+    auto contact = scene->GetAllContactPairs();
+    for (auto c : contact) {
+        printf("contact: %d, %d\n", c.first, c.second);
+    }
+    printf("................\n");
+
+    scene->timeStep = 0.0016666666666666666f;
+    articulation->AddSPDForces(setspd, scene->timeStep);
+    scene->Step();
+    contact = scene->GetAllContactPairs();
+    for (auto c : contact) {
+        printf("contact: %d, %d\n", c.first, c.second);
+    }
+/*    auto jp = articulation->GetJointPositionsQuaternion();
+    articulation->CalculateFK(jp);
+    auto alljoints = articulation->GetAllJointsInIdOrder();
+    for (auto j : alljoints) {
+        printf("link name = %s\n", j->name.c_str());
+        PxVec3 pos = articulation->linkPositions[j->id];
+        PxQuat rot = articulation->linkGlobalRotations[j->id];
+        auto link = articulation->GetLinkByName(j->name);
+        auto linkTransform = link->link->getGlobalPose();
+        PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
+        PxVec3 pxpos = linkTransform.p;
+        PxQuat pxrot = linkTransform.q * frameTransform;
+        printf("my transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
+            pos.x, pos.y, pos.z, rot.w, rot.x, rot.y, rot.z);
+        printf("px transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
+            pxpos.x, pxpos.y, pxpos.z, pxrot.w, pxrot.x, pxrot.y, pxrot.z);
+    }
+    printf("-----------------------------------------------------------\n");*/
 
     if (result["performance"].as<bool>()) {
         static const PxU32 frameCount = 10000;
