@@ -1,0 +1,491 @@
+{
+    "BodyDefs": [
+        {
+            "AttachX": 3.761091947555542,
+            "AttachY": -3.2109107971191406,
+            "AttachZ": 0.0,
+            "ID": 0,
+            "Mass": 2.0,
+            "Name": "root",
+            "Param0": 1.7802996635437012,
+            "Param1": 1.7802996635437012,
+            "Param2": 1.7802996635437012,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 9.5,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 1,
+            "Mass": 3.0,
+            "Name": "spine0",
+            "Param0": 3.4200000762939453,
+            "Param1": 3.4200000762939453,
+            "Param2": 3.4200000762939453,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 15.524999618530273,
+            "AttachY": 2.0,
+            "AttachZ": 0.0,
+            "ID": 2,
+            "Mass": 7.0,
+            "Name": "spine1",
+            "Param0": 5.635186195373535,
+            "Param1": 5.635186195373535,
+            "Param2": 5.635186195373535,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 7.0,
+            "AttachY": 0.015438850037753582,
+            "AttachZ": 0.0,
+            "ID": 3,
+            "Mass": 1.0,
+            "Name": "neck",
+            "Param0": 2.3400063514709473,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        },
+        {
+            "AttachX": 0.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 4,
+            "Mass": 1.5,
+            "Name": "head",
+            "Param0": 0.7200000286102295,
+            "Param1": 0.7200000286102295,
+            "Param2": 0.7200000286102295,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 4.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 5,
+            "Mass": 1.5,
+            "Name": "left_shoulder",
+            "Param0": 1.1699999570846558,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        },
+        {
+            "AttachX": 7.599999904632568,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 6,
+            "Mass": 1.0,
+            "Name": "left_forearm",
+            "Param0": 2.5739998817443848,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        },
+        {
+            "AttachX": 8.899999618530273,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 7,
+            "Mass": 0.5,
+            "Name": "left_hand",
+            "Param0": 3.2039999961853027,
+            "Param1": 3.2039999961853027,
+            "Param2": 3.2039999961853027,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 0.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 8,
+            "Mass": 0.5,
+            "Name": "left_finger",
+            "Param0": 0.7200000286102295,
+            "Param1": 0.7200000286102295,
+            "Param2": 0.7200000286102295,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 4.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.07582700252532959,
+            "ID": 9,
+            "Mass": 1.5,
+            "Name": "right_shoulder",
+            "Param0": 1.1702802181243896,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        },
+        {
+            "AttachX": 7.599999904632568,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 10,
+            "Mass": 1.0,
+            "Name": "right_forearm",
+            "Param0": 2.5739998817443848,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        },
+        {
+            "AttachX": 8.899999618530273,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 11,
+            "Mass": 0.5,
+            "Name": "right_hand",
+            "Param0": 3.2039999961853027,
+            "Param1": 3.2039999961853027,
+            "Param2": 3.2039999961853027,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 0.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 12,
+            "Mass": 0.5,
+            "Name": "right_finger",
+            "Param0": 0.7200000286102295,
+            "Param1": 0.7200000286102295,
+            "Param2": 0.7200000286102295,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 8.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 13,
+            "Mass": 1.5,
+            "Name": "left_upper_leg",
+            "Param0": 2.7300000190734863,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        },
+        {
+            "AttachX": 9.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 14,
+            "Mass": 1.0,
+            "Name": "left_leg",
+            "Param0": 3.119999885559082,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        },
+        {
+            "AttachX": 0.0,
+            "AttachY": -5.400000095367432,
+            "AttachZ": 0.0,
+            "ID": 15,
+            "Mass": 0.5,
+            "Name": "left_foot",
+            "Param0": 1.9440001249313354,
+            "Param1": 1.9440001249313354,
+            "Param2": 1.9440001249313354,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 0.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 16,
+            "Mass": 0.5,
+            "Name": "left_toe",
+            "Param0": 0.7200000286102295,
+            "Param1": 0.7200000286102295,
+            "Param2": 0.7200000286102295,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 8.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 17,
+            "Mass": 1.5,
+            "Name": "right_upper_leg",
+            "Param0": 2.7300000190734863,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        },
+        {
+            "AttachX": 9.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 18,
+            "Mass": 1.0,
+            "Name": "right_leg",
+            "Param0": 3.119999885559082,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        },
+        {
+            "AttachX": 0.0,
+            "AttachY": -5.400000095367432,
+            "AttachZ": 0.0,
+            "ID": 19,
+            "Mass": 0.5,
+            "Name": "right_foot",
+            "Param0": 1.9440001249313354,
+            "Param1": 1.9440001249313354,
+            "Param2": 1.9440001249313354,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 0.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 20,
+            "Mass": 0.5,
+            "Name": "right_toe",
+            "Param0": 0.7200000286102295,
+            "Param1": 0.7200000286102295,
+            "Param2": 0.7200000286102295,
+            "Shape": "sphere"
+        },
+        {
+            "AttachX": 6.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 21,
+            "Mass": 0.5,
+            "Name": "tail0",
+            "Param0": 1.9499999284744263,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        },
+        {
+            "AttachX": 0.0,
+            "AttachY": 0.0,
+            "AttachZ": 0.0,
+            "ID": 22,
+            "Mass": 0.25,
+            "Name": "tail1",
+            "Param0": -0.38999998569488525,
+            "Param1": 2,
+            "Param2": 2,
+            "Shape": "capsule"
+        }
+    ],
+    "Skeleton": {
+        "Joints": [
+            {
+                "AttachX": 0,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 0,
+                "Name": "root",
+                "Parent": -1,
+                "Type": "none"
+            },
+            {
+                "AttachX": 0,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 1,
+                "Name": "spine0",
+                "Parent": 0,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 19,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 2,
+                "Name": "spine1",
+                "Parent": 1,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 22.5,
+                "AttachY": 0.6,
+                "AttachZ": 0,
+                "ID": 3,
+                "Name": "neck",
+                "Parent": 2,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 14,
+                "AttachY": 0.0308777,
+                "AttachZ": 0,
+                "ID": 4,
+                "Name": "head",
+                "Parent": 3,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 19.8,
+                "AttachY": 3.7,
+                "AttachZ": 4.3,
+                "ID": 5,
+                "Name": "left_shoulder",
+                "Parent": 2,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 8,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 6,
+                "Name": "left_forearm",
+                "Parent": 5,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 15.2,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 7,
+                "Name": "left_hand",
+                "Parent": 6,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 17.8,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 8,
+                "Name": "left_finger",
+                "Parent": 7,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 19.8,
+                "AttachY": 3.7,
+                "AttachZ": -4.3,
+                "ID": 9,
+                "Name": "right_shoulder",
+                "Parent": 2,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 8,
+                "AttachY": 0,
+                "AttachZ": 0.151654,
+                "ID": 10,
+                "Name": "right_forearm",
+                "Parent": 9,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 15.2,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 11,
+                "Name": "right_hand",
+                "Parent": 10,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 17.8,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 12,
+                "Name": "right_finger",
+                "Parent": 11,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 5.98425,
+                "AttachY": -7.666,
+                "AttachZ": 4.78879,
+                "ID": 13,
+                "Name": "left_upper_leg",
+                "Parent": 0,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 16,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 14,
+                "Name": "left_leg",
+                "Parent": 13,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 18,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 15,
+                "Name": "left_foot",
+                "Parent": 14,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 0,
+                "AttachY": -10.8,
+                "AttachZ": 0,
+                "ID": 16,
+                "Name": "left_toe",
+                "Parent": 15,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 5.98425,
+                "AttachY": -7.66598,
+                "AttachZ": -4.78879,
+                "ID": 17,
+                "Name": "right_upper_leg",
+                "Parent": 0,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 16,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 18,
+                "Name": "right_leg",
+                "Parent": 17,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 18,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 19,
+                "Name": "right_foot",
+                "Parent": 18,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 0,
+                "AttachY": -10.8,
+                "AttachZ": 0,
+                "ID": 20,
+                "Name": "right_toe",
+                "Parent": 19,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 6.83696,
+                "AttachY": -0.722574,
+                "AttachZ": 0,
+                "ID": 21,
+                "Name": "tail0",
+                "Parent": 0,
+                "Type": "spherical"
+            },
+            {
+                "AttachX": 12,
+                "AttachY": 0,
+                "AttachZ": 0,
+                "ID": 22,
+                "Name": "tail1",
+                "Parent": 21,
+                "Type": "spherical"
+            }
+        ]
+    }
+}

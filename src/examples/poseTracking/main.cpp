@@ -116,8 +116,8 @@ void initPhysics(float dt)
     plane->SetupCollisionFiltering(1, 2 | 4);
 
     if (useDog) {
-        JsonLoader jsonLoader(4);
-        jsonLoader.LoadDescriptionFromFile("resources/dog3d.txt");
+        JsonLoader jsonLoader(0.1f);
+        jsonLoader.LoadDescriptionFromFile("resources/test.txt");
         articulation = scene->CreateArticulation(&jsonLoader, material, vec3(0, 3.25f, 0));
     }
     else {
