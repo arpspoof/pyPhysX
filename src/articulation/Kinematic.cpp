@@ -51,7 +51,7 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
     return result;
 }
 
-void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) const
+void Articulation::SetJointPositionsQuaternion(const vector<float>& positions)
 {
     assert((int)positions.size() == 7 + 4*nSphericalJoint + nRevoluteJoint);
 
@@ -62,6 +62,32 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
     // transform from { x:front, y:up, z:right } to { x:up, y:back, z:right }
     PxQuat rootPose = rootGlobalRotation * frameTransform;
     UniformQuaternion(rootPose);
+
+// hack begin
+    CalculateFK(positions);
+    PxVec3 leftAnkleCOM = linkPositions[5];
+    PxVec3 rightAnkleCOM = linkPositions[11];
+    PxQuat leftAnkleRot = linkGlobalRotations[5];
+    PxQuat rightAnkleRot = linkGlobalRotations[11];
+    vector<PxVec3> offsets {
+        PxVec3(-0.354f, -0.11f, 0.18f) * 0.25f,
+        PxVec3(0.354f, -0.11f, -0.18f) * 0.25f,
+        PxVec3(-0.354f, -0.11f, 0.18f) * 0.25f,
+        PxVec3(0.354f, -0.11f, -0.18f) * 0.25f
+    };
+    PxVec3 lowest(100, 100, 100);
+    for (auto offset : offsets) {
+        PxVec3 endeff = leftAnkleCOM + leftAnkleRot.rotate(offset);
+        if (endeff.y < lowest.y) lowest = endeff;
+    }
+    for (auto offset : offsets) {
+        PxVec3 endeff = rightAnkleCOM + rightAnkleRot.rotate(offset);
+        if (endeff.y < lowest.y) lowest = endeff;
+    }
+    if (lowest.y < 0) {
+        rootGlobalTranslation.y += -lowest.y + 0.001f;
+    }
+// hack end
 
     pxArticulation->teleportRootLink(PxTransform(rootGlobalTranslation, rootPose), true);
 
@@ -177,7 +203,7 @@ void Articulation::SetJointVelocitiesPack4(const std::vector<float>& velocities)
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eVELOCITY);
 }
 
-void Articulation::CalculateFK(vector<float>& jData)
+void Articulation::CalculateFK(const vector<float>& jData)
 {
     auto allJoints = GetAllJointsInIdOrder();
     jointPositions = vector<PxVec3>(allJoints.size());

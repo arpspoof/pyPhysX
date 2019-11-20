@@ -89,7 +89,7 @@ public: // kinematic
      * 
      * @param positions 
      */
-    void SetJointPositionsQuaternion(const std::vector<float>& positions) const;
+    void SetJointPositionsQuaternion(const std::vector<float>& positions);
     /**
      * @brief Get root linear velocity, root angular velocity and all joints'
      *  angular velocities. Root linear velocity is in result[0-2], root
@@ -119,7 +119,7 @@ public:
     std::vector<physx::PxQuat> jointGlobalRotations;
     std::vector<physx::PxVec3> linkPositions;
     std::vector<physx::PxQuat> linkGlobalRotations;
-    void CalculateFK(std::vector<float>& jData);
+    void CalculateFK(const std::vector<float>& jData);
 public: // control
     /**
      * @brief Set joint proportional gains through a single array

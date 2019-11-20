@@ -378,6 +378,7 @@ int main(int argc, char** argv)
 
     articulation->SetJointPositionsQuaternion(setpos);
     articulation->SetJointVelocitiesPack4(setvel);
+    
     scene->timeStep = 0.00001f;
     scene->Step();
     auto contact = scene->GetAllContactPairs();
@@ -386,18 +387,11 @@ int main(int argc, char** argv)
     }
     printf("................\n");
 
-    scene->timeStep = 0.0016666666666666666f;
-    articulation->AddSPDForces(setspd, scene->timeStep);
-    scene->Step();
-    contact = scene->GetAllContactPairs();
-    for (auto c : contact) {
-        printf("contact: %d, %d\n", c.first, c.second);
-    }
-/*    auto jp = articulation->GetJointPositionsQuaternion();
+    auto jp = articulation->GetJointPositionsQuaternion();
     articulation->CalculateFK(jp);
     auto alljoints = articulation->GetAllJointsInIdOrder();
     for (auto j : alljoints) {
-        printf("link name = %s\n", j->name.c_str());
+        printf("link name = %s, id = %d\n", j->name.c_str(), j->id);
         PxVec3 pos = articulation->linkPositions[j->id];
         PxQuat rot = articulation->linkGlobalRotations[j->id];
         auto link = articulation->GetLinkByName(j->name);
@@ -410,7 +404,15 @@ int main(int argc, char** argv)
         printf("px transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
             pxpos.x, pxpos.y, pxpos.z, pxrot.w, pxrot.x, pxrot.y, pxrot.z);
     }
-    printf("-----------------------------------------------------------\n");*/
+    printf("-----------------------------------------------------------\n");
+
+    scene->timeStep = 0.0016666666666666666f;
+    articulation->AddSPDForces(setspd, scene->timeStep);
+    scene->Step();
+    contact = scene->GetAllContactPairs();
+    for (auto c : contact) {
+        printf("contact: %d, %d\n", c.first, c.second);
+    }
 
     if (result["performance"].as<bool>()) {
         static const PxU32 frameCount = 10000;
