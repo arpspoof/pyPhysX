@@ -235,31 +235,119 @@ class GlutHandler :public glutRenderer::GlutRendererCallback
     }
 } glutHandler;
 
-vector<float> setpos {
-    1.53139758,  0.76897873,  0.,          0.97438135,  0.07631286,  0.03776851,
- -0.20816072,  0.99517433, -0.08416767,  0.00331635, -0.05032751,  1.,
-  0.,          0.,          0.,          0.96076651, -0.10451415, -0.07597877,
-  0.24542148, -1.72684866,  0.98388587,  0.17281356, -0.04579028, -0.00271015,
-  0.93162382, -0.25565315,  0.24258843, -0.08870958,  1.00557206,  0.89450882,
- -0.09429659, -0.04680736,  0.43447806, -0.92785196,  0.96074693,  0.01482465,
- -0.00889803,  0.27688699,  0.94699727,  0.25834359, -0.18217961,  0.0571433,
-  1.3976368
-};
 
-vector<float> setvel {
-    2.83644298,  0.14862616,  0.,          0.25620783,  0.88736969, -1.21504141,
-  0.,          0.81095874, -0.41069279, -0.05612331,  0.,          0.,
-  0.,          0.,          0.,          0.11502411, -0.37685434,  9.63703945,
-  0.,         -2.26660043,  0.74523553, -0.31609161,  2.85611727,  0.,
-  1.76529462,  4.96363324, -4.7674136,   0.,         -4.75561945, -0.48500878,
- -0.49944053, -2.74588429,  0.,          0.57918268,  0.90546744, -0.65763673,
-  3.1667057,   0.,          3.26858449,  0.59680633,  9.85829134,  0.,
-  2.30806795
-};
+#include <iomanip>
+#include <filesystem>
+string basePath = "/home/zhiqiy/Documents/motions/";
+string outPath = "/home/zhiqiy/Documents/motionsFixed/";
 
-vector<float> setspd {
-    0.9954484105110168, -0.07091088593006134, -0.06349769979715347, -0.004711734596639872, 0.9968694448471069, -0.058582376688718796, 0.029735218733549118, 0.04399218037724495, 0.9144092202186584, -0.1510108858346939, -0.05221044644713402, 0.37192144989967346, -2.0294315814971924, 0.967540979385376, 0.24877884984016418, -0.03705485537648201, -0.024506621062755585, 0.8977230191230774, -0.25066307187080383, 0.293827623128891, -0.21195927262306213, 0.9495632648468018, 0.8612546920776367, -0.13943254947662354, -0.09141234308481216, 0.48004451394081116, -1.1590757369995117, 0.9470224976539612, 0.010832543484866619, -0.029360629618167877, 0.3196389079093933, 0.8936602473258972, 0.31390172243118286, -0.29510733485221863, 0.1254938393831253, 1.4383859634399414
-};
+void runTransform() 
+{
+    vector<string> linkShapes {
+        "s", "s", "s", 
+        "c", "c", "b", "c", "c", "s", 
+        "c", "c", "b", "c", "c", "s", 
+    };
+    vector<PxVec3> linkParams {
+        PxVec3(0.36f), PxVec3(0.44f), PxVec3(0.41f),
+        PxVec3(0.22f, 1.2f, 0.22f), PxVec3(0.2f, 1.24f, 0.2f), PxVec3(0.708f, 0.22f, 0.36f), 
+        PxVec3(0.18f, 0.72f, 0.18f), PxVec3(0.16f, 0.54f, 0.16f), PxVec3(0.16f), 
+        PxVec3(0.22f, 1.2f, 0.22f), PxVec3(0.2f, 1.24f, 0.2f), PxVec3(0.708f, 0.22f, 0.36f), 
+        PxVec3(0.18f, 0.72f, 0.18f), PxVec3(0.16f, 0.54f, 0.16f), PxVec3(0.16f)
+    };
+    for (PxVec3& v : linkParams) {
+        v *= 0.25f;
+    }
+
+    for (const auto & entry : filesystem::directory_iterator(basePath)) {
+        string path = entry.path();
+        printf("processing %s\n", path.c_str());
+        
+        ifstream motioninput(path);
+        string motionStr((istreambuf_iterator<char>(motioninput)), istreambuf_iterator<char>());
+        
+        auto motionJson = json::parse(motionStr);
+        auto& frames = motionJson["Frames"];
+
+        for (auto& frame : frames) {
+            vector<float> jp;
+            for (int i = 0; i < 43; i++) jp.push_back(frame[i + 1]);
+            articulation->SetJointPositionsQuaternion(jp);
+            articulation->CalculateFK(jp);
+
+            float lowest = 1000;
+            for (int i = 0; i < 15; i++) {
+                PxVec3 pos = articulation->linkPositions[i];
+                PxQuat rot = articulation->linkGlobalRotations[i];
+                if (linkShapes[i] == "s") {
+                    float y = pos.y - linkParams[i].y;
+                    lowest = min(lowest, y);
+                }
+                else if (linkShapes[i] == "b") {
+                    for (int j = 0; j < 8; j++) {
+                        int sign1 = (j & 1) ? 1 : -1;
+                        int sign2 = (j & 2) ? 1 : -1;
+                        int sign3 = (j & 4) ? 1 : -1;
+                        PxVec3 localOffset = linkParams[i] * 0.5f;
+                        localOffset.x *= sign1;
+                        localOffset.y *= sign2;
+                        localOffset.z *= sign3;
+                        PxVec3 globalOffset = rot.rotate(localOffset);
+                        lowest = min(lowest, globalOffset.y + pos.y);
+                    }
+                }
+                else {
+                    for (int j = 0; j < 2; j++) {
+                        int sign1 = (j & 1) ? 1 : -1;
+                        PxVec3 localOffset(0, linkParams[i].y * sign1 * 0.5f, 0);
+                        PxVec3 globalOffset = rot.rotate(localOffset);
+                        lowest = min(lowest, globalOffset.y + pos.y - linkParams[i].x);
+                    }
+                }
+            }
+
+            if (lowest < 0) {
+                printf("lowest = %f\n", lowest);
+                jp[1] += -lowest + 0.0001f;
+                frame[2] = jp[1];
+            } 
+            else {
+                printf("no ground touch\n");
+            }
+        }
+
+        string name = path.substr(path.find_last_of('/') + 1);
+        ofstream out(outPath + name);
+        out << setw(4) << motionJson << endl;
+        out.close();
+        printf("output to %s\n", (outPath + name).c_str());
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -271,7 +359,7 @@ int main(int argc, char** argv)
         ("dmp", "Dump simulation target and actuals")
         ("r,round", "Number of rounds", cxxopts::value<int>()->default_value("0"))
         ("c,control", "Controller", cxxopts::value<int>()->default_value("0"))
-        ("m,mocap", "Mocap data path", cxxopts::value<string>()->default_value("testMotion.txt"))
+        ("m,mocap", "Mocap data path", cxxopts::value<string>()->default_value("run.txt"))
         ("f,frequency", "Tracking frequency", cxxopts::value<float>()->default_value("0.033"))
         ("t,dt", "Time step", cxxopts::value<float>()->default_value("0.033"))
         ("kp", "Joint kp", cxxopts::value<float>()->default_value("75000"))
@@ -374,47 +462,12 @@ int main(int argc, char** argv)
     motioninput.close();
     printf("%ld lines\n", motions.size());
 
-//    articulation->SetJointPositionsQuaternion(motions[0]);
 
-    articulation->SetJointPositionsQuaternion(setpos);
-    articulation->SetJointVelocitiesPack4(setvel);
-    
-    scene->timeStep = 0.00001f;
-    scene->Step();
-    auto contact = scene->GetAllContactPairs();
-    for (auto c : contact) {
-        printf("contact: %d, %d\n", c.first, c.second);
-    }
-    printf("................\n");
+    runTransform();
+    return 0;
 
-    auto jp = articulation->GetJointPositionsQuaternion();
-    articulation->CalculateFK(jp);
-    auto alljoints = articulation->GetAllJointsInIdOrder();
-    for (auto j : alljoints) {
-        printf("link name = %s, id = %d\n", j->name.c_str(), j->id);
-        PxVec3 pos = articulation->linkPositions[j->id];
-        PxQuat rot = articulation->linkGlobalRotations[j->id];
-        auto link = articulation->GetLinkByName(j->name);
-        auto linkTransform = link->link->getGlobalPose();
-        PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
-        PxVec3 pxpos = linkTransform.p;
-        PxQuat pxrot = linkTransform.q * frameTransform;
-        printf("my transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
-            pos.x, pos.y, pos.z, rot.w, rot.x, rot.y, rot.z);
-        printf("px transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
-            pxpos.x, pxpos.y, pxpos.z, pxrot.w, pxrot.x, pxrot.y, pxrot.z);
-    }
-    printf("-----------------------------------------------------------\n");
 
-    scene->timeStep = 0.0016666666666666666f;
-    articulation->AddSPDForces(setspd, scene->timeStep);
-    scene->Step();
-    contact = scene->GetAllContactPairs();
-    for (auto c : contact) {
-        printf("contact: %d, %d\n", c.first, c.second);
-    }
-
-    if (result["performance"].as<bool>()) {
+ /*   if (result["performance"].as<bool>()) {
         static const PxU32 frameCount = 10000;
         auto starttime = high_resolution_clock::now();
         for(PxU32 i = 0; i < frameCount; i++) {
@@ -437,5 +490,5 @@ int main(int argc, char** argv)
         oc.close();
     }
 
-    return 0;
+    return 0;*/
 }

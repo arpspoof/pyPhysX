@@ -26,7 +26,7 @@ public:
     const Link* GetRootLink() const;
 public:
     std::vector<float> GetJointPositionsQuaternion() const;
-    void SetJointPositionsQuaternion(const std::vector<float>& positions);
+    void SetJointPositionsQuaternion(const std::vector<float>& positions) const;
     std::vector<float> GetJointVelocitiesPack4() const;
     void SetJointVelocitiesPack4(const std::vector<float>& velocities) const;
 public:

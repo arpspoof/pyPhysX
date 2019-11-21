@@ -89,7 +89,7 @@ public: // kinematic
      * 
      * @param positions 
      */
-    void SetJointPositionsQuaternion(const std::vector<float>& positions);
+    void SetJointPositionsQuaternion(const std::vector<float>& positions) const;
     /**
      * @brief Get root linear velocity, root angular velocity and all joints'
      *  angular velocities. Root linear velocity is in result[0-2], root
