@@ -238,8 +238,8 @@ class GlutHandler :public glutRenderer::GlutRendererCallback
 
 #include <iomanip>
 #include <filesystem>
-string basePath = "/home/zhiqiy/Documents/motions/";
-string outPath = "/home/zhiqiy/Documents/motionsFixed/";
+string basePath = "/home/zhiqiy/Documents/motionsFixed/";
+string outPath = "/home/zhiqiy/Documents/motionsFixed2/";
 
 void runTransform() 
 {
@@ -312,7 +312,7 @@ void runTransform()
                 frame[2] = jp[1];
             } 
             else {
-                printf("no ground touch\n");
+                printf(".");
             }
         }
 

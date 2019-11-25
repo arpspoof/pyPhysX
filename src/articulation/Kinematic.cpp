@@ -188,6 +188,9 @@ void Articulation::CalculateFK(const vector<float>& jData)
     jointGlobalRotations[0] = PxQuat(jData[4], jData[5], jData[6], jData[3]);
     jointLocalRotations[0] = jointGlobalRotations[0];
 
+    jointGlobalRotations[0].normalize();
+    jointLocalRotations[0].normalize();
+
     int jIndex = 7;
     for (int i = 1; i < (int)allJoints.size(); i++) {
         int dof = allJoints[i]->nDof;
@@ -205,9 +208,11 @@ void Articulation::CalculateFK(const vector<float>& jData)
             jointLocalRotations[i] = PxQuat(PxIdentity);
             break;
         }
+        jointLocalRotations[i].normalize();
         Joint* j = allJoints[i];
         int pjid = j->parentLink->inboundJoint->id;
         jointGlobalRotations[j->id] = jointGlobalRotations[pjid] * jointLocalRotations[j->id];
+        jointGlobalRotations[j->id].normalize();
         jointPositions[j->id] = jointPositions[pjid] + jointGlobalRotations[pjid].rotate(j->posOffsetJointToParentJoint);
     }
 
