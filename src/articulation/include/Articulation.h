@@ -167,6 +167,7 @@ public: // control
      * @warning Experimental
      */
     void AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep); // WXYZ or angle
+    std::vector<float> GetCurrentForces() const;
 // API END
 public:
     std::vector<float> kps, kds, forceLimits;

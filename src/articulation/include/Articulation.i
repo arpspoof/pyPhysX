@@ -35,5 +35,6 @@ public:
     void SetForceLimits(const std::vector<float>& forceLimits);
     void AddSPDForces(const std::vector<float>& targetPositions, float timeStep);
     void AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep);
+    std::vector<float> GetCurrentForces() const;
 // API END
 };

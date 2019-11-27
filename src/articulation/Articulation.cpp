@@ -463,12 +463,22 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
     VectorXd qDotDot = H.llt().solve(centrifugalCoriolisGravityExternal + proportionalTorquePlusQDotDeltaT + derivativeTorque);
     for (int i = 0; i < nDof; i++) {
         forces[i] = (PxReal)(proportionalTorquePlusQDotDeltaT(i) + derivativeTorque(i) - timeStep * kds[i] * qDotDot(i));
-        if (forceLimits[i] > 0 && forces[i] > forceLimits[i]) {
-            forces[i] = forceLimits[i];
+        if (forceLimits[i] > 0 && PxAbs(forces[i]) > forceLimits[i]) {
+            forces[i] = forceLimits[i] * PxSign(forces[i]);
         }
     }
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
+}
+
+vector<float> Articulation::GetCurrentForces() const
+{
+    int nDof = GetNDof();
+    vector<float> forces(nDof);
+    for (int i = 0; i < nDof; i++) {
+        forces[i] = mainCache->jointForce[i];
+    }
+    return forces;
 }
 
 void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep)
