@@ -8,7 +8,8 @@ using namespace physx;
 
 extern PxQuat g_JointQuat[256];
 
-void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce)
+void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep, 
+    bool applyRootExternalForce, bool applyForceLimits)
 {
     int nDof = GetNDof();
 
@@ -97,19 +98,21 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
 
     for (int i = 0; i < nDof; i++) {
         forces[i] = proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i];
-        if (forceLimits[i] > 0 && forces[i] > forceLimits[i]) {
-            forces[i] = forceLimits[i];
-        }
     }
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
 #ifdef ENABLE_SPD_ABA
     extern float  			g_SPD_Dt;
     extern const float* 	g_SPD_Kd;
+    extern const float* 	g_SPD_Fl;
     extern const int*		g_SPD_LinkIdCacheIndexMap;
 
     g_SPD_Dt = timeStep;
     g_SPD_Kd = kds.data();
+    if (applyForceLimits)
+        g_SPD_Fl = forceLimits.data();
+    else 
+        g_SPD_Fl = nullptr;
     g_SPD_LinkIdCacheIndexMap = linkIdCacheIndexMap.data();
 #endif
 

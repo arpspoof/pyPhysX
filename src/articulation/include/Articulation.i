@@ -33,8 +33,9 @@ public:
     void SetKPs(const std::vector<float>& kps);
     void SetKDs(const std::vector<float>& kds);
     void SetForceLimits(const std::vector<float>& forceLimits);
-    void AddSPDForces(const std::vector<float>& targetPositions, float timeStep);
-    void AddSPDForcesSparse(const std::vector<float>& targetPositions, float timeStep);
-    void AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep);
+    void AddSPDForces(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce = false);
+    void AddSPDForcesSparse(const std::vector<float>& targetPositions, float timeStep, bool applyRootExternalForce = false);
+    void AddSPDForcesABA(const std::vector<float>& targetPositions, float timeStep, 
+        bool applyRootExternalForce = false, bool applyForceLimits = false);
 // API END
 };
