@@ -233,8 +233,8 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
     VectorXf qDotDot = H.llt().solve(centrifugalCoriolisGravityExternal + proportionalTorquePlusQDotDeltaT + derivativeTorque);
     for (int i = 0; i < nDof; i++) {
         forces[i] = (PxReal)(proportionalTorquePlusQDotDeltaT(i) + derivativeTorque(i) - timeStep * kds[i] * qDotDot(i));
-        if (forceLimits[i] > 0 && forces[i] > forceLimits[i]) {
-            forces[i] = forceLimits[i];
+        if (forceLimits[i] > 0) {
+            forces[i] = PxClamp(forces[i], -forceLimits[i], forceLimits[i]);
         }
     }
 

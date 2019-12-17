@@ -218,8 +218,8 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
     for (int i = 0; i < nDof; i++) {
         forces[i] = (PxReal)(proportionalTorquePlusQDotDeltaT[i + 6] + derivativeTorque[i + 6]
             - timeStep * kds[i] * rhs[i + 6]);
-        if (forceLimits[i] > 0 && forces[i] > forceLimits[i]) {
-            forces[i] = forceLimits[i];
+        if (forceLimits[i] > 0) {
+            forces[i] = PxClamp(forces[i], -forceLimits[i], forceLimits[i]);
         }
     }
 
