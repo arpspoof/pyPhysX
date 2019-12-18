@@ -354,6 +354,8 @@ int main(int argc, char** argv)
         auto endtime = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(endtime - starttime).count();
         printf("%ld\n", duration);
+        extern long g_ABA_Timer;
+        printf("ABA Timer %ld\n", g_ABA_Timer);
     }
     else {
         auto renderer = glutRenderer::GlutRenderer::GetInstance();

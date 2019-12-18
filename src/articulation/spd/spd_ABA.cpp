@@ -97,9 +97,6 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
 
     for (int i = 0; i < nDof; i++) {
         forces[i] = proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i];
-        if (forceLimits[i] > 0 && forces[i] > forceLimits[i]) {
-            forces[i] = forceLimits[i];
-        }
     }
 
     pxArticulation->applyCache(*mainCache, PxArticulationCache::eFORCE);
