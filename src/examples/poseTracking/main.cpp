@@ -45,6 +45,8 @@ static bool useDog;
 
 static int dim;
 
+static long spdTime = 0;
+
 void reset()
 {
     dim = 7;
@@ -147,7 +149,8 @@ void control(PxReal dt) {
     auto motionFrame = motions[xFrame];
     motionFrame[0] += motions.back()[0] * currentRound;
     motionFrame[2] += motions.back()[2] * currentRound;
-
+    
+    auto starttime = high_resolution_clock::now();
     switch (controller)
     {
     case 0:
@@ -171,6 +174,9 @@ void control(PxReal dt) {
     default:
         break;
     }
+    auto endtime = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(endtime - starttime).count();
+    spdTime += duration;
 
     if (dump) {
         for (int i = 0; i < dim; i++) ot << motionFrame[i] << " ";
@@ -355,7 +361,8 @@ int main(int argc, char** argv)
         auto duration = duration_cast<microseconds>(endtime - starttime).count();
         printf("%ld\n", duration);
         extern long g_ABA_Timer;
-        printf("ABA Timer %ld\n", g_ABA_Timer);
+        printf("%ld\n", g_ABA_Timer);
+        printf("%ld\n", spdTime);
     }
     else {
         auto renderer = glutRenderer::GlutRenderer::GetInstance();
