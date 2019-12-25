@@ -30,7 +30,7 @@ RevoluteJoint::RevoluteJoint(Link *link, PxArticulationAxis::Enum axis,
 }
 
 Link::Link(PxArticulationReducedCoordinate* pxArticulation, Link *parent, PxTransform transform, LinkBody *body)
-    :parentLink(parent), inboundJoint(nullptr) {
+    :parentLink(parent), inboundJoint(nullptr), body(body) {
     link = pxArticulation->createLink(parent ? parent->link : NULL, transform);
     if (body->hasGeometry) {
         PxRigidActorExt::createExclusiveShape(*link, body->getGeometry(), *body->material);
@@ -40,4 +40,9 @@ Link::Link(PxArticulationReducedCoordinate* pxArticulation, Link *parent, PxTran
     }
     PxRigidBodyExt::updateMassAndInertia(*link, body->getDensity());
     pxActor = link;
+}
+
+Link::~Link()
+{
+    delete body;
 }

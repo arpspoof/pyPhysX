@@ -94,9 +94,6 @@ ArticulationTree::~ArticulationTree() {
     for (auto& it : nodeMap) {
         delete it.second;
     }
-    for (auto& p : linkBodies) {
-        delete p;
-    }
 }
 
 unordered_set<LinkBody*> ArticulationTree::GetLinkBodies()

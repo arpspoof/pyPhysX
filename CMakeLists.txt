@@ -39,6 +39,7 @@ set(CORE_PATH "${SRC_PATH}/core")
 
 set(RENDERER_PATH "${SRC_PATH}/renderer")
 set(RENDERER_GLUT_PATH "${RENDERER_PATH}/glut")
+set(RENDERER_UNITY_PATH "${RENDERER_PATH}/unity")
 
 include_directories(SYSTEM "${PHYSX_INSTALL_DIR}/PhysX/include")
 include_directories(SYSTEM "${PHYSX_INSTALL_DIR}/PhysX/source/foundation/include")
@@ -51,6 +52,7 @@ include_directories("${ACTORS_PATH}/include")
 include_directories("${ARTICULATION_PATH}/include")
 include_directories("${CORE_PATH}/include")
 include_directories("${RENDERER_GLUT_PATH}/include")
+include_directories("${RENDERER_UNITY_PATH}/include")
 
 link_directories("${PHYSX_BUILD_DIR}")
 
@@ -102,15 +104,54 @@ function(createExecutable varName varSrcPath)
     target_compile_options(${varName} PRIVATE -Wall -Wextra -pedantic -Werror -fPIC)
 endfunction(createExecutable)
 
+
+set(ENABLE_UNITY_KINEMATICS OFF CACHE BOOL "Choose whether to enable UnityKinematics renderer")
+
+if(${ENABLE_UNITY_KINEMATICS})
+
+set(RPCLIB_INCLUDE_DIR "/usr/local/include" CACHE PATH "rpclib include directory")
+set(RPCLIB_LIBS_DIR "/usr/local/lib" CACHE PATH "rpclib library directory")
+set(UNITY_KINEMATICS_INCLUDE "" CACHE PATH "UnityKinematics include directory")
+set(UNITY_KINEMATICS_LIB "" CACHE PATH "UnityKinematics lib directory")
+
+if (UNITY_KINEMATICS_INCLUDE STREQUAL "")
+    message(FATAL_ERROR "No UnityKinematics include directory specified")
+endif()
+if (UNITY_KINEMATICS_LIB STREQUAL "")
+    message(FATAL_ERROR "No UnityKinematics lib directory specified")
+endif()
+if (RPCLIB_INCLUDE_DIR STREQUAL "")
+    message(FATAL_ERROR "No rpclib include directory specified")
+endif()
+if (RPCLIB_LIBS_DIR STREQUAL "")
+    message(FATAL_ERROR "No rpclib library directory specified")
+endif()
+
+include_directories(SYSTEM "${UNITY_KINEMATICS_INCLUDE}")
+link_directories("${UNITY_KINEMATICS_LIB}")
+
+add_compile_definitions(ENABLE_UNITY_KINEMATICS)
+
+endif()
+
 createLibrary(common ${COMMON_PATH})
 createLibrary(actors ${ACTORS_PATH})
 createLibrary(articulation ${ARTICULATION_PATH} common)
 createLibrary(core ${CORE_PATH} articulation)
 createLibrary(renderer_glut ${RENDERER_GLUT_PATH})
+if(${ENABLE_UNITY_KINEMATICS})
+createLibrary(renderer_unity ${RENDERER_UNITY_PATH} articulation rpc client)
+endif()
 
 set(ALL_MODULE_NO_RENDERER common actors articulation core)
 set(ALL_MODULE ${ALL_MODULE_NO_RENDERER} renderer_glut)
+if(${ENABLE_UNITY_KINEMATICS})
+set(ALL_MODULE ${ALL_MODULE} renderer_unity)
+endif()
 set(ALL_EXT_LIBS ${PX_LIBS} ${PX_LIBS} ${SYS_LIBS})
+if(${ENABLE_UNITY_KINEMATICS})
+set(ALL_EXT_LIBS ${ALL_EXT_LIBS} client)
+endif()
 
 
 set(BUILD_SPD_ABA OFF CACHE BOOL "Choose whether to enable linear time SPD controller")

@@ -97,11 +97,13 @@ public:
     std::vector<Link*> childLinks;
     Link() {} // For API only
 // API END
+    LinkBody *body;
     physx::PxArticulationLink *link;
     physx::PxVec3 globalPositionOffset;
     physx::PxVec3 posOffsetLinkToInboundJoint;
     Link(physx::PxArticulationReducedCoordinate* pxArticulation, Link *parent, 
         physx::PxTransform transform, LinkBody *body);
+    ~Link();
 };
 
 class FixedJoint : public Joint {
