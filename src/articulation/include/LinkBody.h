@@ -3,10 +3,15 @@
 #include "PxPhysicsAPI.h"
 #include "PrimitiveObjects.h"
 
-#ifdef ENABLE_UNITY_KINEMATICS
 #include <string>
-#include <KinematicsClient.hpp>
-#endif
+
+struct BodyGeometryData
+{
+    std::string type;
+    float param0;
+    float param1;
+    float param2;
+};
 
 class LinkBody {
 public:
@@ -18,10 +23,8 @@ public:
     virtual physx::PxGeometry& getGeometry() const;
     virtual float getDensity() const = 0;
     virtual ~LinkBody();
+    virtual void FillBodyGeometryData(BodyGeometryData& data) const = 0;
 
-#ifdef ENABLE_UNITY_KINEMATICS
-    virtual void FillCommandParams(const std::string& name, Command& cmd) const = 0;
-#endif
 protected:
     LinkBody(float mass, physx::PxGeometry *geometry, Material *material);
 };
@@ -31,10 +34,7 @@ public:
     NULLLinkBody();
     float getDensity() const override;
     physx::PxGeometry& getGeometry() const override;
-
-#ifdef ENABLE_UNITY_KINEMATICS
-    virtual void FillCommandParams(const std::string& name, Command& cmd) const override;
-#endif
+    virtual void FillBodyGeometryData(BodyGeometryData& data) const override;
 };
 
 class BoxLinkBody : public LinkBody {
@@ -42,10 +42,7 @@ public:
     float lenX, lenY, lenZ;
     float getDensity() const override;
     BoxLinkBody(float mass, float lenX, float lenY, float lenZ, Material *material);
-
-#ifdef ENABLE_UNITY_KINEMATICS
-    virtual void FillCommandParams(const std::string& name, Command& cmd) const override;
-#endif
+    virtual void FillBodyGeometryData(BodyGeometryData& data) const override;
 };
 
 class SphereLinkBody : public LinkBody {
@@ -53,10 +50,7 @@ public:
     float radius;
     float getDensity() const override;
     SphereLinkBody(float mass, float radius, Material *material);
-
-#ifdef ENABLE_UNITY_KINEMATICS
-    virtual void FillCommandParams(const std::string& name, Command& cmd) const override;
-#endif
+    virtual void FillBodyGeometryData(BodyGeometryData& data) const override;
 };
 
 class CapsuleLinkBody : public LinkBody {
@@ -65,9 +59,6 @@ public:
     float length;
     float getDensity() const override;
     CapsuleLinkBody(float mass, float radius, float length, Material *material);
-
-#ifdef ENABLE_UNITY_KINEMATICS
-    virtual void FillCommandParams(const std::string& name, Command& cmd) const override;
-#endif
+    virtual void FillBodyGeometryData(BodyGeometryData& data) const override;
 };
 

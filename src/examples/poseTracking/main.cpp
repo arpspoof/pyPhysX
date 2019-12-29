@@ -236,8 +236,6 @@ class GlutHandler :public glutRenderer::GlutRendererCallback
     }
 } glutHandler;
 
-int urfrequency = 100;
-
 int main(int argc, char** argv)
 {
     cxxopts::Options opts("Example", "Pose tracking");
@@ -257,8 +255,7 @@ int main(int argc, char** argv)
         ("rkda", "Root kd angular", cxxopts::value<float>()->default_value("1800"))
         ("rkpl", "Root kp linear", cxxopts::value<float>()->default_value("2000"))
         ("rkdl", "Root kd linear", cxxopts::value<float>()->default_value("100"))
-        ("h,height", "height", cxxopts::value<float>()->default_value("0"))
-        ("ur", "unity renderer frequency", cxxopts::value<int>()->default_value("100"));
+        ("h,height", "height", cxxopts::value<float>()->default_value("0"));
     
     auto result = opts.parse(argc, argv);
 
@@ -276,7 +273,6 @@ int main(int argc, char** argv)
     controller = result["control"].as<int>();
     trackingFrequency = result["frequency"].as<float>();
     height = result["height"].as<float>();
-    urfrequency = result["ur"].as<int>();
 
     if (dump) {
         ot.open("/home/zhiqiy/target.txt");
@@ -373,13 +369,13 @@ int main(int argc, char** argv)
     /*    auto renderer = glutRenderer::GlutRenderer::GetInstance();
         renderer->AttachScene(scene, &glutHandler);
         renderer->StartRenderLoop();*/
-        UR_Init(urfrequency);
+        UR_Init(scene->timeStep);
         UR_AddArticulation(articulation);
         UR_InitPrimitives();
         for(;;) {
             control(scene->timeStep);
             scene->Step();
-            UR_Tick((int)(scene->timeStep * 6000));
+            UR_Tick();
         }
         cleanupPhysics();
     }

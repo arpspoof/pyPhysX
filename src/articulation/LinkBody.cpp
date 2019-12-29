@@ -42,12 +42,10 @@ PxGeometry& NULLLinkBody::getGeometry() const
     return *geometry;
 }
 
-#ifdef ENABLE_UNITY_KINEMATICS
-void NULLLinkBody::FillCommandParams(const string&, Command&) const
+void NULLLinkBody::FillBodyGeometryData(BodyGeometryData&) const
 {
     assert(false);
 }
-#endif
 
 
 // BoxLinkBody
@@ -65,18 +63,13 @@ BoxLinkBody::BoxLinkBody(float mass, float lenX, float lenY, float lenZ, Materia
     type = "box";
 }
 
-#ifdef ENABLE_UNITY_KINEMATICS
-void BoxLinkBody::FillCommandParams(const string& name, Command& cmd) const
+void BoxLinkBody::FillBodyGeometryData(BodyGeometryData& data) const
 {
-    cmd.ps.clear();
-    cmd.ps.push_back("box");
-    cmd.ps.push_back(name);
-    cmd.pf.clear();
-    cmd.pf.push_back(lenX);
-    cmd.pf.push_back(lenY);
-    cmd.pf.push_back(lenZ);
+    data.type = "box";
+    data.param0 = lenX;
+    data.param1 = lenY;
+    data.param2 = lenZ;
 }
-#endif
 
 
 // SphereLinkBody
@@ -93,16 +86,13 @@ SphereLinkBody::SphereLinkBody(float mass, float radius, Material *material)
     type = "sphere";
 }
 
-#ifdef ENABLE_UNITY_KINEMATICS
-void SphereLinkBody::FillCommandParams(const string& name, Command& cmd) const
+void SphereLinkBody::FillBodyGeometryData(BodyGeometryData& data) const
 {
-    cmd.ps.clear();
-    cmd.ps.push_back("sphere");
-    cmd.ps.push_back(name);
-    cmd.pf.clear();
-    cmd.pf.push_back(radius);
+    data.type = "sphere";
+    data.param0 = radius;
+    data.param1 = 0;
+    data.param2 = 0;
 }
-#endif
 
 
 // CapsuleLinkBody
@@ -123,14 +113,10 @@ CapsuleLinkBody::CapsuleLinkBody(float mass, float radius, float length, Materia
     type = "capsule";
 }
 
-#ifdef ENABLE_UNITY_KINEMATICS
-void CapsuleLinkBody::FillCommandParams(const string& name, Command& cmd) const
+void CapsuleLinkBody::FillBodyGeometryData(BodyGeometryData& data) const
 {
-    cmd.ps.clear();
-    cmd.ps.push_back("capsule");
-    cmd.ps.push_back(name);
-    cmd.pf.clear();
-    cmd.pf.push_back(radius);
-    cmd.pf.push_back(length);
+    data.type = "capsule";
+    data.param0 = radius;
+    data.param1 = length;
+    data.param2 = 0;
 }
-#endif

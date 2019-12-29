@@ -14,8 +14,9 @@ class DataProvider : public AbstractDataProvider
 {
     virtual FrameState GetCurrentState() const override
     {
-        FrameState frame("session");
-
+        FrameState frame;
+        frame.groups.push_back(GroupState("articulation"));
+        GroupState& group = frame.groups[0];
         for (auto& ar : articulations) {
             for (auto& kvp : ar->linkMap) {
                 const string& name = kvp.first;
@@ -28,31 +29,42 @@ class DataProvider : public AbstractDataProvider
                         q = q * PxQuat(-PxPi / 2, PxVec3(0, 0, 1));
                     }
                     ObjectState obj(name, p.x, p.y, p.z, q.w, q.x, q.y, q.z);
-                    frame.objectStates.push_back(obj);
+                    group.objectStates.push_back(obj);
                 }
             }
         }
-
         return frame;
-    }   
+    }  
+};
+
+class CommandHandler : public AbstractCommandHandler
+{ 
+    virtual void HandleCommand(const Command& cmd) const override
+    {
+        printf("cls recv cmd: %s\n", cmd.name.c_str());
+    }
 };
 
 static DataProvider dataProvider;
+static CommandHandler commandHandler;
 
-void UR_Init(int frequency)
+static float timeStep;
+
+void UR_Init(float timeStep)
 {
-    RPCStartClient("localhost", 8080);
-    dataProvider.frequency = frequency;
+    ::timeStep = timeStep;
+    InitRenderController("localhost", 8080, "142.58.21.58", 8081, 
+        (int)round(1.0 / timeStep), &dataProvider, &commandHandler);
 }
 
-void UR_Tick(int slots)
+void UR_Tick()
 {
-    dataProvider.Tick(slots);
+    Tick(timeStep);
 }
 
 void UR_Stop()
 {
-    RPCStopClient();
+    DisposeRenderController();
 }
 
 void UR_AddArticulation(Articulation* ar)
@@ -67,11 +79,10 @@ void UR_InitPrimitives()
             const string& name = kvp.first;
             Link* link = kvp.second;
             LinkBody* body = link->body;
-            if (body->geometry) {
-                Command cmd;
-                cmd.name = "_sys_create_primitive";
-                body->FillCommandParams(name, cmd);
-                SendCommand(cmd);
+            if (body->hasGeometry) {
+                BodyGeometryData data;
+                body->FillBodyGeometryData(data);
+                CreatePrimitive(data.type, "articulation", name, data.param0, data.param1, data.param2);
                 printf("track name %s\n", name.c_str());
             }
         }
