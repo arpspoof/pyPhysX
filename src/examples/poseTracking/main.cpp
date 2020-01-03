@@ -3,6 +3,7 @@
 #include <vector>
 #include <stdio.h>
 #include <chrono>
+#include <iomanip>
 
 #include "PxPhysicsAPI.h"
 #include "ArticulationTree.h"
@@ -119,8 +120,8 @@ void initPhysics(float dt)
     plane->SetupCollisionFiltering(1, 2 | 4);
 
     if (useDog) {
-        JsonLoader jsonLoader(4);
-        jsonLoader.LoadDescriptionFromFile("resources/dog3d.txt");
+        JsonLoader jsonLoader(1);
+        jsonLoader.LoadDescriptionFromFile("resources/dog3d_my_modeify.txt");
         articulation = scene->CreateArticulation(&jsonLoader, material, vec3(0, 3.25f, 0));
     }
     else {
@@ -238,6 +239,62 @@ class GlutHandler :public glutRenderer::GlutRendererCallback
 
 int main(int argc, char** argv)
 {
+    json outj = {};
+    outj["Frames"] = json::array();
+    auto& fr = outj["Frames"];
+
+    ifstream dogmo("/home/zhiqiy/Documents/mocap/dogfastwalk.bvh");
+    float tmpf;
+    while (dogmo >> tmpf) {
+        auto frame = json::array();
+        frame.push_back(0.016666f);
+
+        float x = tmpf, y, z;
+        dogmo >> y >> z;
+        frame.push_back((x + 27.6894f) / 100.f);
+        frame.push_back((y - 8.21667f) / 100.f);
+        frame.push_back((z + 501.626f) / 100.f);
+        for (int k = 0; k < 21; k++) {
+            float rz, rx, ry;
+            dogmo >> rz >> rx >> ry;
+         /*   PxQuat rot = 
+                PxQuat(ry * PxPi / 180.f, PxVec3(0, 1, 0)) *
+                PxQuat(rx * PxPi / 180.f, PxVec3(1, 0, 0)) *
+                PxQuat(rz * PxPi / 180.f, PxVec3(0, 0, 1));*/
+            PxQuat rot = 
+                PxQuat(rz * PxPi / 180.f, PxVec3(0, 0, 1)) *
+                PxQuat(rx * PxPi / 180.f, PxVec3(1, 0, 0)) *
+                PxQuat(ry * PxPi / 180.f, PxVec3(0, 1, 0));
+          //  PxQuat ft(PxPi / 2, PxVec3(0, 1, 0));
+          //  rot = ft.getConjugate() * rot * ft;
+            if (k == 15 || k == 18) {
+                rot = rot * PxQuat(-PxPi / 2, PxVec3(0, 0, 1));
+            }
+            frame.push_back(rot.w);
+            frame.push_back(rot.x);
+            frame.push_back(rot.y);
+            frame.push_back(rot.z);
+            if (k == 15 || k == 18) {
+                frame.push_back(1);
+                frame.push_back(0);
+                frame.push_back(0);
+                frame.push_back(0);
+            }
+        }
+        fr.push_back(frame);
+    }
+
+    dogmo.close();
+
+    if (argc > 1 && string(argv[1]) == "zxc") {
+        printf("aha?\n");
+        ofstream outf("/home/zhiqiy/pyPhysX/resources/motions/dogfastwalk.txt");
+        outf << std::setw(4) << outj << endl;
+        outf.close();
+
+        return 0;
+    }
+
     cxxopts::Options opts("Example", "Pose tracking");
     opts.add_options()
         ("d,dog", "Use dog model")
@@ -292,7 +349,7 @@ int main(int argc, char** argv)
 
     if (useDog) {
         // motion retargeting
-        for (auto frame : frames) {
+       /* for (auto frame : frames) {
             motions.push_back(vector<float>(dim));
             auto& motion = motions.back();
             int offset = 0;
@@ -331,6 +388,15 @@ int main(int argc, char** argv)
                 motion[cacheIndex + 1] = qRetarget.x;
                 motion[cacheIndex + 2] = qRetarget.y;
                 motion[cacheIndex + 3] = qRetarget.z;
+            }
+        }*/
+
+        for (auto frame : frames) {
+            motions.push_back(vector<float>(dim));
+            for (int i = 0; i < dim; i++) {
+                float value = frame[i + 1]; 
+                if (i == 1) value += height;
+                motions.back()[i] = value;
             }
         }
     }
