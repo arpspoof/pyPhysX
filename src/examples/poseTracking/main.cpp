@@ -120,7 +120,7 @@ void initPhysics(float dt)
 
     if (useDog) {
         JsonLoader jsonLoader(4);
-        jsonLoader.LoadDescriptionFromFile("resources/dog3d.txt");
+        jsonLoader.LoadDescriptionFromFile("resources/dog3d_my.txt");
         articulation = scene->CreateArticulation(&jsonLoader, material, vec3(0, 3.25f, 0));
     }
     else {
@@ -290,59 +290,13 @@ int main(int argc, char** argv)
     auto motionJson = json::parse(motionStr);
     auto frames = motionJson["Frames"];
 
-    if (useDog) {
-        // motion retargeting
-        for (auto frame : frames) {
-            motions.push_back(vector<float>(dim));
-            auto& motion = motions.back();
-            int offset = 0;
-            for (int i = 0; i < 83; i++) {
-                float value = frame[i + 1]; 
-                if (i <= 2) value *= 4;
-                if (i == 1) value += height;
-                if (i == 27 || i == 40 || i == 53 || i == 66) {
-                    PxQuat q(value, PxVec3(0, 0, 1));
-                    motion[i + offset] = q.w;
-                    motion[i + offset + 1] = q.x;
-                    motion[i + offset + 2] = q.y;
-                    motion[i + offset + 3] = q.z;
-                    offset += 3;
-                }
-                motion[i + offset] = value;
-            }
-            int legs[4] = { 23, 39, 55, 71 };
-            for (int i = 0; i < 4; i++) {
-                int leg = legs[i];
-                PxQuat qOriginal(motion[leg + 1], motion[leg + 2], motion[leg + 3], motion[leg]);
-                PxQuat qRetarget = qOriginal * PxQuat(-PxPi / 2, PxVec3(0, 0, 1));
-                motion[leg] = qRetarget.w;
-                motion[leg + 1] = qRetarget.x;
-                motion[leg + 2] = qRetarget.y;
-                motion[leg + 3] = qRetarget.z;
-            }
-            int retargetId[] = { 6, 7, 8, 10, 11, 12, 14, 15, 16, 18, 19, 20 };
-            for (int id : retargetId) {
-                int cacheIndex = 7 + (id - 1) * 4;
-                PxQuat qOriginal(motion[cacheIndex + 1], motion[cacheIndex + 2], 
-                    motion[cacheIndex + 3], motion[cacheIndex]);
-                PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
-                PxQuat qRetarget = frameTransform.getConjugate() * qOriginal * frameTransform;
-                motion[cacheIndex] = qRetarget.w;
-                motion[cacheIndex + 1] = qRetarget.x;
-                motion[cacheIndex + 2] = qRetarget.y;
-                motion[cacheIndex + 3] = qRetarget.z;
-            }
-        }
-    }
-    else {
-        for (auto frame : frames) {
-            motions.push_back(vector<float>(dim));
-            for (int i = 0; i < dim; i++) {
-                float value = frame[i + 1]; 
-                if (i <= 2) value *= 4;
-                if (i == 1) value += height;
-                motions.back()[i] = value;
-            }
+    for (auto frame : frames) {
+        motions.push_back(vector<float>(dim));
+        for (int i = 0; i < dim; i++) {
+            float value = frame[i + 1]; 
+            if (i <= 2) value *= 4;
+            if (i == 1) value += height;
+            motions.back()[i] = value;
         }
     }
 
