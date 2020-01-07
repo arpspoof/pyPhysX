@@ -169,9 +169,6 @@ void control(PxReal dt) {
         articulation->SetJointPositionsQuaternion(motionFrame);
         articulation->SetJointVelocitiesPack4(vector<float>(dim, 0));
         break;
-    case 4:
-        articulation->AddSPDForcesAcc(motionFrame, dt);
-        break;
     default:
         break;
     }
