@@ -46,7 +46,12 @@ void Articulation::AddSPDForcesABA(const std::vector<float>& targetPositions, fl
             targetPosition = frameTransform.getConjugate() * targetPosition * frameTransform;
             UniformQuaternion(targetPosition);
 
-            PxQuat localRotation = g_JointQuat[cacheIndex];
+            PxVec3 localRotationExpMap(
+                positions[cacheIndex],
+                positions[cacheIndex + 1],
+                positions[cacheIndex + 2]
+            );
+            PxQuat localRotation(localRotationExpMap.magnitude(), localRotationExpMap.getNormalized());
             UniformQuaternion(localRotation);
 
             PxQuat posDifference = targetPosition * localRotation.getConjugate();

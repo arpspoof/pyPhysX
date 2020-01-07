@@ -28,6 +28,8 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
     int nJoints = GetNJoints();
     int resultIndex = 7;
 
+    PxReal *positions = mainCache->jointPosition;
+
     for (int i = 0; i < nJoints; i++) {
         const int jointDof = jointList[i]->nDof;
         const int cacheIndex = jointList[i]->cacheIndex;
@@ -36,7 +38,14 @@ vector<float> Articulation::GetJointPositionsQuaternion() const
             result[resultIndex++] = mainCache->jointPosition[cacheIndex];
         }
         else if (jointDof == 3) {
-            PxQuat rotation = frameTransform * g_JointQuat[cacheIndex] * frameTransform.getConjugate();
+
+            PxVec3 localRotationExpMap(
+                positions[cacheIndex],
+                positions[cacheIndex + 1],
+                positions[cacheIndex + 2]
+            );
+            PxQuat localRotation(localRotationExpMap.magnitude(), localRotationExpMap.getNormalized());
+            PxQuat rotation = frameTransform * localRotation * frameTransform.getConjugate();
             UniformQuaternion(rotation);
             
             result[resultIndex] = rotation.w;

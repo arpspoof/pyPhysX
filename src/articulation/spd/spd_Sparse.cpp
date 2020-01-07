@@ -73,7 +73,12 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
                 targetPosition = -targetPosition;
             }
 
-            PxQuat localRotation = g_JointQuat[cacheIndex];
+            PxVec3 localRotationExpMap(
+                positions[cacheIndex],
+                positions[cacheIndex + 1],
+                positions[cacheIndex + 2]
+            );
+            PxQuat localRotation(localRotationExpMap.magnitude(), localRotationExpMap.getNormalized());
 
             PxQuat posDifference = targetPosition * localRotation.getConjugate();
             UniformQuaternion(posDifference);
