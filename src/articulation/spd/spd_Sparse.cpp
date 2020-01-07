@@ -159,10 +159,6 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
             -root_kds[2] * rootGlobalLinearVelocity[2]
         );
 
-        PxVec3 rootLocalProportionalLinearForcePlusQDotDeltaT = 
-            rootGlobalRotation.rotateInv(rootGlobalProportionalLinearForcePlusQDotDeltaT);
-        PxVec3 rootLocalDerivativeLinearForce = rootGlobalRotation.rotateInv(rootGlobalDerivativeLinearForce);
-
         PxQuat rootGlobalTargetRotationUser(targetPositions[4], targetPositions[5], targetPositions[6], targetPositions[3]);
         rootGlobalTargetRotationUser.normalize();
         
@@ -187,18 +183,14 @@ void Articulation::AddSPDForcesSparse(const std::vector<float>& targetPositions,
             -root_kds[5] * rootGlobalAngularVelocity[2]
         );
 
-        PxVec3 rootLocalProportionalTorquePlusQDotDeltaT = 
-            rootGlobalRotation.rotateInv(rootGlobalProportionalTorquePlusQDotDeltaT);
-        PxVec3 rootLocalDerivativeTorque = rootGlobalRotation.rotateInv(rootGlobalDerivativeTorque);
-
         for (int i = 0; i < 3; i++) {
-            proportionalTorquePlusQDotDeltaT[i] = rootLocalProportionalLinearForcePlusQDotDeltaT[i];
-            derivativeTorque[i] = rootLocalDerivativeLinearForce[i];
+            proportionalTorquePlusQDotDeltaT[i] = rootGlobalProportionalLinearForcePlusQDotDeltaT[i];
+            derivativeTorque[i] = rootGlobalDerivativeLinearForce[i];
             rhs[i] += proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i];
         }
         for (int i = 3; i < 6; i++) {
-            proportionalTorquePlusQDotDeltaT[i] = rootLocalProportionalTorquePlusQDotDeltaT[i - 3];
-            derivativeTorque[i] = rootLocalDerivativeTorque[i - 3];
+            proportionalTorquePlusQDotDeltaT[i] = rootGlobalProportionalTorquePlusQDotDeltaT[i - 3];
+            derivativeTorque[i] = rootGlobalDerivativeTorque[i - 3];
             rhs[i] += proportionalTorquePlusQDotDeltaT[i] + derivativeTorque[i];
         }
     }

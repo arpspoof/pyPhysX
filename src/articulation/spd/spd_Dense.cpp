@@ -170,10 +170,6 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
             -root_kds[2] * rootGlobalLinearVelocity[2]
         );
 
-        PxVec3 rootLocalProportionalLinearForcePlusQDotDeltaT = 
-            rootGlobalRotation.rotateInv(rootGlobalProportionalLinearForcePlusQDotDeltaT);
-        PxVec3 rootLocalDerivativeLinearForce = rootGlobalRotation.rotateInv(rootGlobalDerivativeLinearForce);
-
         PxQuat rootGlobalTargetRotationUser(targetPositions[4], targetPositions[5], targetPositions[6], targetPositions[3]);
         rootGlobalTargetRotationUser.normalize();
         
@@ -198,15 +194,11 @@ void Articulation::AddSPDForces(const std::vector<float>& targetPositions, float
             -root_kds[5] * rootGlobalAngularVelocity[2]
         );
 
-        PxVec3 rootLocalProportionalTorquePlusQDotDeltaT = 
-            rootGlobalRotation.rotateInv(rootGlobalProportionalTorquePlusQDotDeltaT);
-        PxVec3 rootLocalDerivativeTorque = rootGlobalRotation.rotateInv(rootGlobalDerivativeTorque);
-
         for (int i = 0; i < 3; i++) {
-            rootForcePD(i) += rootLocalProportionalLinearForcePlusQDotDeltaT[i] + rootLocalDerivativeLinearForce[i];
+            rootForcePD(i) += rootGlobalProportionalLinearForcePlusQDotDeltaT[i] + rootGlobalDerivativeLinearForce[i];
         }
         for (int i = 0; i < 3; i++) {
-            rootForcePD(i + 3) += rootLocalProportionalTorquePlusQDotDeltaT[i] + rootLocalDerivativeTorque[i];
+            rootForcePD(i + 3) += rootGlobalProportionalTorquePlusQDotDeltaT[i] + rootGlobalDerivativeTorque[i];
         }
 
         I0cPlusKdDeltaT = MatrixXf(6, 6);
