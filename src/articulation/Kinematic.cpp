@@ -83,16 +83,15 @@ void Articulation::SetJointPositionsQuaternion(const vector<float>& positions) c
 
             UniformQuaternion(rotation); // Never trust user input
             rotation = frameTransform.getConjugate() * rotation * frameTransform;
+
+            float angle; PxVec3 axis;
+            rotation.toRadiansAndUnitAxis(angle, axis);
+
+            axis *= angle;
             
-            PxQuat twist, swing;
-            SeparateTwistSwing(rotation, swing, twist);
-            float theta0 = PxAtan2(twist.x, (1.f + twist.w)) * 4.f;
-            float theta1 = PxAtan2(swing.y, (1.f + swing.w)) * 4.f;
-            float theta2 = PxAtan2(swing.z, (1.f + swing.w)) * 4.f;
-            
-            mainCache->jointPosition[cacheIndex] = theta0;
-            mainCache->jointPosition[cacheIndex + 1] = theta1;
-            mainCache->jointPosition[cacheIndex + 2] = theta2;
+            mainCache->jointPosition[cacheIndex] = axis.x;
+            mainCache->jointPosition[cacheIndex + 1] = axis.y;
+            mainCache->jointPosition[cacheIndex + 2] = axis.z;
 
             inputIndex += 4;
         }
