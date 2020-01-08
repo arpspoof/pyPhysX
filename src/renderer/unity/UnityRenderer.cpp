@@ -83,7 +83,8 @@ void UR_InitPrimitives()
                 BodyGeometryData data;
                 body->FillBodyGeometryData(data);
                 CreatePrimitive(data.type, "articulation", name, data.param0, data.param1, data.param2);
-                printf("track name %s\n", name.c_str());
+                printf("track name %s : %s, %f, %f, %f\n", name.c_str(), 
+                    data.type.c_str(), data.param0, data.param1, data.param2);
             }
         }
     }
