@@ -2,7 +2,7 @@
     #include "JsonLoader.h"
 %}
 
-class JsonLoader :public Loader
+class JsonLoader :public IDisposable
 {
 // API BEGIN
 public:
