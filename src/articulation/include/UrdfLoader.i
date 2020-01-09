@@ -4,7 +4,7 @@
 
 %include "std_string.i"
 
-class UrdfLoader :public IDisposable
+class UrdfLoader :public Loader
 {
 // API BEGIN
 public:

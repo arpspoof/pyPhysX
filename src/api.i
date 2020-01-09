@@ -8,6 +8,7 @@
 
 %include "ArticulationElements.i"
 %include "Articulation.i"
+%include "Loader.i"
 %include "UrdfLoader.i"
 %include "JsonLoader.i"
 
