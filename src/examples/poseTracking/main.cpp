@@ -43,6 +43,7 @@ extern bool debug;
 extern bool dump;
 
 static bool useDog;
+static string dmpFolder;
 
 static int dim;
 
@@ -143,6 +144,9 @@ static float height;
 static ofstream ot;
 static ofstream oc;
 
+#include <unordered_map>
+static unordered_map<string, ofstream> dmpMap;
+
 void control(PxReal dt) {
     static int currentRound = 0;
     static float cumulateTime = 0;
@@ -194,6 +198,13 @@ void control(PxReal dt) {
                 reset();
                 currentRound = 0;
                 cumulateTime = 0;
+            }
+        }
+
+        if (dmpFolder != "") {
+            for (auto& kvp : dmpMap) {
+                auto pos = articulation->linkMap[kvp.first]->link->getGlobalPose().p;
+                kvp.second << pos.x << "," << pos.y << "," << pos.z << "\n";
             }
         }
     }
@@ -252,6 +263,8 @@ int main(int argc, char** argv)
         ("rkda", "Root kd angular", cxxopts::value<float>()->default_value("1800"))
         ("rkpl", "Root kp linear", cxxopts::value<float>()->default_value("2000"))
         ("rkdl", "Root kd linear", cxxopts::value<float>()->default_value("100"))
+        ("dmpFolder", "dmp file folder", cxxopts::value<string>()->default_value(""))
+        ("dmpRepeat", "dmp repeat", cxxopts::value<int>()->default_value("1"))
         ("h,height", "height", cxxopts::value<float>()->default_value("0"));
     
     auto result = opts.parse(argc, argv);
@@ -276,7 +289,27 @@ int main(int argc, char** argv)
         oc.open("/home/zhiqiy/current.txt");
     }
 
-    initPhysics(result["dt"].as<float>());
+    dmpFolder = result["dmpFolder"].as<string>();
+    if (dmpFolder != "") {
+        if (useDog) {
+            dmpMap["tail1"] = ofstream(dmpFolder + "/" + "tail1.txt");
+            dmpMap["head"] = ofstream(dmpFolder + "/" + "head.txt");
+            dmpMap["left_finger"] = ofstream(dmpFolder + "/" + "left_finger.txt");
+            dmpMap["right_finger"] = ofstream(dmpFolder + "/" + "right_finger.txt");
+            dmpMap["left_foot"] = ofstream(dmpFolder + "/" + "left_foot.txt");
+            dmpMap["right_foot"] = ofstream(dmpFolder + "/" + "right_foot.txt");
+        }
+        else {
+            dmpMap["neck"] = ofstream(dmpFolder + "/" + "neck.txt");
+            dmpMap["left_wrist"] = ofstream(dmpFolder + "/" + "left_wrist.txt");
+            dmpMap["right_wrist"] = ofstream(dmpFolder + "/" + "right_wrist.txt");
+            dmpMap["left_ankle"] = ofstream(dmpFolder + "/" + "left_ankle.txt");
+            dmpMap["right_ankle"] = ofstream(dmpFolder + "/" + "right_ankle.txt");
+        }
+    }
+
+    float dt = result["dt"].as<float>();
+    initPhysics(dt);
 
     string mocap = result["mocap"].as<string>();
     printf("mocap is %s\n", mocap.c_str());
@@ -323,7 +356,7 @@ int main(int argc, char** argv)
         UR_Init(scene->timeStep);
         UR_AddArticulation(articulation);
         UR_InitPrimitives();
-        for(;;) {
+        for(int i = 0; i < result["dmpRepeat"].as<int>() * (int)frames.size() * (int)(trackingFrequency / dt); i++) {
             control(scene->timeStep);
             scene->Step();
             UR_Tick();
@@ -334,6 +367,12 @@ int main(int argc, char** argv)
     if (dump) {
         ot.close();
         oc.close();
+    }
+
+    if (dmpFolder != "") {
+        for (auto& kvp : dmpMap) {
+            kvp.second.close();
+        }
     }
 
     return 0;
