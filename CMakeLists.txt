@@ -172,6 +172,9 @@ if(${BUILD_EXAMPLES})
     set(EXAMPLE_POSE_TRACKING_PATH "${EXAMPLE_PATH}/poseTracking")
     createExecutable(poseTracking ${EXAMPLE_POSE_TRACKING_PATH} ${ALL_MODULE} ${ALL_EXT_LIBS})
 
+    set(EXAMPLE_SNAKE_PATH "${EXAMPLE_PATH}/snake")
+    createExecutable(snake ${EXAMPLE_SNAKE_PATH} ${ALL_MODULE} ${ALL_EXT_LIBS})
+
 endif()
 
 
