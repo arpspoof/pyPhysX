@@ -1,23 +1,37 @@
 import subprocess
 import sys
 
-repeat = 20
+for ctrl in range(3):
+    print('running test for control', ctrl)
 
-total = 0
-total_aba = 0
-total_spd = 0
+    repeat = 20
 
-for i in range(repeat):
-    result = subprocess.run(sys.argv[1:], stdout=subprocess.PIPE).stdout.decode('utf-8')
-    time = int(result.strip().split()[-3])
-    aba = int(result.strip().split()[-2])
-    spd = int(result.strip().split()[-1])
-    total += time
-    total_aba += aba
-    total_spd += spd
-    print("run", i, "time is", time, "; aba is", aba, "; spd is", spd)
+    total = 0
+    total_aba = 0
+    total_spd = 0
 
-print("average FPS =", repeat * 10000000000 / total)
-print("spd FPS =", repeat * 10000000000 / total_spd)
-print("aba + spd FPS =", repeat * 10000000000 / (total_aba + total_spd))
-print("total aba + spd FPS =", repeat * 10000000000 / (total_aba + total))
+    for i in range(repeat):
+        result = subprocess.run(sys.argv[1:] + ['-c', str(ctrl)], stdout=subprocess.PIPE).stdout.decode('utf-8')
+        time = int(result.strip().split()[-3])
+        aba = int(result.strip().split()[-2])
+        spd = int(result.strip().split()[-1])
+        total += time
+        total_aba += aba
+        total_spd += spd
+
+    avgFPS = repeat * 10000000000 / total
+    spdFPS = repeat * 10000000000 / total_spd
+    abaPlusSpdFPS = repeat * 10000000000 / (total_aba + total_spd)
+    totalAbaPlusSpdFPS = repeat * 10000000000 / (total_aba + total)
+    totalMinusAbaFPS = repeat * 10000000000 / (-total_aba + total)
+    
+    if ctrl == 0:
+        componentFPS = abaPlusSpdFPS
+        aloneFPS = totalAbaPlusSpdFPS
+        embedFPS = avgFPS
+    else:
+        componentFPS = spdFPS
+        aloneFPS = avgFPS
+        embedFPS = totalMinusAbaFPS
+
+    print('method:', ctrl, 'component:', componentFPS, 'alone:', aloneFPS, 'embed:', embedFPS)

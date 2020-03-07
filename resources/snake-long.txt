@@ -1,0 +1,495 @@
+{  
+	"Skeleton": 
+	{  
+		"Joints": 
+		[  
+			{  
+				"ID": 0,
+				"Name": "s0",
+				"Type": "none",
+				"Parent": -1,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": 0
+			},
+			{  
+				"ID": 1,
+				"Name": "s1",
+				"Type": "spherical",
+				"Parent": 0,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 2,
+				"Name": "s2",
+				"Type": "spherical",
+				"Parent": 1,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 3,
+				"Name": "s3",
+				"Type": "spherical",
+				"Parent": 2,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 4,
+				"Name": "s4",
+				"Type": "spherical",
+				"Parent": 3,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 5,
+				"Name": "s5",
+				"Type": "spherical",
+				"Parent": 4,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 6,
+				"Name": "s6",
+				"Type": "spherical",
+				"Parent": 5,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 7,
+				"Name": "s7",
+				"Type": "spherical",
+				"Parent": 6,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 8,
+				"Name": "s8",
+				"Type": "spherical",
+				"Parent": 7,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 9,
+				"Name": "s9",
+				"Type": "spherical",
+				"Parent": 8,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 10,
+				"Name": "s10",
+				"Type": "spherical",
+				"Parent": 9,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 11,
+				"Name": "s11",
+				"Type": "spherical",
+				"Parent": 10,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 12,
+				"Name": "s12",
+				"Type": "spherical",
+				"Parent": 11,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 13,
+				"Name": "s13",
+				"Type": "spherical",
+				"Parent": 12,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 14,
+				"Name": "s14",
+				"Type": "spherical",
+				"Parent": 13,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 15,
+				"Name": "s15",
+				"Type": "spherical",
+				"Parent": 14,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 16,
+				"Name": "s16",
+				"Type": "spherical",
+				"Parent": 15,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 17,
+				"Name": "s17",
+				"Type": "spherical",
+				"Parent": 16,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 18,
+				"Name": "s18",
+				"Type": "spherical",
+				"Parent": 17,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 19,
+				"Name": "s19",
+				"Type": "spherical",
+				"Parent": 18,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 20,
+				"Name": "s20",
+				"Type": "spherical",
+				"Parent": 19,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 21,
+				"Name": "s21",
+				"Type": "spherical",
+				"Parent": 20,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			},
+			{  
+				"ID": 22,
+				"Name": "s22",
+				"Type": "spherical",
+				"Parent": 21,
+				"AttachX": 0,
+				"AttachY": 0,
+				"AttachZ": -1.3
+			}
+		]
+	},
+
+	"BodyDefs": 
+	[
+		{
+			"ID": 0,
+			"Name": "s0",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0,
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 1,
+			"Name": "s1",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 2,
+			"Name": "s2",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 3,
+			"Name": "s3",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 4,
+			"Name": "s4",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 5,
+			"Name": "s5",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 6,
+			"Name": "s6",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 7,
+			"Name": "s7",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 8,
+			"Name": "s8",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 9,
+			"Name": "s9",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 10,
+			"Name": "s10",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 11,
+			"Name": "s11",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 12,
+			"Name": "s12",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 13,
+			"Name": "s13",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 14,
+			"Name": "s14",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 15,
+			"Name": "s15",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 16,
+			"Name": "s16",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 17,
+			"Name": "s17",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 18,
+			"Name": "s18",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 19,
+			"Name": "s19",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 20,
+			"Name": "s20",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 21,
+			"Name": "s21",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		},
+		{
+			"ID": 22,
+			"Name": "s22",
+			"Shape": "box",
+			"Mass": 1.0,
+			"AttachX": 0, 
+			"AttachY": 0,
+			"AttachZ": 0,
+			"Param0": 1,
+			"Param1": 1,
+			"Param2": 1
+		}
+	]
+}
