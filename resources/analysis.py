@@ -9,7 +9,7 @@ j = sys.argv[3]
 pos = []
 for c in range(4):
     pos.append([])
-    file = '/home/zhiqiy/Documents/SCA2020/accuracy/{3}/{0}/{1}/{2}.txt'.format(m, c, j, f)
+    file = '/home/zhiqiy/Documents/SCA2020/accuracy-snake-long/{3}/{0}/{1}/{2}.txt'.format(m, c, j, f)
     with open(file) as fp:
         for line in fp:
             spline = line.strip()

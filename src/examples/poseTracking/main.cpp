@@ -335,6 +335,11 @@ int main(int argc, char** argv)
 
     articulation->SetJointPositionsQuaternion(motions[0]);
 
+    auto alljoints = articulation->GetAllJointsInIdOrder();
+    for (auto& j : alljoints) {
+        printf("j:%s\n", j->name.c_str());
+    }
+
     if (result["performance"].as<bool>()) {
         static const PxU32 frameCount = 10000;
         auto starttime = high_resolution_clock::now();

@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include <fstream>
 
 using namespace physx;
 using namespace std;
@@ -20,6 +21,11 @@ static Material* material;
 
 static bool longSnake = false;
 static float height = 0.251f;
+
+static string dmpFolder;
+
+#include <unordered_map>
+static unordered_map<string, ofstream> dmpMap;
 
 void InitControl() {
     vector<float> kps, kds, fls;
@@ -137,6 +143,13 @@ void control(PxReal dt)
     auto endtime = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(endtime - starttime).count();
     spdTime += duration;
+
+    if (dmpFolder != "") {
+        for (auto& kvp : dmpMap) {
+            auto pos = articulation->linkMap[kvp.first]->link->getGlobalPose().p;
+            kvp.second << pos.x << "," << pos.y << "," << pos.z << "\n";
+        }
+    }
 }
 
 int main(int argc, char** argv)
@@ -147,12 +160,19 @@ int main(int argc, char** argv)
         ("long", "Use long snake")
         ("c,control", "Controller", cxxopts::value<int>()->default_value("0"))
         ("t,dt", "Time step", cxxopts::value<float>()->default_value("0.033"))
+        ("dmpFolder", "dmp file folder", cxxopts::value<string>()->default_value(""))
+        ("dmpRepeat", "dmp repeat", cxxopts::value<int>()->default_value("1"))
         ("h,height", "height", cxxopts::value<float>()->default_value("0.251"));
     
     auto result = opts.parse(argc, argv);
     controlMethod = result["control"].as<int>();
     longSnake = result["long"].as<bool>();
     height = result["height"].as<float>();
+
+    dmpFolder = result["dmpFolder"].as<string>();
+    if (dmpFolder != "") {
+        dmpMap["s22"] = ofstream(dmpFolder + "/" + "s22.txt");
+    }
 
     float dt = result["dt"].as<float>();
     initPhysics(dt);
@@ -179,11 +199,17 @@ int main(int argc, char** argv)
         UR_Init(scene->timeStep);
         UR_AddArticulation(articulation);
         UR_InitPrimitives();
-        for (;;) {
+        for(int i = 0; i < result["dmpRepeat"].as<int>() * 393 * (int)(0.033f / dt); i++) {
             control(scene->timeStep);
             scene->Step();
             UR_Tick();
         }
         cleanupPhysics();
+    }
+
+    if (dmpFolder != "") {
+        for (auto& kvp : dmpMap) {
+            kvp.second.close();
+        }
     }
 }
