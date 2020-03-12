@@ -24,14 +24,20 @@ for ctrl in range(3):
     abaPlusSpdFPS = repeat * 10000000000 / (total_aba + total_spd)
     totalAbaPlusSpdFPS = repeat * 10000000000 / (total_aba + total)
     totalMinusAbaFPS = repeat * 10000000000 / (-total_aba + total)
-    
+
     if ctrl == 0:
         componentFPS = abaPlusSpdFPS
         aloneFPS = totalAbaPlusSpdFPS
         embedFPS = avgFPS
+
+        embedpercent = total_spd / total
+        alonepercent = (total_spd + total_aba) / (total + total_aba)
     else:
         componentFPS = spdFPS
         aloneFPS = avgFPS
         embedFPS = totalMinusAbaFPS
 
-    print('method:', ctrl, 'component:', componentFPS, 'alone:', aloneFPS, 'embed:', embedFPS)
+        embedpercent = total_spd / (total - total_aba)
+        alonepercent = total_spd / total
+
+    print('method:', ctrl, 'component:', componentFPS, 'alone:', aloneFPS, alonepercent, 'embed:', embedFPS, embedpercent)

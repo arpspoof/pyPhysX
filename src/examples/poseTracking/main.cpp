@@ -258,11 +258,11 @@ int main(int argc, char** argv)
         ("f,frequency", "Tracking frequency", cxxopts::value<float>()->default_value("0.033"))
         ("t,dt", "Time step", cxxopts::value<float>()->default_value("0.033"))
         ("kp", "Joint kp", cxxopts::value<float>()->default_value("75000"))
-        ("kd", "Joint kd", cxxopts::value<float>()->default_value("6600"))
-        ("rkpa", "Root kp angular", cxxopts::value<float>()->default_value("2000"))
-        ("rkda", "Root kd angular", cxxopts::value<float>()->default_value("1800"))
-        ("rkpl", "Root kp linear", cxxopts::value<float>()->default_value("2000"))
-        ("rkdl", "Root kd linear", cxxopts::value<float>()->default_value("100"))
+        ("kd", "Joint kd", cxxopts::value<float>()->default_value("4000"))
+        ("rkpa", "Root kp angular", cxxopts::value<float>()->default_value("20000"))
+        ("rkda", "Root kd angular", cxxopts::value<float>()->default_value("2000"))
+        ("rkpl", "Root kp linear", cxxopts::value<float>()->default_value("20000"))
+        ("rkdl", "Root kd linear", cxxopts::value<float>()->default_value("2000"))
         ("dmpFolder", "dmp file folder", cxxopts::value<string>()->default_value(""))
         ("dmpRepeat", "dmp repeat", cxxopts::value<int>()->default_value("1"))
         ("h,height", "height", cxxopts::value<float>()->default_value("0"));
@@ -292,6 +292,7 @@ int main(int argc, char** argv)
     dmpFolder = result["dmpFolder"].as<string>();
     if (dmpFolder != "") {
         if (useDog) {
+            dmpMap["root"] = ofstream(dmpFolder + "/" + "root.txt");
             dmpMap["tail1"] = ofstream(dmpFolder + "/" + "tail1.txt");
             dmpMap["head"] = ofstream(dmpFolder + "/" + "head.txt");
             dmpMap["left_finger"] = ofstream(dmpFolder + "/" + "left_finger.txt");
@@ -300,6 +301,7 @@ int main(int argc, char** argv)
             dmpMap["right_foot"] = ofstream(dmpFolder + "/" + "right_foot.txt");
         }
         else {
+            dmpMap["root"] = ofstream(dmpFolder + "/" + "root.txt");
             dmpMap["neck"] = ofstream(dmpFolder + "/" + "neck.txt");
             dmpMap["left_wrist"] = ofstream(dmpFolder + "/" + "left_wrist.txt");
             dmpMap["right_wrist"] = ofstream(dmpFolder + "/" + "right_wrist.txt");
@@ -355,18 +357,23 @@ int main(int argc, char** argv)
         printf("%ld\n", spdTime);
     }
     else {
-    /*    auto renderer = glutRenderer::GlutRenderer::GetInstance();
-        renderer->AttachScene(scene, &glutHandler);
-        renderer->StartRenderLoop();*/
-        UR_Init(scene->timeStep);
-        UR_AddArticulation(articulation);
-        UR_InitPrimitives();
-        for(int i = 0; i < result["dmpRepeat"].as<int>() * (int)frames.size() * (int)(trackingFrequency / dt); i++) {
-            control(scene->timeStep);
-            scene->Step();
-            UR_Tick();
+        if (dmpFolder != "") {
+            for(int i = 0; i < result["dmpRepeat"].as<int>() * (int)frames.size() * (int)(trackingFrequency / dt); i++) {
+                control(scene->timeStep);
+                scene->Step();
+            }
         }
-        cleanupPhysics();
+        else {
+            UR_Init(scene->timeStep);
+            UR_AddArticulation(articulation);
+            UR_InitPrimitives();
+            for(;;) {
+                control(scene->timeStep);
+                scene->Step();
+                UR_Tick();
+            }
+            cleanupPhysics();
+        }
     }
 
     if (dump) {

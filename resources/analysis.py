@@ -2,14 +2,15 @@ import sys
 import math
 import matplotlib.pyplot as plt
 
-f = int(sys.argv[1])
-m = sys.argv[2]
-j = sys.argv[3]
+model = sys.argv[1]
+f = int(sys.argv[2])
+m = sys.argv[3]
+j = sys.argv[4]
 
 pos = []
 for c in range(4):
     pos.append([])
-    file = '/home/zhiqiy/Documents/SCA2020/accuracy-snake-long/{3}/{0}/{1}/{2}.txt'.format(m, c, j, f)
+    file = '/home/zhiqiy/Documents/SCA2020/accuracy-{4}/{3}/{0}/{1}/{2}.txt'.format(m, c, j, f, model)
     with open(file) as fp:
         for line in fp:
             spline = line.strip()
@@ -17,6 +18,7 @@ for c in range(4):
                 splt = spline.split(',')
                 pos[c].append([ float(splt[0]), float(splt[1]), float(splt[2]) ])
 
+# relative to kinematic
 err = [[], [], []]
 for c in range(3):
     for t in range(len(pos[0])):
@@ -36,4 +38,5 @@ print(err)
 plt.plot(err[0], 'r')
 plt.plot(err[1], 'g')
 plt.plot(err[2], 'b')
+plt.ylim(0, 3.5)
 plt.show()

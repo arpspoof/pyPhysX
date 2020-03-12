@@ -53,7 +53,7 @@ static float timeStep;
 void UR_Init(float timeStep)
 {
     ::timeStep = timeStep;
-    InitRenderController("localhost", 8080, "localhost", 8081, 
+    InitRenderController("172.27.9.125", 8080, "172.27.59.248", 8081, 
         (int)round(1.0 / timeStep), &dataProvider, &commandHandler);
 }
 
