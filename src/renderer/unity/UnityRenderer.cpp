@@ -50,10 +50,14 @@ static CommandHandler commandHandler;
 
 static float timeStep;
 
-void UR_Init(float timeStep)
+void UR_Init(float timeStep, 
+    const std::string remoteIP, 
+    unsigned short remotePort,
+    const std::string localIP,
+    unsigned short localPort)
 {
     ::timeStep = timeStep;
-    InitRenderController("localhost", 8080, "localhost", 8081, 
+    InitRenderController(remoteIP, remotePort, localIP, localPort, 
         (int)round(1.0 / timeStep), &dataProvider, &commandHandler);
 }
 

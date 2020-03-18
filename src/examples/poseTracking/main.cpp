@@ -320,7 +320,7 @@ int main(int argc, char** argv)
     /*    auto renderer = glutRenderer::GlutRenderer::GetInstance();
         renderer->AttachScene(scene, &glutHandler);
         renderer->StartRenderLoop();*/
-        UR_Init(scene->timeStep);
+        UR_Init(scene->timeStep, "172.27.9.125", 8080, "172.27.59.248", 8081);
         UR_AddArticulation(articulation);
         UR_InitPrimitives();
         for(;;) {

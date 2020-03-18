@@ -16,3 +16,4 @@
 %include "Foundation.i"
 
 %include "GlutRenderer.i"
+%include "UnityRenderer.i"

@@ -44,20 +44,13 @@ end_t = time.time()
 print("total time is ", int((end_t - start_t) * 1000000.0))
 '''
 
+UR_Init(scene.timeStep, "172.27.9.125", 8080, "172.27.59.248", 8081)
+UR_AddArticulation(articulation)
+UR_InitPrimitives()
 
-class GlutHandler(GlutRendererCallback):
-    def __init__(self):
-        GlutRendererCallback.__init__(self)
-    def keyboardHandler(self, key):
-        pass
-    def beforeSimulationHandler(self):
-        articulation.AddSPDForcesABA(targetPositions, scene.timeStep)
-
-handler = GlutHandler()
-
-renderer = GlutRenderer.GetInstance()
-renderer.AttachScene(scene, handler)
-renderer.StartRenderLoop()
-
+while True:
+    articulation.AddSPDForcesABA(targetPositions, scene.timeStep)
+    scene.Step()
+    UR_Tick()
 
 foundation.Dispose()

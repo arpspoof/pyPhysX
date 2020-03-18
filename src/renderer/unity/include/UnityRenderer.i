@@ -1,6 +1,8 @@
-#pragma once
+%{
+    #include "UnityRenderer.h"
+%}
 
-#include "Articulation.h"
+%include "std_string.i"
 
 void UR_Init(float timeStep, 
     const std::string remoteIP, 

@@ -128,7 +128,9 @@ if (RPCLIB_LIBS_DIR STREQUAL "")
 endif()
 
 include_directories(SYSTEM "${UNITY_KINEMATICS_INCLUDE}")
+include_directories(SYSTEM "${RPCLIB_INCLUDE_DIR}")
 link_directories("${UNITY_KINEMATICS_LIB}")
+link_directories("${RPCLIB_LIBS_DIR}")
 
 add_compile_definitions(ENABLE_UNITY_KINEMATICS)
 
@@ -214,7 +216,7 @@ swig_add_library(pyPhysX
     SOURCES "${SRC_PATH}/api.i"
 )
 
-swig_link_libraries(pyPhysX ${ALL_MODULE} ${ALL_EXT_LIBS})
+swig_link_libraries(pyPhysX rpc ${ALL_MODULE} ${ALL_EXT_LIBS})
 
 add_custom_target(copy_so ALL
     COMMAND cp -f "${CMAKE_BINARY_DIR}/_pyPhysX.so" "${RESOURCES_PATH}/sample.py" "${BUILD_API_DIR}"
