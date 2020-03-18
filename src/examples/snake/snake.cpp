@@ -199,7 +199,7 @@ int main(int argc, char** argv)
         UR_Init(scene->timeStep);
         UR_AddArticulation(articulation);
         UR_InitPrimitives();
-        for(int i = 0; i < result["dmpRepeat"].as<int>() * 393 * (int)(0.033f / dt); i++) {
+        for(int i = 0; i < 1+ 0* result["dmpRepeat"].as<int>() * 393 * (int)(0.033f / dt); i++) {
             control(scene->timeStep);
             scene->Step();
             UR_Tick();

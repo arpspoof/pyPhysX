@@ -367,7 +367,7 @@ int main(int argc, char** argv)
             UR_Init(scene->timeStep);
             UR_AddArticulation(articulation);
             UR_InitPrimitives();
-            for(;;) {
+            /*for(;;)*/ {
                 control(scene->timeStep);
                 scene->Step();
                 UR_Tick();

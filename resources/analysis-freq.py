@@ -74,25 +74,27 @@ elif c == 2:
 
 axes(frameon=0)
 grid(linestyle=':')
-plot(time, err[0], color='#b33b3b', linewidth=1)
+plot(time, err[0], color='#a40a15', linewidth=1)
 plot(time, err[1], color='#b3803b', linewidth=1)
 plot(time, err[2], color='#7da537', linewidth=1)
 plot(time, err[3], color='#2f4877', linewidth=1)
 plot(time, err[4], color='#852c6d', linewidth=1)
 
-title('Tracking error with respect to time step $t$', fontsize=12)
 xlabel('Time (s)')
-ylabel('Error distance')
+ylabel('Positional error (m)')
 
 if model == 'dog':
     ylim(0, 3.0)
     legendloc = 1
+    legendncol = 1
 else:
     ylim(0, 3.5)
     legendloc = 4
+    legendncol = 1
 
-legend = legend(["$t = 1/30$", "$t = 1/60$", "$t = 1/120$", "$t = 1/300$", "$t = 1/600$"], 
-    loc=legendloc, fancybox=True, shadow=False);
+legend = legend(["$\Delta t = 1/30$", "$\Delta t = 1/60$", "$\Delta t = 1/120$", "$\Delta t = 1/300$", "$\Delta t = 1/600$"], 
+    loc=legendloc, fancybox=True, shadow=False, fontsize = 12, 
+    ncol=legendncol, columnspacing = 1);
 frame = legend.get_frame()
 frame.set_facecolor('0.9')
 frame.set_edgecolor('0.9')
