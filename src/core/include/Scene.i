@@ -42,5 +42,6 @@ public:
     void Dispose() override;
 
     const std::vector<std::pair<int, int>>& GetAllContactPairs() const;
+    void SetJointVelocitiesPack4AndStep(Articulation* ar, const std::vector<float>& velocities);
 // API END
 };

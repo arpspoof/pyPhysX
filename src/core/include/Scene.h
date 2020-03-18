@@ -140,6 +140,7 @@ public:
      * @remark See [Collision System](wiki/CollisionSystem.md) page for details.
      */
     const std::vector<std::pair<int, int>>& GetAllContactPairs() const;
+    void SetJointVelocitiesPack4AndStep(Articulation* ar, const std::vector<float>& velocities);
 // API END
 public:
     Scene(Foundation* foundation, SceneDescription description, float timeStep);

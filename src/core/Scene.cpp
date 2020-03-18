@@ -129,6 +129,15 @@ void Scene::BuildArticulation(Articulation &ar, ArticulationDescriptionNode* sta
     }
 }
 
+void Scene::SetJointVelocitiesPack4AndStep(Articulation* ar, const std::vector<float>& velocities)
+{
+    ar->SetJointVelocitiesPack4(velocities);
+    float tmp = timeStep;
+    timeStep = 0.00001f;
+    Step();
+    timeStep = tmp;
+}
+
 void Scene::Step()
 {
     contacts.clear();
