@@ -246,12 +246,12 @@ int main(int argc, char** argv)
         ("m,mocap", "Mocap data path", cxxopts::value<string>()->default_value("testMotion.txt"))
         ("f,frequency", "Tracking frequency", cxxopts::value<float>()->default_value("0.033"))
         ("t,dt", "Time step", cxxopts::value<float>()->default_value("0.033"))
-        ("kp", "Joint kp", cxxopts::value<float>()->default_value("75000"))
-        ("kd", "Joint kd", cxxopts::value<float>()->default_value("6600"))
-        ("rkpa", "Root kp angular", cxxopts::value<float>()->default_value("2000"))
-        ("rkda", "Root kd angular", cxxopts::value<float>()->default_value("1800"))
-        ("rkpl", "Root kp linear", cxxopts::value<float>()->default_value("2000"))
-        ("rkdl", "Root kd linear", cxxopts::value<float>()->default_value("100"))
+        ("kp", "Joint kp", cxxopts::value<float>()->default_value("750000"))
+        ("kd", "Joint kd", cxxopts::value<float>()->default_value("40000"))
+        ("rkpa", "Root kp angular", cxxopts::value<float>()->default_value("200000"))
+        ("rkda", "Root kd angular", cxxopts::value<float>()->default_value("20000"))
+        ("rkpl", "Root kp linear", cxxopts::value<float>()->default_value("200000"))
+        ("rkdl", "Root kd linear", cxxopts::value<float>()->default_value("20000"))
         ("h,height", "height", cxxopts::value<float>()->default_value("0"));
     
     auto result = opts.parse(argc, argv);

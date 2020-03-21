@@ -28,6 +28,8 @@ void JsonLoader::LoadDescriptionFromFile(string path)
 
 void JsonLoader::ParseLinkBodies(ArticulationTree& tree, Material* material)
 {
+    float scalingFactorcube = scalingFactor*scalingFactor*scalingFactor;
+
     auto def = j["BodyDefs"];
     for (auto& body : def) {
         string linkName = body["Name"];
@@ -35,13 +37,13 @@ void JsonLoader::ParseLinkBodies(ArticulationTree& tree, Material* material)
         string shape = body["Shape"];
         if (shape == "sphere") {
             float diameter = body["Param0"];
-            LinkBody* body = tree.CreateSphereLinkBody(mass, diameter * scalingFactor / 2, material);
+            LinkBody* body = tree.CreateSphereLinkBody(mass*scalingFactorcube, diameter * scalingFactor / 2, material);
             linkBodyMap[linkName] = body;
         }
         else if (shape == "capsule") {
             float diameter = body["Param0"];
             float length = body["Param1"];
-            LinkBody* body = tree.CreateCapsuleLinkBody(mass, 
+            LinkBody* body = tree.CreateCapsuleLinkBody(mass*scalingFactorcube, 
                 diameter * scalingFactor / 2, length * scalingFactor, material);
             linkBodyMap[linkName] = body;
         }
@@ -49,7 +51,7 @@ void JsonLoader::ParseLinkBodies(ArticulationTree& tree, Material* material)
             float x = body["Param0"];
             float y = body["Param1"];
             float z = body["Param2"];
-            LinkBody* body = tree.CreateBoxLinkBody(mass, 
+            LinkBody* body = tree.CreateBoxLinkBody(mass*scalingFactorcube, 
                 x * scalingFactor, y * scalingFactor, z * scalingFactor, material);
             linkBodyMap[linkName] = body;
         }
