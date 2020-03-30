@@ -37,6 +37,8 @@ static Material* material;
 static float kp, kd, rkpA, rkdA, rkpL, rkdL;
 static vector<vector<float>> motions;
 static int xFrame = 0;
+static int xFrameLb = 0;
+static int xFrameUb = 0;
 static int nRounds = 0;
 
 extern bool debug;
@@ -147,9 +149,9 @@ void control(PxReal dt) {
     static int currentRound = 0;
     static float cumulateTime = 0;
 
-    auto motionFrame = motions[xFrame];
-    motionFrame[0] += motions.back()[0] * currentRound;
-    motionFrame[2] += motions.back()[2] * currentRound;
+    auto motionFrame = motions[xFrame + xFrameLb];
+    motionFrame[0] += (motions[xFrameUb][0] - motions[xFrameLb][0]) * currentRound;
+    motionFrame[2] += (motions[xFrameUb][2] - motions[xFrameLb][2]) * currentRound;
     
     auto starttime = high_resolution_clock::now();
     switch (controller)
@@ -185,9 +187,12 @@ void control(PxReal dt) {
         oc << endl;
     }
 
+    int cycleLen = xFrameUb - xFrameLb + 1;
+    if (cycleLen <= 0) cycleLen = motions.size();
+
     cumulateTime += dt;
-    if (cumulateTime >= (currentRound * motions.size() + xFrame + 1) * trackingFrequency) {
-        xFrame = (xFrame + 1) % motions.size();
+    if (cumulateTime >= (currentRound * cycleLen + xFrame + 1) * trackingFrequency) {
+        xFrame = (xFrame + 1) % cycleLen;
         if (xFrame == 0) {
             currentRound++;
             if (nRounds > 0 && currentRound == nRounds) {
@@ -197,51 +202,22 @@ void control(PxReal dt) {
             }
         }
     }
-
-/*    auto jp = articulation->GetJointPositionsQuaternion();
-    articulation->CalculateFK(jp);
-    auto alljoints = articulation->GetAllJointsInIdOrder();
-    for (auto j : alljoints) {
-        printf("link name = %s\n", j->name.c_str());
-        PxVec3 pos = articulation->linkPositions[j->id];
-        PxQuat rot = articulation->linkGlobalRotations[j->id];
-        auto link = articulation->GetLinkByName(j->name);
-        auto linkTransform = link->link->getGlobalPose();
-        PxQuat frameTransform(-PxPi / 2, PxVec3(0, 0, 1));
-        PxVec3 pxpos = linkTransform.p;
-        PxQuat pxrot = linkTransform.q * frameTransform;
-        printf("my transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
-            pos.x, pos.y, pos.z, rot.w, rot.x, rot.y, rot.z);
-        printf("px transform: p = %f, %f, %f; q = %f, %f, %f, %f\n",
-            pxpos.x, pxpos.y, pxpos.z, pxrot.w, pxrot.x, pxrot.y, pxrot.z);
-    }
-    printf("-----------------------------------------------------------\n");*/
 }
 
-class GlutHandler :public glutRenderer::GlutRendererCallback
-{
-    void keyboardHandler(unsigned char key) override
-    {
-        switch (key) {
-        case 'z': xFrame--; printf("xframe = %d\n", xFrame); break;
-        case 'x': xFrame++; printf("xframe = %d\n", xFrame); break;
-        }
-    }
-    void beforeSimulationHandler() override
-    {
-        control(scene->timeStep);
-    }
-} glutHandler;
+#include <iomanip>
 
 int main(int argc, char** argv)
 {
     cxxopts::Options opts("Example", "Pose tracking");
     opts.add_options()
+        ("crop", "Crop motion only")
         ("d,dog", "Use dog model")
         ("p,performance", "Run performance test")
         ("dbg", "Print debug info")
         ("dmp", "Dump simulation target and actuals")
         ("r,round", "Number of rounds", cxxopts::value<int>()->default_value("0"))
+        ("lb", "xframe lower bound", cxxopts::value<int>()->default_value("0"))
+        ("ub", "xframe upper bound", cxxopts::value<int>()->default_value("-1"))
         ("c,control", "Controller", cxxopts::value<int>()->default_value("0"))
         ("m,mocap", "Mocap data path", cxxopts::value<string>()->default_value("testMotion.txt"))
         ("f,frequency", "Tracking frequency", cxxopts::value<float>()->default_value("0.033"))
@@ -267,6 +243,8 @@ int main(int argc, char** argv)
     rkpL = result["rkpl"].as<float>();
     rkdL = result["rkdl"].as<float>();
     nRounds = result["round"].as<int>();
+    xFrameLb = result["lb"].as<int>();
+    xFrameUb = result["ub"].as<int>();
     controller = result["control"].as<int>();
     trackingFrequency = result["frequency"].as<float>();
     height = result["height"].as<float>();
@@ -287,6 +265,17 @@ int main(int argc, char** argv)
     auto motionJson = json::parse(motionStr);
     auto frames = motionJson["Frames"];
 
+    if (result["crop"].as<bool>()) {
+        auto bg = frames.begin() + xFrameLb;
+        auto ed = frames.begin() + xFrameUb + 1;
+        decltype(frames) newframes(bg, ed);
+        motionJson["Frames"] = newframes;
+        ofstream motioncropoutput("../resources/motions/crop/" + mocap);
+        motioncropoutput << setw(4) << motionJson << endl;
+        motioncropoutput.close();
+        return 0;
+    }
+
     for (auto frame : frames) {
         motions.push_back(vector<float>(dim));
         for (int i = 0; i < dim; i++) {
@@ -295,6 +284,10 @@ int main(int argc, char** argv)
             if (i == 1) value += height;
             motions.back()[i] = value;
         }
+    }
+
+    if (xFrameUb < 0) {
+        xFrameUb = motions.size() - 1;
     }
 
     motioninput.close();
