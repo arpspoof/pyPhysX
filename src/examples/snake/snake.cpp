@@ -4,11 +4,15 @@
 #include "Foundation.h"
 #include "Scene.h"
 #include "cxxopts.hpp"
+#include "json.hpp"
 
 #include <string>
 #include <vector>
 #include <chrono>
+#include <fstream>
+#include <iomanip>
 
+using namespace nlohmann;
 using namespace physx;
 using namespace std;
 using namespace std::chrono;
@@ -71,6 +75,7 @@ void cleanupPhysics()
 static long spdTime = 0;
 static int controlMethod = 0;
 
+static float frequencyHz = 30;
 static float omega = 0.8;
 static float amplitude = 1.3;
 static float segdist = 0.65f;
@@ -105,9 +110,14 @@ void getFrame(vector<float>& motionFrame)
     }
 }
 
+static float cumulative_t = 0;
 void control(PxReal dt) 
 {
-    pos += 0.02f;
+    if (cumulative_t > 1.0f / frequencyHz) {
+        pos += PxPi * 2 / frequencyHz;
+        cumulative_t -= 1.0f / frequencyHz;
+    }
+    cumulative_t += dt;
 
     vector<float> motionFrame;
     getFrame(motionFrame);
@@ -144,15 +154,18 @@ int main(int argc, char** argv)
     cxxopts::Options opts("Example", "Pose tracking");
     opts.add_options()
         ("p,performance", "Run performance test")
+        ("gen", "generate motion")
         ("long", "Use long snake")
         ("c,control", "Controller", cxxopts::value<int>()->default_value("0"))
         ("t,dt", "Time step", cxxopts::value<float>()->default_value("0.033"))
+        ("hz", "control frequency", cxxopts::value<float>()->default_value("30"))
         ("h,height", "height", cxxopts::value<float>()->default_value("0.251"));
     
     auto result = opts.parse(argc, argv);
     controlMethod = result["control"].as<int>();
     longSnake = result["long"].as<bool>();
     height = result["height"].as<float>();
+    frequencyHz = result["hz"].as<float>();
 
     float dt = result["dt"].as<float>();
     initPhysics(dt);
@@ -160,6 +173,33 @@ int main(int argc, char** argv)
     vector<float> motionFrame;
     getFrame(motionFrame);
     articulation->SetJointPositionsQuaternion(motionFrame);
+
+    if (result["gen"].as<bool>()) {
+        vector<vector<float>> frames(frequencyHz);
+        for (int i = 0; i< frequencyHz; i++) {
+            vector<float> tmp;
+            getFrame(tmp);
+            frames[i].push_back(2.f / frequencyHz);
+            for (float x : tmp) frames[i].push_back(x);
+            pos += PxPi * 2 / frequencyHz;
+        }
+        
+        json j;
+        j["Frames"] = frames;
+        
+        string name = "slither";
+        if (longSnake) {
+            name += "_long";
+        }
+
+        string path = "../resources/motions/" + name + ".txt";
+        ofstream outputj(path);
+
+        outputj << setw(4) << j << endl;
+        outputj.close();
+
+        return 0;
+    }
 
     if (result["performance"].as<bool>()) {
         static const PxU32 frameCount = 10000;
