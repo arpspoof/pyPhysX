@@ -11,6 +11,8 @@ c = int(sys.argv[2])
 motion = sys.argv[3]
 link = sys.argv[4]
 
+rel = True
+
 pos = []
 for freq in simfreqs:
     ar = []
@@ -38,7 +40,7 @@ for i in range(5):
         xe = x - x0
         ye = y - y0
         ze = z - z0
-        err[i].append(math.sqrt(xe**2+ye**2+ze**2))
+        err[i].append(math.sqrt(xe**2+ye**2+ze**2) / 3.5 * 100)
 
 time = []
 for t in range(len(pos[0])):
@@ -81,16 +83,27 @@ plot(time, err[3], color='#2f4877', linewidth=1)
 plot(time, err[4], color='#852c6d', linewidth=1)
 
 xlabel('Time (s)')
-ylabel('Positional error (m)')
+ylabel('Positional error (cm)')
 
+print('txfjgchjk')
 if model == 'dog':
-    ylim(0, 3.0)
-    legendloc = 1
-    legendncol = 1
+    if rel:
+        ylim(0, 1.5 / 3.5 * 100)
+        legendloc = 1
+        legendncol = 1
+    else:
+        ylim(0, 3.0 / 3.5 * 100)
+        legendloc = 1
+        legendncol = 1
 else:
-    ylim(0, 3.5)
-    legendloc = 4
-    legendncol = 1
+    if rel:
+        ylim(0, 2.0 / 3.5 * 100)
+        legendloc = 1
+        legendncol = 1
+    else:
+        ylim(0, 3.5 / 3.5 * 100)
+        legendloc = 4
+        legendncol = 1
 
 legend = legend(["$\Delta t = 1/30$", "$\Delta t = 1/60$", "$\Delta t = 1/120$", "$\Delta t = 1/300$", "$\Delta t = 1/600$"], 
     loc=legendloc, fancybox=True, shadow=False, fontsize = 12, 
@@ -102,4 +115,8 @@ frame.set_edgecolor('0.9')
 fig1 = plt.gcf()
 plt.show()
 plt.draw()
-fig1.savefig('/home/zhiqiy/Documents/SCA2020/{0}-{1}-{2}.pgf'.format(model, link, method), dpi=100)
+
+if rel:
+    fig1.savefig('/home/zhiqiy/Documents/SCA2020/{0}-{1}-{2}-rel.pgf'.format(model, link, method), dpi=100)
+else:
+    fig1.savefig('/home/zhiqiy/Documents/SCA2020/{0}-{1}-{2}.pgf'.format(model, link, method), dpi=100)

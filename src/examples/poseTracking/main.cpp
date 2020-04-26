@@ -176,6 +176,11 @@ void control(PxReal dt) {
     default:
         break;
     }
+/*
+    auto allpos = articulation->GetJointPositionsQuaternion();
+    for (int i = 0; i < 7; i++) allpos[i] = motionFrame[i];
+    articulation->SetJointPositionsQuaternion(allpos);*/
+    
     auto endtime = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(endtime - starttime).count();
     spdTime += duration;
@@ -204,6 +209,8 @@ void control(PxReal dt) {
         if (dmpFolder != "") {
             for (auto& kvp : dmpMap) {
                 auto pos = articulation->linkMap[kvp.first]->link->getGlobalPose().p;
+                auto rpos = articulation->linkMap["root"]->link->getGlobalPose().p;
+                pos -= rpos;
                 kvp.second << pos.x << "," << pos.y << "," << pos.z << "\n";
             }
         }
